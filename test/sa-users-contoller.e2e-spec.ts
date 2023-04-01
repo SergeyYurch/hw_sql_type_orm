@@ -1,139 +1,29 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import {
-  BadRequestException,
-  INestApplication,
-  ValidationPipe,
-} from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { AppModule } from '../src/app.module';
 import { disconnect } from 'mongoose';
-import { useContainer } from 'class-validator';
-import { HttpExceptionFilter } from '../src/common/exception-filters/http-exception.filter';
-import { BlogViewModel } from '../src/blogs/dto/view-models/blog.view.model';
-
-const user1 = {
-  login: 'user1',
-  password: 'password1',
-  email: 'email1@gmail.com',
-};
-const user2 = {
-  login: 'user2',
-  password: 'password2',
-  email: 'email2@gmail.com',
-};
-const user3 = {
-  login: 'user3',
-  password: 'password3',
-  email: 'email3@gmail.com',
-};
-const user4 = {
-  login: 'user4',
-  password: 'password4',
-  email: 'email4@gmail.com',
-};
-const user5 = {
-  login: 'user5',
-  password: 'password5',
-  email: 'email5@gmail.com',
-};
-const user6 = {
-  login: 'user6',
-  password: 'password6',
-  email: 'email6@gmail.com',
-};
-const user7 = {
-  login: 'user7',
-  password: 'password7',
-  email: 'email7@gmail.com',
-};
-const user8 = {
-  login: 'user8',
-  password: 'password8',
-  email: 'email8@gmail.com',
-};
-const user9 = {
-  login: 'user9',
-  password: 'password9',
-  email: 'email9@gmail.com',
-};
-const user10 = {
-  login: 'user10',
-  password: 'password10',
-  email: 'email10@gmail.com',
-};
-
-const user11 = {
-  login: 'user11',
-  password: 'password11',
-  email: 'email11@gmail.com',
-};
-
-const user12 = {
-  login: 'user12',
-  password: 'password12',
-  email: 'email12@gmail.com',
-};
-const blog1 = {
-  name: 'blog1',
-  description: 'description1',
-  websiteUrl: 'https://youtube1.com',
-};
-const blog2 = {
-  name: 'blog2',
-  description: 'description2',
-  websiteUrl: 'https://youtube2.com',
-};
-const blog3 = {
-  name: 'blog3',
-  description: 'description3',
-  websiteUrl: 'https://youtube3.com',
-};
+import { getApp } from './test-utils';
+import {
+  user1,
+  user10,
+  user11,
+  user12,
+  user2,
+  user3,
+  user4,
+  user5,
+  user6,
+  user7,
+  user8,
+  user9,
+} from './tsts-input-data';
 
 describe('UsersController (e2e)', () => {
   let app: INestApplication;
   let user1Id: string;
   let user2Id: string;
-  let user3Id: string;
-  let blog1Id: string;
-  let blog2Id: string;
-  let blog3Id: string;
-  let blog1View: BlogViewModel;
-  let blog2View: BlogViewModel;
-  let blog3View: BlogViewModel;
-  let post1Id: string;
-  let post2Id: string;
-  let post3Id: string;
-  let accessTokenUser1: string;
-  let accessTokenUser2: string;
-  let accessTokenUser3: string;
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
-    useContainer(app.select(AppModule), { fallbackOnErrors: true });
-    app.useGlobalPipes(
-      new ValidationPipe({
-        stopAtFirstError: true,
-        transform: true,
-        exceptionFactory: (errors) => {
-          const errorsForResponse = [];
-          for (const e of errors) {
-            const key = Object.keys(e.constraints)[0];
-            errorsForResponse.push({
-              message: e.constraints[key],
-              field: e.property,
-            });
-          }
-          throw new BadRequestException(errorsForResponse);
-        },
-      }),
-    );
-    app.useGlobalFilters(new HttpExceptionFilter());
-
-    await app.init();
+    app = await getApp();
   });
 
   afterAll(async () => {
