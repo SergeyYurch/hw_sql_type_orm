@@ -70,7 +70,7 @@ import { BloggerBanUserUseCase } from './blogs/providers/use-cases/blogger-ban-u
 import { BloggerUsersController } from './users/blogger-users.controller';
 import { BanBlogCommentByCommentatorIdUseCase } from './comments/providers/use-cases/ban-blog--comments-by-user-id--use-case';
 import { BanBlogUseCase } from './blogs/providers/use-cases/ban-blog-use-case';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { UsersSqlRepository } from './users/providers/users.sql.repository';
 import { UsersQuerySqlRepository } from './users/providers/users.query-sql.repository';
 import { TestingRepository } from './testing/testing.repository';
@@ -141,6 +141,30 @@ const securityUseCases = [
   DeleteAllSessionExcludeCurrentUseCase,
   GetSessionsByUserIdUseCase,
 ];
+export const options: TypeOrmModuleOptions =
+  process.env.DB_LOCATION === 'LOCAL'
+    ? {
+        type: 'postgres',
+        host: process.env.LOCAL_PGHOST,
+        port: 5432,
+        username: process.env.LOCAL_PGUSER,
+        password: process.env.LOCAL_PGPASSWORD,
+        database: process.env.LOCAL_PGDATABASE,
+        autoLoadEntities: false,
+        synchronize: false,
+      }
+    : {
+        type: 'postgres',
+        host: process.env.PGHOST,
+        port: 5432,
+        username: process.env.PGUSER,
+        password: process.env.PGPASSWORD,
+        database: process.env.PGDATABASE,
+        autoLoadEntities: false,
+        synchronize: false,
+        ssl: true,
+      };
+
 @Module({
   imports: [
     configModule,
@@ -154,17 +178,7 @@ const securityUseCases = [
       { name: Post.name, schema: PostSchema },
       { name: Comment.name, schema: CommentSchema },
     ]),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.PGHOST || 'localhost',
-      port: 5432,
-      username: process.env.PGUSER || 'postgres',
-      password: process.env.PGPASSWORD || '12p17A',
-      database: process.env.PGDATABASE || 'guild_db',
-      autoLoadEntities: false,
-      synchronize: false,
-      ssl: true,
-    }),
+    TypeOrmModule.forRoot(options),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
