@@ -1,15 +1,19 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import {
-  BadRequestException,
-  INestApplication,
-  ValidationPipe,
-} from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { AppModule } from '../src/app.module';
 import { disconnect } from 'mongoose';
-import { useContainer } from 'class-validator';
-import { HttpExceptionFilter } from '../src/common/exception-filters/http-exception.filter';
 import { BlogViewModel } from '../src/blogs/dto/view-models/blog.view.model';
+import { getApp } from './test-utils';
+import {
+  bannedUser,
+  blog1,
+  blog2,
+  blog3,
+  blog4,
+  user1,
+  user2,
+  user3,
+} from './tsts-input-data';
+
 //Bloggers: user1, user2, user3
 //User1 created: blog1User1, blog2User1, blog3User1Id
 //User3 created: blog4User3Id
@@ -21,47 +25,6 @@ import { BlogViewModel } from '../src/blogs/dto/view-models/blog.view.model';
 //User1 create post4Blog2
 //User2 created comment for post4Blog2Id
 //User3 created comment for post4Blog2Id
-
-const user1 = {
-  login: 'user1',
-  password: 'password1',
-  email: 'email1@gmail.com',
-};
-const user2 = {
-  login: 'user2',
-  password: 'password2',
-  email: 'email2@gmail.com',
-};
-const user3 = {
-  login: 'user3',
-  password: 'password3',
-  email: 'email3@gmail.com',
-};
-const bannedUser = {
-  login: 'user3',
-  password: 'password3',
-  email: 'email3@gmail.com',
-};
-const blog1 = {
-  name: 'blog1',
-  description: 'description1',
-  websiteUrl: 'https://youtube1.com',
-};
-const blog2 = {
-  name: 'blog2',
-  description: 'description2',
-  websiteUrl: 'https://youtube2.com',
-};
-const blog3 = {
-  name: 'blog3',
-  description: 'description3',
-  websiteUrl: 'https://youtube3.com',
-};
-const blog4 = {
-  name: 'blog4',
-  description: 'description4',
-  websiteUrl: 'https://youtube4.com',
-};
 
 describe('BloggerBlogController (e2e)', () => {
   let app: INestApplication;
@@ -86,32 +49,7 @@ describe('BloggerBlogController (e2e)', () => {
   let accessTokenBannedUser: string;
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
-    useContainer(app.select(AppModule), { fallbackOnErrors: true });
-    app.useGlobalPipes(
-      new ValidationPipe({
-        stopAtFirstError: true,
-        transform: true,
-        exceptionFactory: (errors) => {
-          const errorsForResponse = [];
-          for (const e of errors) {
-            const key = Object.keys(e.constraints)[0];
-            errorsForResponse.push({
-              message: e.constraints[key],
-              field: e.property,
-            });
-          }
-          throw new BadRequestException(errorsForResponse);
-        },
-      }),
-    );
-    app.useGlobalFilters(new HttpExceptionFilter());
-
-    await app.init();
+    app = await getApp();
   });
   afterAll(async () => {
     await disconnect();
