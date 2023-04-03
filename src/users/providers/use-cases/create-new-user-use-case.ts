@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { UsersRepository } from '../users.repository';
 import { UserInputModel } from '../../dto/input-models/user-input-model';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UserCreatDto } from '../../dto/user-creat.dto';
 import { UsersService } from '../users.service';
-import { UsersSqlRepository } from '../users.sql.repository';
+import { UsersTypeOrmRepository } from '../users.typeorm.repository';
 
 export class CreateNewUserCommand {
   constructor(public userInputModel: UserInputModel) {}
@@ -16,7 +15,7 @@ export class CreateNewUserUseCase
   implements ICommandHandler<CreateNewUserCommand>
 {
   constructor(
-    private readonly usersRepository: UsersSqlRepository,
+    private readonly usersRepository: UsersTypeOrmRepository,
     private readonly usersService: UsersService,
   ) {}
   async execute(command: CreateNewUserCommand) {
