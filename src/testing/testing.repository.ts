@@ -2,7 +2,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Blog, BlogDocument } from '../blogs/domain/blog.schema';
 import { Model } from 'mongoose';
 import { Post, PostDocument } from '../posts/domain/post.schema';
-import { User, UserDocument } from '../users/domain/user.schema';
+import { User, UserDocument } from '../users/mongo-schema/user.schema';
 import { Comment, CommentDocument } from '../comments/domain/comment.schema';
 
 export class TestingRepository {
