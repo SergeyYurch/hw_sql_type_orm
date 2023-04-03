@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { InjectDataSource } from '@nestjs/typeorm';
-import { UserEntity } from '../domain/user.entity';
+import { User } from '../domain/user';
 import { UsersQuerySqlRepository } from './users.query-sql.repository';
 
 @Injectable()
@@ -20,7 +20,7 @@ export class UsersSqlRepository {
   // }
 
   async createUserModel() {
-    return new UserEntity();
+    return new User();
   }
 
   async deleteUser(userId: string) {
@@ -34,7 +34,7 @@ export class UsersSqlRepository {
     return true;
   }
 
-  async save(user: UserEntity) {
+  async save(user: User) {
     if (!user.id) {
       return await this.insertNewUser(user);
     }
@@ -217,7 +217,7 @@ export class UsersSqlRepository {
     }
     return user.id;
   }
-  private async insertNewUser(user: UserEntity) {
+  private async insertNewUser(user: User) {
     try {
       const { accountData, emailConfirmation } = user;
       const { login, email, passwordSalt, passwordHash, createdAt } =
@@ -238,7 +238,7 @@ export class UsersSqlRepository {
     }
   }
 
-  private async insertEmailConfirmationRow(user: UserEntity) {
+  private async insertEmailConfirmationRow(user: User) {
     try {
       const { confirmationCode, expirationDate, dateSendingConfirmEmail } =
         user.emailConfirmation;
@@ -253,7 +253,7 @@ export class UsersSqlRepository {
     }
   }
 
-  private async insertPasswordRecoveryInfoRow(user: UserEntity) {
+  private async insertPasswordRecoveryInfoRow(user: User) {
     try {
       const { recoveryCode, expirationDate } = user.passwordRecoveryInformation;
       const queryString = `
@@ -268,7 +268,7 @@ export class UsersSqlRepository {
     }
   }
 
-  private async deletePasswordRecoveryInfoRow(user: UserEntity) {
+  private async deletePasswordRecoveryInfoRow(user: User) {
     try {
       const queryString = `
         DELETE FROM password_recovery_information WHERE "userId"=${user.id} 
@@ -281,7 +281,7 @@ export class UsersSqlRepository {
     }
   }
 
-  private async insertDeviceSessionRows(user: UserEntity) {
+  private async insertDeviceSessionRows(user: User) {
     try {
       const sessions = user.deviceSessions;
       const valuesArray = sessions.map(
@@ -311,7 +311,7 @@ export class UsersSqlRepository {
   //   return changesArray.join(',');
   // }
 
-  private async banUser(user: UserEntity) {
+  private async banUser(user: User) {
     try {
       if (user.banInfo.isBanned) {
         const { banReason, banDate } = user.banInfo;
@@ -336,7 +336,7 @@ export class UsersSqlRepository {
     }
   }
 
-  private async confirmEmail(user: UserEntity) {
+  private async confirmEmail(user: User) {
     try {
       const queryString = `
         UPDATE users SET "isConfirmed"=true WHERE id=${user.id};
