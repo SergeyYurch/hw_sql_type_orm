@@ -5,7 +5,7 @@ import { UserViewModel } from '../dto/view-models/user.view.model';
 import { MeViewModel } from '../../common/dto/view-models/me.view.model';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { UserEntity } from '../domain/user.entity';
+import { User } from '../domain/user';
 import {
   DeviceSessionSqlType,
   UserSqlDataType,
@@ -164,7 +164,7 @@ export class UsersQuerySqlRepository {
       OFFSET ${pageSize * (pageNumber - 1)};
     `;
       const users: UserSqlDataType[] = await this.dataSource.query(queryString);
-      const userEntities: UserEntity[] = [];
+      const userEntities: User[] = [];
       for (const user of users) {
         userEntities.push(await this.castToUserEntity(user));
       }
@@ -222,7 +222,7 @@ export class UsersQuerySqlRepository {
     };
   }
 
-  private getUserViewModel(user: UserEntity): UserViewModel {
+  private getUserViewModel(user: User): UserViewModel {
     return {
       id: user.id,
       email: user.accountData.email,
@@ -231,7 +231,7 @@ export class UsersQuerySqlRepository {
     };
   }
 
-  private getUserSaViewModel(user: UserEntity) {
+  private getUserSaViewModel(user: User) {
     return {
       id: user.id,
       email: user.accountData.email,
@@ -247,10 +247,8 @@ export class UsersQuerySqlRepository {
     };
   }
 
-  private async castToUserEntity(
-    userData: UserSqlDataType,
-  ): Promise<UserEntity> {
-    const userEntity = new UserEntity();
+  private async castToUserEntity(userData: UserSqlDataType): Promise<User> {
+    const userEntity = new User();
     userEntity.id = userData.id;
     userEntity.accountData = {
       login: userData.login,
@@ -297,7 +295,7 @@ export class UsersQuerySqlRepository {
     return this.getMeViewModel(user);
   }
 
-  getMeViewModel(user: UserEntity): MeViewModel {
+  getMeViewModel(user: User): MeViewModel {
     return {
       login: user.accountData.login,
       email: user.accountData.email,
