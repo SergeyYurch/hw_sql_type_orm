@@ -11,7 +11,7 @@ import { CreateNewUserUseCase } from './users/providers/use-cases/create-new-use
 import { DeleteUserUseCase } from './users/providers/use-cases/delete-user-use-case';
 import { CreateNewPostUseCase } from './posts/providers/use-cases/create-new-post-use-case';
 import { MongooseModule } from '@nestjs/mongoose';
-import { User, UserSchema } from './users/domain/user.schema';
+import { User, UserSchema } from './users/mongo-schema/user.schema';
 import { Blog, BlogSchema } from './blogs/domain/blog.schema';
 import { Post, PostSchema } from './posts/domain/post.schema';
 import { Comment, CommentSchema } from './comments/domain/comment.schema';
@@ -87,8 +87,23 @@ import { ValidateUserUseCase } from './auth/providers/use-cases/validate-user.us
 import { CommentsSqlRepository } from './comments/providers/comments.sql.repository';
 import { CommentsQuerySqlRepository } from './comments/providers/comments.query.sql.repository';
 import { LikesQuerySqlRepository } from './common/providers/likes.query.sql.repository';
+import { UsersTypeOrmRepository } from './users/providers/users.typeorm.repository';
+import { UserEntity } from './users/entities/user.entity';
+import { AccountDataEntity } from './users/entities/account-data.entity';
+import { DeviceSessionsEntity } from './users/entities/device-sessions.entity';
+import { EmailConfirmationEntity } from './users/entities/email-confirmation.entity';
+import { PasswordRecoveryInformationEntity } from './users/entities/password-recovery-information.entity';
+import { BanInfoEntity } from './users/entities/ban-info.entity';
 
 const configModule = ConfigModule.forRoot();
+const userEntities = [
+  UserEntity,
+  DeviceSessionsEntity,
+  BanInfoEntity,
+  EmailConfirmationEntity,
+  AccountDataEntity,
+  PasswordRecoveryInformationEntity,
+];
 
 const blogsUseCases = [
   BindBlogWithUserUseCase,
@@ -179,6 +194,7 @@ export const options: TypeOrmModuleOptions =
       { name: Comment.name, schema: CommentSchema },
     ]),
     TypeOrmModule.forRoot(options),
+    TypeOrmModule.forFeature([...userEntities]),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -276,6 +292,7 @@ export const options: TypeOrmModuleOptions =
     UsersQueryRepository,
     UsersSqlRepository,
     UsersQuerySqlRepository,
+    UsersTypeOrmRepository,
     //
     TestingService,
     TestingRepository,
