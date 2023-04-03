@@ -39,7 +39,7 @@ export class BanInfo {
   sa: string | null;
 }
 
-export class UserEntity {
+export class User {
   id: string;
   sigIn: boolean;
   accountData: AccountData;
