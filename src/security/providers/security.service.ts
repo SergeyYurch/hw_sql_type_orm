@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { User, UserDocument } from '../../users/domain/user.schema';
+import { User, UserDocument } from '../../users/mongo-schema/user.schema';
 import { Model } from 'mongoose';
 import { UsersQuerySqlRepository } from '../../users/providers/users.query-sql.repository';
 
