@@ -1,17 +1,19 @@
-import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
-import { User } from '../domain/user';
+import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
+import { UserEntity } from './user.entity';
 
-@Entity()
+@Entity('ban_info')
 export class BanInfoEntity {
   @Column()
   isBanned: boolean;
-  @Column()
+  @Column({ type: 'bigint' })
   banDate: number | null;
   @Column()
   banReason: string | null;
   @Column()
   sa: string | null;
-  @OneToOne(() => User)
+  @OneToOne(() => UserEntity)
   @JoinColumn()
-  user: User;
+  user: UserEntity;
+  @PrimaryColumn()
+  userId: number;
 }
