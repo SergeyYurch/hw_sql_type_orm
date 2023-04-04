@@ -1,19 +1,21 @@
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
-import { User } from '../domain/user';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+import { UserEntity } from './user.entity';
 
-@Entity()
+@Entity('device_sessions')
 export class DeviceSessionsEntity {
-  @Column()
+  @PrimaryColumn()
   deviceId: string;
   @Column()
   ip: string;
   @Column()
   title: string;
-  @Column()
+  @Column({ type: 'bigint' })
   lastActiveDate: number;
-  @Column()
+  @Column({ type: 'bigint' })
   expiresDate: number;
-  @ManyToOne(() => User, (u) => u.deviceSessions)
+  @ManyToOne(() => UserEntity)
   @JoinColumn()
-  user: User;
+  user: UserEntity;
+  @PrimaryColumn()
+  userId: number;
 }
