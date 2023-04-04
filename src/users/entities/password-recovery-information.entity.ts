@@ -1,13 +1,15 @@
-import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
-import { User } from '../domain/user';
+import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
+import { UserEntity } from './user.entity';
 
-@Entity()
+@Entity('password_recovery_information')
 export class PasswordRecoveryInformationEntity {
   @Column()
   recoveryCode: string;
-  @Column()
+  @Column({ type: 'bigint' })
   expirationDate: number;
-  @OneToOne(() => User)
+  @OneToOne(() => UserEntity)
   @JoinColumn()
-  user: User;
+  user: UserEntity;
+  @PrimaryColumn()
+  userId: number;
 }
