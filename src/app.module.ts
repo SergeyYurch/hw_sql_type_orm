@@ -89,7 +89,6 @@ import { CommentsQuerySqlRepository } from './comments/providers/comments.query.
 import { LikesQuerySqlRepository } from './common/providers/likes.query.sql.repository';
 import { UsersTypeOrmRepository } from './users/providers/users.typeorm.repository';
 import { UserEntity } from './users/entities/user.entity';
-import { AccountDataEntity } from './users/entities/account-data.entity';
 import { DeviceSessionsEntity } from './users/entities/device-sessions.entity';
 import { EmailConfirmationEntity } from './users/entities/email-confirmation.entity';
 import { PasswordRecoveryInformationEntity } from './users/entities/password-recovery-information.entity';
@@ -101,7 +100,6 @@ const userEntities = [
   DeviceSessionsEntity,
   BanInfoEntity,
   EmailConfirmationEntity,
-  AccountDataEntity,
   PasswordRecoveryInformationEntity,
 ];
 
@@ -165,8 +163,8 @@ export const options: TypeOrmModuleOptions =
         username: process.env.LOCAL_PGUSER,
         password: process.env.LOCAL_PGPASSWORD,
         database: process.env.LOCAL_PGDATABASE,
-        autoLoadEntities: false,
-        synchronize: false,
+        autoLoadEntities: true,
+        synchronize: true,
       }
     : {
         type: 'postgres',
@@ -175,8 +173,8 @@ export const options: TypeOrmModuleOptions =
         username: process.env.PGUSER,
         password: process.env.PGPASSWORD,
         database: process.env.PGDATABASE,
-        autoLoadEntities: false,
-        synchronize: false,
+        autoLoadEntities: true,
+        synchronize: true,
         ssl: true,
       };
 
