@@ -4,7 +4,6 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { User } from '../domain/user';
 import { UsersQuerySqlRepository } from './users.query-sql.repository';
 import { UserEntity } from '../entities/user.entity';
-import { AccountDataEntity } from '../entities/account-data.entity';
 import { BanInfoEntity } from '../entities/ban-info.entity';
 import { DeviceSessionsEntity } from '../entities/device-sessions.entity';
 import { EmailConfirmationEntity } from '../entities/email-confirmation.entity';
@@ -17,8 +16,6 @@ export class UsersTypeOrmRepository {
     protected userQueryRepository: UsersQuerySqlRepository,
     @InjectRepository(UserEntity)
     private readonly usersRepository: Repository<UserEntity>,
-    @InjectRepository(AccountDataEntity)
-    private readonly accountDataRepository: Repository<AccountDataEntity>,
     @InjectRepository(BanInfoEntity)
     private readonly banInfoRepository: Repository<BanInfoEntity>,
     @InjectRepository(DeviceSessionsEntity)
@@ -238,17 +235,18 @@ export class UsersTypeOrmRepository {
   private async insertNewUser(user: User) {
     try {
       const { accountData, emailConfirmation } = user;
-      const accountDataEntity = new AccountDataEntity(accountData);
-      await this.accountDataRepository.save(accountDataEntity);
-      const emailConfirmationEntity = new EmailConfirmationEntity(
-        emailConfirmation,
-      );
-      await this.emailConfirmationRepository.save(emailConfirmationEntity);
       const userEntity = new UserEntity();
-      userEntity.accountData = accountDataEntity;
-      userEntity.emailConfirmation = emailConfirmationEntity;
+      userEntity.login = accountData.login;
+      userEntity.email = accountData.email;
+      userEntity.passwordSalt = accountData.passwordSalt;
+      userEntity.passwordHash = accountData.passwordHash;
+      userEntity.createdAt = accountData.createdAt;
       await this.usersRepository.save(userEntity);
-      return user.id;
+      const emailConfirmationEntity = new EmailConfirmationEntity();
+      emailConfirmationEntity.user = userEntity;
+      emailConfirmationEntity.isConfirmed = emailConfirmation.isConfirmed;
+      await this.emailConfirmationRepository.save(emailConfirmationEntity);
+      return userEntity.id;
     } catch (e) {
       console.log(e);
     }
