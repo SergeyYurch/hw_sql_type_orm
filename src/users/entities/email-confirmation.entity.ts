@@ -1,24 +1,25 @@
-import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
-import { EmailConfirmation, User } from '../domain/user';
+import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
+import { UserEntity } from './user.entity';
 
-@Entity()
+@Entity('email_confirmation')
 export class EmailConfirmationEntity {
-  @Column()
+  @Column({ default: false })
   isConfirmed: boolean;
-  @Column()
   confirmationCode: string | null;
-  @Column()
+  @Column({ type: 'bigint', nullable: true })
   expirationDate: number | null;
-  @Column()
+  @Column({ type: 'bigint', nullable: true })
   dateSendingConfirmEmail: number | null;
-  @OneToOne(() => User)
+  @OneToOne(() => UserEntity)
   @JoinColumn()
-  user: User;
+  user: UserEntity;
+  @PrimaryColumn()
+  userId: number;
 
-  constructor(data: EmailConfirmation) {
-    this.isConfirmed = data.isConfirmed;
-    this.confirmationCode = data.confirmationCode;
-    this.expirationDate = data.expirationDate;
-    this.dateSendingConfirmEmail = data.dateSendingConfirmEmail;
-  }
+  // constructor(data: EmailConfirmation) {
+  //   this.isConfirmed = data.isConfirmed;
+  //   this.confirmationCode = data.confirmationCode;
+  //   this.expirationDate = data.expirationDate;
+  //   this.dateSendingConfirmEmail = data.dateSendingConfirmEmail;
+  // }
 }
