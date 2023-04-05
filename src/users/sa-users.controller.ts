@@ -25,6 +25,7 @@ import { UsersQuerySqlRepository } from './providers/users.query-sql.repository'
 import { PaginatorInputType } from '../common/dto/input-models/paginator.input.type';
 import { PaginatorParam } from '../common/decorators/paginator-param.decorator';
 import { CheckUserIdBannedIncludeGuard } from '../common/guards/check-user-id-banned-include.guard';
+import { UsersQueryTypeormRepository } from './providers/users.query-typeorm.repository';
 
 @UseGuards(AuthGuard('basic'))
 @Controller('sa/users')
@@ -33,7 +34,7 @@ export class SaUsersController {
     private commandBus: CommandBus,
     private userService: UsersService,
     private createNewUserUseCase: CreateNewUserUseCase,
-    private usersQueryRepository: UsersQuerySqlRepository,
+    private usersQueryRepository: UsersQueryTypeormRepository,
   ) {}
 
   @UseGuards(CheckUserIdBannedIncludeGuard)
