@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { EmailConfirmationEntity } from './email-confirmation.entity';
 
 @Entity('users')
 export class UserEntity {
@@ -14,4 +15,6 @@ export class UserEntity {
   passwordSalt: string;
   @Column({ type: 'bigint' })
   createdAt: number;
+  @OneToOne(() => EmailConfirmationEntity, (ec) => ec.user)
+  emailConfirmation: EmailConfirmationEntity;
 }
