@@ -8,12 +8,13 @@ import { BanInfoEntity } from '../entities/ban-info.entity';
 import { DeviceSessionsEntity } from '../entities/device-sessions.entity';
 import { EmailConfirmationEntity } from '../entities/email-confirmation.entity';
 import { PasswordRecoveryInformationEntity } from '../entities/password-recovery-information.entity';
+import { UsersQueryTypeormRepository } from './users.query-typeorm.repository';
 
 @Injectable()
 export class UsersTypeOrmRepository {
   constructor(
     @InjectDataSource() protected dataSource: DataSource,
-    protected userQueryRepository: UsersQuerySqlRepository,
+    protected userQueryRepository: UsersQueryTypeormRepository,
     @InjectRepository(UserEntity)
     private readonly usersRepository: Repository<UserEntity>,
     @InjectRepository(BanInfoEntity)
@@ -80,136 +81,6 @@ export class UsersTypeOrmRepository {
     ) {
       await this.deletePasswordRecoveryInfoRow(user);
     }
-    //
-    //
-    // //changeDetection
-    // const usersChanges = [];
-    // const emailConfirmationChanges = [];
-    // const passwordRecoveryInformationChanges = [];
-    // const banInfoChanges = [];
-    //
-    // //detection of changes in the accountData
-    // for (const key in user.accountData) {
-    //   if (
-    //     !(user.accountData[key] instanceof Date) &&
-    //     user.accountData[key] !== userFromDb.accountData[key]
-    //   ) {
-    //     usersChanges.push({ field: key, value: user.accountData[key] });
-    //   }
-    // }
-    //
-    // //detection of changes in the emailConfirmation
-    // for (const key in user.emailConfirmation) {
-    //   if (user.emailConfirmation[key] !== userFromDb.emailConfirmation[key]) {
-    //     if (key === 'isConfirmed') {
-    //       usersChanges.push({ field: key, value: user.emailConfirmation[key] });
-    //       continue;
-    //     }
-    //     emailConfirmationChanges.push({
-    //       field: key,
-    //       value: user.emailConfirmation[key],
-    //     });
-    //   }
-    // }
-    // //detection of changes in the passwordRecoveryInformation
-    // for (const key in user.passwordRecoveryInformation) {
-    //   if (
-    //     user.passwordRecoveryInformation[key] !==
-    //     userFromDb.passwordRecoveryInformation[key]
-    //   ) {
-    //     passwordRecoveryInformationChanges.push({
-    //       field: key,
-    //       value: user.passwordRecoveryInformation[key],
-    //     });
-    //   }
-    // }
-    //
-    // //detection of  changes in the banInfo
-    // for (const key in user.banInfo) {
-    //   if (user.banInfo[key] !== userFromDb.banInfo[key]) {
-    //     if (key === 'isBanned') {
-    //       usersChanges.push({ field: key, value: user.banInfo[key] });
-    //       continue;
-    //     }
-    //     banInfoChanges.push({
-    //       field: key,
-    //       value: user.banInfo[key],
-    //     });
-    //   }
-    // }
-    //
-    // if (usersChanges.length > 0) {
-    //   //update users
-    //   try {
-    //     const changeString = this.getChangeQueryString(usersChanges);
-    //     const queryString = `UPDATE users SET ${changeString} WHERE users.id='${user.id}'`;
-    //     await this.dataSource.query(queryString);
-    //   } catch (e) {
-    //     console.log(e);
-    //     return null;
-    //   }
-    // }
-    //
-    // if (emailConfirmationChanges.length > 0) {
-    //   const isExistRows = await this.dataSource.query(
-    //     `SELECT * FROM email_confirmation  WHERE "userId"='${user.id}'`,
-    //   );
-    //   //add new row
-    //   if (isExistRows.length < 1) {
-    //     return await this.insertEmailConfirmationRow(user);
-    //   }
-    //   //update email_confirmation
-    //   try {
-    //     const changeString = this.getChangeQueryString(
-    //       emailConfirmationChanges,
-    //     );
-    //     const queryString = `UPDATE email_confirmation SET ${changeString} WHERE "userId"=${user.id}`;
-    //     return await this.dataSource.query(queryString);
-    //   } catch (e) {
-    //     console.log(e);
-    //     return null;
-    //   }
-    // }
-    //
-    // if (passwordRecoveryInformationChanges.length > 0) {
-    //   const isExistRows = await this.dataSource.query(
-    //     `SELECT * FROM password_recovery_information  WHERE "userId"=${user.id}`,
-    //   );
-    //   if (isExistRows.length < 1) {
-    //     await this.insertPasswordRecoveryInfoRow(user);
-    //   }
-    //   //update
-    //   try {
-    //     const changeString = this.getChangeQueryString(
-    //       passwordRecoveryInformationChanges,
-    //     );
-    //     const queryString = `UPDATE password_recovery_information SET ${changeString} WHERE "userId"=${user.id}`;
-    //     await this.dataSource.query(queryString);
-    //   } catch (e) {
-    //     console.log(e);
-    //     return null;
-    //   }
-    // }
-    //
-    // if (banInfoChanges.length > 0) {
-    //   const isExistRows = await this.dataSource.query(
-    //     `SELECT * FROM ban_info  WHERE "userId"=${user.id}`,
-    //   );
-    //   if (isExistRows.length < 1) {
-    //     await this.insertBanInfoRow(user);
-    //   }
-    //   //update ban_info
-    //   try {
-    //     const changeString = this.getChangeQueryString(banInfoChanges);
-    //     console.log(banInfoChanges);
-    //     const queryString = `UPDATE ban_info SET ${changeString} WHERE "userId"=${user.id}`;
-    //     console.log(queryString);
-    //     await this.dataSource.query(queryString);
-    //   } catch (e) {
-    //     console.log(e);
-    //     return null;
-    //   }
-    // }
 
     //deviceSession change
     //delete all sessions in DB for current user
