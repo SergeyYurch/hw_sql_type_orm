@@ -93,6 +93,7 @@ import { DeviceSessionsEntity } from './users/entities/device-sessions.entity';
 import { EmailConfirmationEntity } from './users/entities/email-confirmation.entity';
 import { PasswordRecoveryInformationEntity } from './users/entities/password-recovery-information.entity';
 import { BanInfoEntity } from './users/entities/ban-info.entity';
+import { UsersQueryTypeormRepository } from './users/providers/users.query-typeorm.repository';
 
 const configModule = ConfigModule.forRoot();
 const userEntities = [
@@ -290,6 +291,7 @@ export const options: TypeOrmModuleOptions =
     UsersQueryRepository,
     UsersSqlRepository,
     UsersQuerySqlRepository,
+    UsersQueryTypeormRepository,
     UsersTypeOrmRepository,
     //
     TestingService,
