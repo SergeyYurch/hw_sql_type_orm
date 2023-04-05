@@ -5,6 +5,7 @@ import { UserEntity } from './user.entity';
 export class EmailConfirmationEntity {
   @Column({ default: false })
   isConfirmed: boolean;
+  @Column({ nullable: true })
   confirmationCode: string | null;
   @Column({ type: 'bigint', nullable: true })
   expirationDate: number | null;
