@@ -3,17 +3,23 @@ import { pagesCount } from '../../common/helpers/helpers';
 import { PaginatorInputType } from '../../common/dto/input-models/paginator.input.type';
 import { UserViewModel } from '../dto/view-models/user.view.model';
 import { MeViewModel } from '../../common/dto/view-models/me.view.model';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { User } from '../domain/user';
 import {
   DeviceSessionSqlType,
   UserSqlDataType,
 } from '../types/userSqlData.type';
+import { UserEntity } from '../entities/user.entity';
+import { EmailConfirmationEntity } from '../entities/email-confirmation.entity';
 
 @Injectable()
-export class UsersQuerySqlRepository {
-  constructor(@InjectDataSource() protected dataSource: DataSource) {}
+export class UsersQueryTypeormRepository {
+  constructor(
+    @InjectDataSource() protected dataSource: DataSource,
+    @InjectRepository(UserEntity)
+    private readonly usersRepository: Repository<UserEntity>,
+  ) {}
   async doesUserIdExist(
     userId: string,
     options?: { bannedInclude: boolean },
@@ -82,11 +88,25 @@ export class UsersQuerySqlRepository {
     }
   }
 
-  async findById(id: string) {
-    console.log(`findById: ${id}`);
-    const conditionString = `users.id='${id}'`;
-    return await this.findOne(conditionString);
+  async findById(id: string): Promise<User | null> {
+    console.log(`findById- typeOrm: ${id}`);
+    // const conditionString = `users.id='${id}'`;
+    // return await this.findOne(conditionString);
+    const queryBuilder = this.usersRepository.createQueryBuilder('u');
+    console.log(queryBuilder.getSql());
+
+    const result = await queryBuilder
+      .select(['u.login', 'ec.isConfirmed'])
+      .leftJoinAndSelect('email_confirmation', 'ec', 'ec.userId=u.id', {
+        isConfirmed: true,
+      })
+      .where('u.id=:id', { id })
+      .getOne();
+    console.log(queryBuilder.getSql());
+    console.log(result);
+    return null;
   }
+
   async getUserModel(id: string) {
     return this.findById(id);
   }
@@ -203,23 +223,34 @@ export class UsersQuerySqlRepository {
     banStatus?: string,
     withBanStatus = false,
   ) {
-    const { totalCount, userEntities } = await this.find(
-      paginatorParams,
-      searchLoginTerm,
-      searchEmailTerm,
-      banStatus,
-    );
-    const { pageSize, pageNumber } = paginatorParams;
-    const items: UserViewModel[] = userEntities.map((u) =>
-      withBanStatus ? this.getUserSaViewModel(u) : this.getUserViewModel(u),
-    );
-    return {
-      pagesCount: pagesCount(totalCount, pageSize),
-      page: pageNumber,
-      pageSize,
-      totalCount,
-      items,
-    };
+    const queryBuilder = this.usersRepository.createQueryBuilder('u');
+    const query = await queryBuilder
+      .select(['u.login'])
+      .addSelect(['u.email'])
+      .addSelect(['ec.isConfirmed'])
+      .addSelect(['ec.confirmationCode'])
+      .leftJoin('u.emailConfirmation', 'ec');
+
+    console.log(queryBuilder.getSql());
+    const result = await query.getMany();
+    return result;
+    // const { totalCount, userEntities } = await this.find(
+    //   paginatorParams,
+    //   searchLoginTerm,
+    //   searchEmailTerm,
+    //   banStatus,
+    // );
+    // const { pageSize, pageNumber } = paginatorParams;
+    // const items: UserViewModel[] = userEntities.map((u) =>
+    //   withBanStatus ? this.getUserSaViewModel(u) : this.getUserViewModel(u),
+    // );
+    // return {
+    //   pagesCount: pagesCount(totalCount, pageSize),
+    //   page: pageNumber,
+    //   pageSize,
+    //   totalCount,
+    //   items,
+    // };
   }
 
   private getUserViewModel(user: User): UserViewModel {
