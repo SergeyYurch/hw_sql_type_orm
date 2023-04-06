@@ -4,8 +4,8 @@ import { UserInputModel } from '../../dto/input-models/user-input-model';
 import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UserCreatDto } from '../../dto/user-creat.dto';
 import { UsersService } from '../users.service';
-import { UsersQuerySqlRepository } from '../users.query-sql.repository';
-import { UsersSqlRepository } from '../users.sql.repository';
+import { UsersTypeOrmRepository } from '../users.typeorm.repository';
+import { UsersQueryTypeormRepository } from '../users.query-typeorm.repository';
 
 export class RegistrationUserCommand {
   constructor(public userInputModel: UserInputModel) {}
@@ -18,8 +18,8 @@ export class RegistrationUserUseCase
 {
   constructor(
     private commandBus: CommandBus,
-    private readonly usersQueryRepository: UsersQuerySqlRepository,
-    private readonly usersRepository: UsersSqlRepository,
+    private readonly usersQueryRepository: UsersQueryTypeormRepository,
+    private readonly usersRepository: UsersTypeOrmRepository,
     private readonly usersService: UsersService,
     private readonly mailService: MailService,
   ) {}
@@ -43,8 +43,7 @@ export class RegistrationUserUseCase
     const userId = await this.usersRepository.save(userModel);
 
     if (!userId) return null;
-    const { confirmationCode } =
-      await this.usersQueryRepository.getEmailConfirmationData(userId);
+    const confirmationCode = userModel.emailConfirmation.confirmationCode;
     await this.mailService.sendConfirmationEmail(email, confirmationCode);
     return this.usersQueryRepository.getUserById(userId);
   }
