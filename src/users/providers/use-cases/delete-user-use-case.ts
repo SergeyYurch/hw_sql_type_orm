@@ -1,5 +1,5 @@
 import { CommandHandler } from '@nestjs/cqrs';
-import { UsersSqlRepository } from '../users.sql.repository';
+import { UsersTypeOrmRepository } from '../users.typeorm.repository';
 
 export class DeleteUserCommand {
   constructor(public userId: string) {}
@@ -7,7 +7,7 @@ export class DeleteUserCommand {
 
 @CommandHandler(DeleteUserCommand)
 export class DeleteUserUseCase {
-  constructor(private readonly usersRepository: UsersSqlRepository) {}
+  constructor(private readonly usersRepository: UsersTypeOrmRepository) {}
 
   async execute(command: DeleteUserCommand): Promise<boolean> {
     return this.usersRepository.deleteUser(command.userId);
