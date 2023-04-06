@@ -4,7 +4,14 @@ import { PaginatorInputType } from '../../common/dto/input-models/paginator.inpu
 import { UserViewModel } from '../dto/view-models/user.view.model';
 import { MeViewModel } from '../../common/dto/view-models/me.view.model';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import {
+  DataSource,
+  FindManyOptions,
+  FindOptionsOrder,
+  FindOptionsOrderValue,
+  ILike,
+  Repository,
+} from 'typeorm';
 import { User } from '../domain/user';
 import {
   DeviceSessionSqlType,
@@ -12,6 +19,7 @@ import {
 } from '../types/userSqlData.type';
 import { UserEntity } from '../entities/user.entity';
 import { EmailConfirmationEntity } from '../entities/email-confirmation.entity';
+import { use } from 'passport';
 
 @Injectable()
 export class UsersQueryTypeormRepository {
@@ -127,7 +135,7 @@ export class UsersQueryTypeormRepository {
     `;
       const users = await this.dataSource.query(queryString);
       if (!users[0]) return null;
-      return this.castToUserEntity(users[0]);
+      return this.castToUserModel(users[0]);
     } catch (e) {
       console.log('Did not found users');
       console.log(e);
@@ -142,53 +150,53 @@ export class UsersQueryTypeormRepository {
     banStatus?: string,
   ) {
     const { sortBy, sortDirection, pageSize, pageNumber } = paginatorParams;
-    let searchString = '';
-    if (searchLoginTerm) searchString += `login ILIKE '%${searchLoginTerm}%' `;
-    if (searchEmailTerm) {
-      if (searchLoginTerm) searchString += 'OR ';
-      searchString += `email ILIKE '%${searchEmailTerm}%' `;
-    }
-    let banSearchParam = '';
-    if (banStatus === 'banned') {
-      banSearchParam = '"isBanned"=true';
-    }
-    if (banStatus === 'notBanned') {
-      banSearchParam = '"isBanned"=false';
-    }
-    if (searchString) {
-      searchString = `WHERE (${searchString})`;
-      if (banSearchParam) searchString += `AND ${banSearchParam}`;
-    }
-    if (!searchString && banSearchParam) {
-      searchString = `WHERE ${banSearchParam}`;
-    }
+    const where = {};
+    if (searchLoginTerm) where['login'] = ILike(`%${searchLoginTerm}%`);
+    if (searchEmailTerm) where['email'] = ILike(`%${searchEmailTerm}%`);
+    if (banStatus === 'banned') where['isBanned'] = true;
+    if (banStatus === 'notBanned') where['isBanned'] = false;
+    //     let searchString = '';
+    // if (searchLoginTerm) searchString += `login ILIKE '%${searchLoginTerm}%' `;
+    // if (searchEmailTerm) {
+    //   if (searchLoginTerm) searchString += 'OR ';
+    //   searchString += `email ILIKE '%${searchEmailTerm}%' `;
+    // }
+    // let banSearchParam = '';
+    // if (banStatus === 'banned') {
+    //   banSearchParam = '"isBanned"=true';
+    // }
+    // if (banStatus === 'notBanned') {
+    //   banSearchParam = '"isBanned"=false';
+    // }
+    // if (searchString) {
+    //   searchString = `WHERE (${searchString})`;
+    //   if (banSearchParam) searchString += `AND ${banSearchParam}`;
+    // }
+    // if (!searchString && banSearchParam) {
+    //   searchString = `WHERE ${banSearchParam}`;
+    // }
     try {
-      console.log(searchString);
-      const totalCount = await this.dataSource.query(`
-    SELECT COUNT(*)
-    FROM users
-    ${searchString}
-    `);
-      const queryString = `
-      SELECT users.*, 
-      ec."confirmationCode",ec."dateSendingConfirmEmail", ec."expirationDate" as "confirmationCodeExpirationDate", 
-      bi."banDate", bi."banReason",
-      pr."recoveryCode", pr."expirationDate" as "recoveryPassCodeExpirationDate"
-      FROM "users" 
-      LEFT JOIN "email_confirmation" ec ON users.id=ec."userId"
-      LEFT JOIN "ban_info" bi ON users.id=bi."userId"
-      LEFT JOIN "password_recovery_information" pr ON users.id=pr."userId"
-      ${searchString}
-      ORDER BY "${sortBy}" ${sortDirection}
-      LIMIT ${pageSize}
-      OFFSET ${pageSize * (pageNumber - 1)};
-    `;
-      const users: UserSqlDataType[] = await this.dataSource.query(queryString);
-      const userEntities: User[] = [];
+      const findOptions: FindManyOptions<UserEntity> = {
+        relations: {
+          emailConfirmation: true,
+          deviceSessions: true,
+          banInfo: true,
+          passwordRecoveryInformation: true,
+        },
+        order: {},
+        where,
+        skip: pageSize * (pageNumber - 1),
+        take: pageSize,
+      };
+      findOptions.order[sortBy] = sortDirection;
+      const [users, totalCount] = await this.usersRepository.findAndCount(
+        findOptions,
+      );
+      const userModels: User[] = [];
       for (const user of users) {
-        userEntities.push(await this.castToUserEntity(user));
+        userModels.push(await this.castToUserModel(user));
       }
-      return { totalCount: +totalCount[0].count, userEntities };
+      return { totalCount, userModels };
     } catch (e) {
       console.log(e);
       return null;
@@ -223,34 +231,30 @@ export class UsersQueryTypeormRepository {
     banStatus?: string,
     withBanStatus = false,
   ) {
-    const queryBuilder = this.usersRepository.createQueryBuilder('u');
-    const query = await queryBuilder
-      .select(['u.login'])
-      .addSelect(['u.email'])
-      .addSelect(['ec.isConfirmed'])
-      .addSelect(['ec.confirmationCode'])
-      .leftJoin('u.emailConfirmation', 'ec');
-
-    console.log(queryBuilder.getSql());
-    const result = await query.getMany();
-    return result;
-    // const { totalCount, userEntities } = await this.find(
-    //   paginatorParams,
-    //   searchLoginTerm,
-    //   searchEmailTerm,
-    //   banStatus,
-    // );
-    // const { pageSize, pageNumber } = paginatorParams;
-    // const items: UserViewModel[] = userEntities.map((u) =>
-    //   withBanStatus ? this.getUserSaViewModel(u) : this.getUserViewModel(u),
-    // );
-    // return {
-    //   pagesCount: pagesCount(totalCount, pageSize),
-    //   page: pageNumber,
-    //   pageSize,
-    //   totalCount,
-    //   items,
-    // };
+    const findResult: { totalCount: number; userModels: User[] } | null =
+      await this.find(
+        paginatorParams,
+        searchLoginTerm,
+        searchEmailTerm,
+        banStatus,
+      );
+    let totalCount = 0;
+    let userModels = [];
+    if (findResult) {
+      totalCount = findResult.totalCount;
+      userModels = findResult.userModels;
+    }
+    const { pageSize, pageNumber } = paginatorParams;
+    const items: UserViewModel[] = userModels.map((u) =>
+      withBanStatus ? this.getUserSaViewModel(u) : this.getUserViewModel(u),
+    );
+    return {
+      pagesCount: pagesCount(totalCount, pageSize),
+      page: pageNumber,
+      pageSize,
+      totalCount,
+      items,
+    };
   }
 
   private getUserViewModel(user: User): UserViewModel {
@@ -269,55 +273,52 @@ export class UsersQueryTypeormRepository {
       login: user.accountData.login,
       createdAt: new Date(user.accountData.createdAt).toISOString(),
       banInfo: {
-        isBanned: user.banInfo.isBanned,
+        isBanned: user.banInfo.isBanned || false,
         banDate: user.banInfo.banDate
           ? new Date(user.banInfo.banDate).toISOString()
           : null,
-        banReason: user.banInfo.banReason,
+        banReason: user.banInfo.banReason || null,
       },
     };
   }
 
-  private async castToUserEntity(userData: UserSqlDataType): Promise<User> {
-    const userEntity = new User();
-    userEntity.id = userData.id;
-    userEntity.accountData = {
-      login: userData.login,
-      email: userData.email,
-      passwordHash: userData.passwordHash,
-      passwordSalt: userData.passwordSalt,
-      createdAt: +userData.createdAt,
+  private async castToUserModel(userEntity: UserEntity): Promise<User> {
+    const user = new User();
+    user.id = userEntity.id;
+    user.accountData = {
+      login: userEntity.login,
+      email: userEntity.email,
+      passwordHash: userEntity.passwordHash,
+      passwordSalt: userEntity.passwordSalt,
+      createdAt: +userEntity.createdAt,
     };
-    userEntity.banInfo = {
-      isBanned: userData.isBanned,
-      banDate: +userData.banDate || null,
-      banReason: userData.banReason,
+    user.banInfo = {
+      isBanned: userEntity.banInfo?.isBanned,
+      banDate: +userEntity.banInfo?.banDate || null,
+      banReason: userEntity.banInfo?.banReason,
       sa: 'superAdmin',
     };
 
-    userEntity.emailConfirmation = {
-      isConfirmed: userData.isConfirmed,
-      confirmationCode: userData.confirmationCode,
-      expirationDate: +userData.confirmationCodeExpirationDate || null,
-      dateSendingConfirmEmail: +userData.dateSendingConfirmEmail || null,
+    user.emailConfirmation = {
+      isConfirmed: userEntity.emailConfirmation?.isConfirmed,
+      confirmationCode: userEntity.emailConfirmation?.confirmationCode,
+      expirationDate: +userEntity.emailConfirmation?.expirationDate || null,
+      dateSendingConfirmEmail:
+        +userEntity.emailConfirmation?.dateSendingConfirmEmail || null,
     };
-    userEntity.passwordRecoveryInformation = {
-      recoveryCode: userData.recoveryCode,
-      expirationDate: +userData.recoveryPassCodeExpirationDate || null,
+    user.passwordRecoveryInformation = {
+      recoveryCode: userEntity.passwordRecoveryInformation?.recoveryCode,
+      expirationDate:
+        +userEntity.passwordRecoveryInformation?.expirationDate || null,
     };
-    const sessions: DeviceSessionSqlType[] = await this.dataSource.query(`
-      SELECT * 
-      FROM "device_sessions"
-      WHERE "userId"='${userData.id}';
-    `);
-    userEntity.deviceSessions = sessions.map((d) => ({
+    user.deviceSessions = userEntity.deviceSessions.map((d) => ({
       deviceId: d.deviceId,
       ip: d.ip,
       title: d.title,
       lastActiveDate: +d.lastActiveDate,
       expiresDate: +d.expiresDate,
     }));
-    return userEntity;
+    return user;
   }
 
   async getMeInfo(userId: string) {
