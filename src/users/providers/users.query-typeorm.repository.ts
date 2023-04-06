@@ -4,22 +4,9 @@ import { PaginatorInputType } from '../../common/dto/input-models/paginator.inpu
 import { UserViewModel } from '../dto/view-models/user.view.model';
 import { MeViewModel } from '../../common/dto/view-models/me.view.model';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import {
-  DataSource,
-  FindManyOptions,
-  FindOptionsOrder,
-  FindOptionsOrderValue,
-  ILike,
-  Repository,
-} from 'typeorm';
+import { DataSource, FindManyOptions, ILike, Repository } from 'typeorm';
 import { User } from '../domain/user';
-import {
-  DeviceSessionSqlType,
-  UserSqlDataType,
-} from '../types/userSqlData.type';
 import { UserEntity } from '../entities/user.entity';
-import { EmailConfirmationEntity } from '../entities/email-confirmation.entity';
-import { use } from 'passport';
 
 @Injectable()
 export class UsersQueryTypeormRepository {
@@ -98,21 +85,16 @@ export class UsersQueryTypeormRepository {
 
   async findById(id: string): Promise<User | null> {
     console.log(`findById- typeOrm: ${id}`);
-    // const conditionString = `users.id='${id}'`;
-    // return await this.findOne(conditionString);
-    const queryBuilder = this.usersRepository.createQueryBuilder('u');
-    console.log(queryBuilder.getSql());
-
-    const result = await queryBuilder
-      .select(['u.login', 'ec.isConfirmed'])
-      .leftJoinAndSelect('email_confirmation', 'ec', 'ec.userId=u.id', {
-        isConfirmed: true,
-      })
-      .where('u.id=:id', { id })
-      .getOne();
-    console.log(queryBuilder.getSql());
-    console.log(result);
-    return null;
+    const userEntity: UserEntity = await this.usersRepository.findOne({
+      relations: {
+        emailConfirmation: true,
+        deviceSessions: true,
+        banInfo: true,
+        passwordRecoveryInformation: true,
+      },
+      where: { id },
+    });
+    return userEntity ? this.castToUserModel(userEntity) : null;
   }
 
   async getUserModel(id: string) {
@@ -149,33 +131,13 @@ export class UsersQueryTypeormRepository {
     searchEmailTerm?: string,
     banStatus?: string,
   ) {
-    const { sortBy, sortDirection, pageSize, pageNumber } = paginatorParams;
-    const where = {};
-    if (searchLoginTerm) where['login'] = ILike(`%${searchLoginTerm}%`);
-    if (searchEmailTerm) where['email'] = ILike(`%${searchEmailTerm}%`);
-    if (banStatus === 'banned') where['isBanned'] = true;
-    if (banStatus === 'notBanned') where['isBanned'] = false;
-    //     let searchString = '';
-    // if (searchLoginTerm) searchString += `login ILIKE '%${searchLoginTerm}%' `;
-    // if (searchEmailTerm) {
-    //   if (searchLoginTerm) searchString += 'OR ';
-    //   searchString += `email ILIKE '%${searchEmailTerm}%' `;
-    // }
-    // let banSearchParam = '';
-    // if (banStatus === 'banned') {
-    //   banSearchParam = '"isBanned"=true';
-    // }
-    // if (banStatus === 'notBanned') {
-    //   banSearchParam = '"isBanned"=false';
-    // }
-    // if (searchString) {
-    //   searchString = `WHERE (${searchString})`;
-    //   if (banSearchParam) searchString += `AND ${banSearchParam}`;
-    // }
-    // if (!searchString && banSearchParam) {
-    //   searchString = `WHERE ${banSearchParam}`;
-    // }
     try {
+      const { sortBy, sortDirection, pageSize, pageNumber } = paginatorParams;
+      const where = {};
+      if (searchLoginTerm) where['login'] = ILike(`%${searchLoginTerm}%`);
+      if (searchEmailTerm) where['email'] = ILike(`%${searchEmailTerm}%`);
+      if (banStatus === 'banned') where['isBanned'] = true;
+      if (banStatus === 'notBanned') where['isBanned'] = false;
       const findOptions: FindManyOptions<UserEntity> = {
         relations: {
           emailConfirmation: true,
@@ -209,19 +171,6 @@ export class UsersQueryTypeormRepository {
     return withBanStatus
       ? this.getUserSaViewModel(user)
       : this.getUserViewModel(user);
-  }
-
-  async getEmailConfirmationData(userId: string) {
-    const user = await this.findById(userId);
-    console.log();
-    console.log('user.emailConfirmation.confirmationCode');
-    console.log(user.emailConfirmation.confirmationCode);
-    if (!user) return null;
-    return {
-      email: user.accountData.email,
-      confirmationCode: user.emailConfirmation.confirmationCode,
-      expirationDate: user.emailConfirmation.expirationDate,
-    };
   }
 
   async findUsers(
