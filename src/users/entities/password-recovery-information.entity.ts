@@ -7,7 +7,9 @@ export class PasswordRecoveryInformationEntity {
   recoveryCode: string;
   @Column({ type: 'bigint' })
   expirationDate: number;
-  @OneToOne(() => UserEntity)
+  @OneToOne(() => UserEntity, (u) => u.passwordRecoveryInformation, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn()
   user: UserEntity;
   @PrimaryColumn()
