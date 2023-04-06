@@ -13,7 +13,7 @@ export class DeviceSessionsEntity {
   lastActiveDate: number;
   @Column({ type: 'bigint' })
   expiresDate: number;
-  @ManyToOne(() => UserEntity)
+  @ManyToOne(() => UserEntity, (u) => u.deviceSessions, { onDelete: 'CASCADE' })
   @JoinColumn()
   user: UserEntity;
   @PrimaryColumn()
