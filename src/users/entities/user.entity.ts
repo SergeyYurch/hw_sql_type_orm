@@ -1,5 +1,14 @@
-import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { EmailConfirmationEntity } from './email-confirmation.entity';
+import { BanInfoEntity } from './ban-info.entity';
+import { DeviceSessionsEntity } from './device-sessions.entity';
+import { PasswordRecoveryInformationEntity } from './password-recovery-information.entity';
 
 @Entity('users')
 export class UserEntity {
@@ -17,4 +26,10 @@ export class UserEntity {
   createdAt: number;
   @OneToOne(() => EmailConfirmationEntity, (ec) => ec.user)
   emailConfirmation: EmailConfirmationEntity;
+  @OneToOne(() => BanInfoEntity, (bi) => bi.user)
+  banInfo: BanInfoEntity;
+  @OneToMany(() => DeviceSessionsEntity, (ds) => ds.user)
+  deviceSessions: DeviceSessionsEntity[];
+  @OneToOne(() => PasswordRecoveryInformationEntity, (pri) => pri.user)
+  passwordRecoveryInformation: PasswordRecoveryInformationEntity;
 }
