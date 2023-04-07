@@ -2,9 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { User } from '../domain/user';
-import { UsersQuerySqlRepository } from './users.query-sql.repository';
 import { UserEntity } from '../entities/user.entity';
-import { BanInfoEntity } from '../entities/ban-info.entity';
 import { DeviceSessionsEntity } from '../entities/device-sessions.entity';
 import { EmailConfirmationEntity } from '../entities/email-confirmation.entity';
 import { PasswordRecoveryInformationEntity } from '../entities/password-recovery-information.entity';
@@ -17,8 +15,6 @@ export class UsersTypeOrmRepository {
     protected userQueryRepository: UsersQueryTypeormRepository,
     @InjectRepository(UserEntity)
     private readonly usersRepository: Repository<UserEntity>,
-    @InjectRepository(BanInfoEntity)
-    private readonly banInfoRepository: Repository<BanInfoEntity>,
     @InjectRepository(DeviceSessionsEntity)
     private readonly deviceSessionRepository: Repository<DeviceSessionsEntity>,
     @InjectRepository(EmailConfirmationEntity)
@@ -40,68 +36,110 @@ export class UsersTypeOrmRepository {
   }
 
   async deleteUser(userId: string) {
-    await this.dataSource.query(`
-        DELETE FROM ban_info WHERE "userId"=${userId};
-        DELETE FROM device_sessions WHERE "userId"=${userId};
-        DELETE FROM email_confirmation  WHERE "userId"=${userId};
-        DELETE FROM password_recovery_information  WHERE "userId"=${userId};
-        DELETE FROM users  WHERE "id"=${userId};
-`);
-    return true;
+    const result = await this.usersRepository
+      .createQueryBuilder('u')
+      .delete()
+      .from(UserEntity)
+      .where('id = :id', { id: userId })
+      .execute();
+    return result.affected === 1;
   }
 
   async save(user: User) {
     if (!user.id) {
       return await this.insertNewUser(user);
     }
+    const userEntity: UserEntity = new UserEntity();
 
-    const userFromDb = await this.userQueryRepository.findById(user.id);
-    //if user banned
-    if (userFromDb.banInfo.isBanned !== user.banInfo.isBanned) {
-      await this.banUser(user);
-    }
-    if (
-      !userFromDb.emailConfirmation.isConfirmed &&
-      user.emailConfirmation.isConfirmed
-    ) {
-      await this.confirmEmail(user);
+    userEntity.id = +user.id;
+    userEntity.login = user.accountData.login;
+    userEntity.email = user.accountData.email;
+    userEntity.passwordHash = user.accountData.passwordHash;
+    userEntity.passwordSalt = user.accountData.passwordSalt;
+    userEntity.createdAt = user.accountData.createdAt;
+    userEntity.isBanned = user.banInfo?.isBanned;
+    userEntity.banDate = user.banInfo?.banDate;
+    userEntity.banReason = user.banInfo?.banReason;
+    //try to map User to UserEntity and save model
+
+    if (user.emailConfirmation) {
+      const emailConfirmation = new EmailConfirmationEntity();
+      emailConfirmation.userId = +user.id;
+      emailConfirmation.confirmationCode =
+        user.emailConfirmation.confirmationCode;
+      emailConfirmation.expirationDate = user.emailConfirmation.expirationDate;
+      emailConfirmation.dateSendingConfirmEmail =
+        user.emailConfirmation.dateSendingConfirmEmail;
+      emailConfirmation.isConfirmed = user.emailConfirmation.isConfirmed;
+      console.log('save emailConfirmation');
+      await this.emailConfirmationRepository.save(emailConfirmation);
+      userEntity.emailConfirmation = emailConfirmation;
     }
 
-    if (
-      !userFromDb.passwordRecoveryInformation.recoveryCode &&
-      user.passwordRecoveryInformation.recoveryCode
-    ) {
-      await this.insertPasswordRecoveryInfoRow(user);
+    if (user.passwordRecoveryInformation) {
+      const passwordRecoveryInformation =
+        new PasswordRecoveryInformationEntity();
+      passwordRecoveryInformation.recoveryCode =
+        user.passwordRecoveryInformation.recoveryCode;
+      passwordRecoveryInformation.expirationDate =
+        user.passwordRecoveryInformation.expirationDate;
+      passwordRecoveryInformation.userId = +user.id;
+      console.log('save emailConfirmation');
+      await this.emailConfirmationRepository.save(passwordRecoveryInformation);
+      userEntity.passwordRecoveryInformation = passwordRecoveryInformation;
     }
-
-    if (
-      (!userFromDb.passwordRecoveryInformation.recoveryCode &&
-        user.passwordRecoveryInformation.recoveryCode) ||
-      +userFromDb.passwordRecoveryInformation.expirationDate < Date.now()
-    ) {
-      await this.deletePasswordRecoveryInfoRow(user);
-    }
-
-    //deviceSession change
-    //delete all sessions in DB for current user
-    if (userFromDb.deviceSessions.length > 0) {
-      let conditionString = '';
-      for (let i = 0; i < userFromDb.deviceSessions.length; i++) {
-        if (i === 0) {
-          conditionString = `WHERE "deviceId"='${userFromDb.deviceSessions[i].deviceId}'`;
-          continue;
-        }
-        conditionString += `OR "deviceId"='${userFromDb.deviceSessions[i].deviceId}'`;
-      }
-
-      const queryString = `DELETE FROM device_sessions ${conditionString}`;
-      await this.dataSource.query(queryString);
-    }
-    //add new device sessions in DB if they are exist
-    if (user.deviceSessions.length > 0) {
-      await this.insertDeviceSessionRows(user);
-    }
-    return user.id;
+    await this.usersRepository.save(userEntity);
+    console.log(userEntity);
+    return userEntity.id;
+    // ////
+    //
+    // const userFromDb = await this.userQueryRepository.findById(user.id);
+    // //if user banned
+    // if (userFromDb.banInfo.isBanned !== user.banInfo.isBanned) {
+    //   await this.banUser(user);
+    // }
+    // if (
+    //   !userFromDb.emailConfirmation.isConfirmed &&
+    //   user.emailConfirmation.isConfirmed
+    // ) {
+    //   await this.confirmEmail(user);
+    // }
+    //
+    // if (
+    //   !userFromDb.passwordRecoveryInformation.recoveryCode &&
+    //   user.passwordRecoveryInformation.recoveryCode
+    // ) {
+    //   await this.insertPasswordRecoveryInfoRow(user);
+    // }
+    //
+    // if (
+    //   (!userFromDb.passwordRecoveryInformation.recoveryCode &&
+    //     user.passwordRecoveryInformation.recoveryCode) ||
+    //   +userFromDb.passwordRecoveryInformation.expirationDate < Date.now()
+    // ) {
+    //   await this.deletePasswordRecoveryInfoRow(user);
+    // }
+    //
+    // //deviceSession change
+    // //delete all sessions in DB for current user
+    // if (userFromDb.deviceSessions.length > 0) {
+    //   let conditionString = '';
+    //   for (let i = 0; i < userFromDb.deviceSessions.length; i++) {
+    //     if (i === 0) {
+    //       conditionString = `WHERE "deviceId"='${userFromDb.deviceSessions[i].deviceId}'`;
+    //       continue;
+    //     }
+    //     conditionString += `OR "deviceId"='${userFromDb.deviceSessions[i].deviceId}'`;
+    //   }
+    //
+    //   const queryString = `DELETE FROM device_sessions ${conditionString}`;
+    //   await this.dataSource.query(queryString);
+    // }
+    // //add new device sessions in DB if they are exist
+    // if (user.deviceSessions.length > 0) {
+    //   await this.insertDeviceSessionRows(user);
+    // }
+    // return user.id;
   }
   private async insertNewUser(user: User) {
     try {
