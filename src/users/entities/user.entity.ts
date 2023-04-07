@@ -6,14 +6,13 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { EmailConfirmationEntity } from './email-confirmation.entity';
-import { BanInfoEntity } from './ban-info.entity';
 import { DeviceSessionsEntity } from './device-sessions.entity';
 import { PasswordRecoveryInformationEntity } from './password-recovery-information.entity';
 
 @Entity('users')
 export class UserEntity {
   @PrimaryGeneratedColumn()
-  id: string;
+  id: number;
   @Column()
   login: string;
   @Column()
@@ -24,10 +23,14 @@ export class UserEntity {
   passwordSalt: string;
   @Column({ type: 'bigint' })
   createdAt: number;
+  @Column({ default: false })
+  isBanned: boolean;
+  @Column({ type: 'bigint', nullable: true })
+  banDate: number | null;
+  @Column({ nullable: true })
+  banReason: string | null;
   @OneToOne(() => EmailConfirmationEntity, (ec) => ec.user)
   emailConfirmation: EmailConfirmationEntity;
-  @OneToOne(() => BanInfoEntity, (bi) => bi.user)
-  banInfo: BanInfoEntity;
   @OneToMany(() => DeviceSessionsEntity, (ds) => ds.user)
   deviceSessions: DeviceSessionsEntity[];
   @OneToOne(() => PasswordRecoveryInformationEntity, (pri) => pri.user)
