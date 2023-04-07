@@ -289,7 +289,7 @@ describe('UsersController (e2e)', () => {
     expect(users.body.totalCount).toBe(12);
 
     await request(app.getHttpServer())
-      .delete(`/sa/users/${user1Id}`)
+      .delete(`/sa/users/${user2Id}`)
       .auth('admin', 'qwerty', { type: 'basic' })
       .expect(204);
 
