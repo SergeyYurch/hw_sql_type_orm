@@ -45,6 +45,6 @@ export class RegistrationUserUseCase
     if (!userId) return null;
     const confirmationCode = userModel.emailConfirmation.confirmationCode;
     await this.mailService.sendConfirmationEmail(email, confirmationCode);
-    return this.usersQueryRepository.getUserById(userId);
+    return this.usersQueryRepository.getUserById(String(userId));
   }
 }
