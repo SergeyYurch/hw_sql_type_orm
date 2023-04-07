@@ -89,10 +89,9 @@ export class UsersQueryTypeormRepository {
       relations: {
         emailConfirmation: true,
         deviceSessions: true,
-        banInfo: true,
         passwordRecoveryInformation: true,
       },
-      where: { id },
+      where: { id: +id },
     });
     return userEntity ? this.castToUserModel(userEntity) : null;
   }
@@ -136,13 +135,17 @@ export class UsersQueryTypeormRepository {
       const where = {};
       if (searchLoginTerm) where['login'] = ILike(`%${searchLoginTerm}%`);
       if (searchEmailTerm) where['email'] = ILike(`%${searchEmailTerm}%`);
-      if (banStatus === 'banned') where['isBanned'] = true;
-      if (banStatus === 'notBanned') where['isBanned'] = false;
+      if (banStatus === 'banned') {
+        where['isBanned'] = true;
+      }
+      if (banStatus === 'notBanned') {
+        where['isBanned'] = false;
+      }
+      console.log(where);
       const findOptions: FindManyOptions<UserEntity> = {
         relations: {
           emailConfirmation: true,
           deviceSessions: true,
-          banInfo: true,
           passwordRecoveryInformation: true,
         },
         order: {},
@@ -233,7 +236,7 @@ export class UsersQueryTypeormRepository {
 
   private async castToUserModel(userEntity: UserEntity): Promise<User> {
     const user = new User();
-    user.id = userEntity.id;
+    user.id = String(userEntity.id);
     user.accountData = {
       login: userEntity.login,
       email: userEntity.email,
@@ -242,9 +245,9 @@ export class UsersQueryTypeormRepository {
       createdAt: +userEntity.createdAt,
     };
     user.banInfo = {
-      isBanned: userEntity.banInfo?.isBanned,
-      banDate: +userEntity.banInfo?.banDate || null,
-      banReason: userEntity.banInfo?.banReason,
+      isBanned: userEntity.isBanned,
+      banDate: +userEntity.banDate || null,
+      banReason: userEntity.banReason,
       sa: 'superAdmin',
     };
 
