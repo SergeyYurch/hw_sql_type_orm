@@ -3,7 +3,7 @@ import { UserEntity } from './user.entity';
 
 @Entity('device_sessions')
 export class DeviceSessionsEntity {
-  @PrimaryColumn()
+  @PrimaryColumn('uuid')
   deviceId: string;
   @Column()
   ip: string;
@@ -16,6 +16,6 @@ export class DeviceSessionsEntity {
   @ManyToOne(() => UserEntity, (u) => u.deviceSessions, { onDelete: 'CASCADE' })
   @JoinColumn()
   user: UserEntity;
-  @PrimaryColumn()
+  @Column()
   userId: number;
 }
