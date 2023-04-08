@@ -30,6 +30,7 @@ export class UsersQueryTypeormRepository {
       let queryString = `SELECT EXISTS (SELECT * FROM users WHERE id=${userId} AND "isBanned"=false)`;
       if (options?.bannedInclude)
         queryString = `SELECT EXISTS (SELECT * FROM users WHERE id=${userId})`;
+      console.log(queryString);
       return await this.dataSource.query(queryString);
     } catch (e) {
       console.log(e);
