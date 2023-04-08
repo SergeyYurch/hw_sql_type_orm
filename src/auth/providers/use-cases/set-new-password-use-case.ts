@@ -1,9 +1,9 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { BadRequestException } from '@nestjs/common';
 import { PASSWORD_RECOVERY_CODE_MESSAGE } from '../../constants/auth.constant';
-import { UsersSqlRepository } from '../../../users/providers/users.sql.repository';
-import { UsersQuerySqlRepository } from '../../../users/providers/users.query-sql.repository';
 import { UsersService } from '../../../users/providers/users.service';
+import { UsersTypeOrmRepository } from '../../../users/providers/users.typeorm.repository';
+import { UsersQueryTypeormRepository } from '../../../users/providers/users.query-typeorm.repository';
 
 export class SetNewPasswordCommand {
   constructor(public recoveryCode: string, public newPassword: string) {}
@@ -14,8 +14,8 @@ export class SetNewPasswordUseCase
   implements ICommandHandler<SetNewPasswordCommand>
 {
   constructor(
-    private userRepository: UsersSqlRepository,
-    private userQueryRepository: UsersQuerySqlRepository,
+    private userRepository: UsersTypeOrmRepository,
+    private userQueryRepository: UsersQueryTypeormRepository,
     private usersService: UsersService,
   ) {}
 
