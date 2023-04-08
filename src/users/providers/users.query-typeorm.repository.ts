@@ -4,7 +4,13 @@ import { PaginatorInputType } from '../../common/dto/input-models/paginator.inpu
 import { UserViewModel } from '../dto/view-models/user.view.model';
 import { MeViewModel } from '../../common/dto/view-models/me.view.model';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, FindManyOptions, ILike, Repository } from 'typeorm';
+import {
+  DataSource,
+  FindManyOptions,
+  FindOptionsWhere,
+  ILike,
+  Repository,
+} from 'typeorm';
 import { User } from '../domain/user';
 import { UserEntity } from '../entities/user.entity';
 
@@ -43,8 +49,10 @@ export class UsersQueryTypeormRepository {
   }
 
   async findUserByLoginOrEmail(loginOrEmail: string) {
-    const conditionString = `users.email='${loginOrEmail}' OR users.login='${loginOrEmail}'`;
-    return await this.findOne(conditionString);
+    return await this.findOne([
+      { login: loginOrEmail },
+      { email: loginOrEmail },
+    ]);
   }
 
   async findUserByDeviceId(deviceId: string) {
@@ -100,23 +108,20 @@ export class UsersQueryTypeormRepository {
     return this.findById(id);
   }
 
-  async findOne(conditionString: string) {
+  async findOne(
+    condition: FindOptionsWhere<UserEntity> | FindOptionsWhere<UserEntity>[],
+  ): Promise<User | null> {
     try {
       console.log('find one');
-      const queryString = `
-      SELECT users.*, 
-      ec."confirmationCode",ec."dateSendingConfirmEmail", ec."expirationDate" AS "confirmationCodeExpirationDate", 
-      bi."banDate", bi."banReason",
-      pr."recoveryCode", pr."expirationDate" AS "recoveryPassCodeExpirationDate"
-      FROM "users"
-      LEFT JOIN "email_confirmation" ec ON users.id=ec."userId"
-      LEFT JOIN "ban_info" bi ON users.id=bi."userId"
-      LEFT JOIN "password_recovery_information" pr ON users.id=pr."userId"
-      WHERE ${conditionString};
-    `;
-      const users = await this.dataSource.query(queryString);
-      if (!users[0]) return null;
-      return this.castToUserModel(users[0]);
+      const userEntity: UserEntity = await this.usersRepository.findOne({
+        relations: {
+          emailConfirmation: true,
+          deviceSessions: true,
+          passwordRecoveryInformation: true,
+        },
+        where: condition,
+      });
+      return userEntity ? this.castToUserModel(userEntity) : null;
     } catch (e) {
       console.log('Did not found users');
       console.log(e);
