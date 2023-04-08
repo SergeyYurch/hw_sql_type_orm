@@ -1,10 +1,9 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { UsersRepository } from '../../../users/providers/users.repository';
 import { MailService } from '../../../common/mail.service/mail.service';
 import { BadRequestException } from '@nestjs/common';
 import { EMAIL_RESENDING_MESSAGE } from '../../constants/auth.constant';
-import { UsersSqlRepository } from '../../../users/providers/users.sql.repository';
-import { UsersQuerySqlRepository } from '../../../users/providers/users.query-sql.repository';
+import { UsersQueryTypeormRepository } from '../../../users/providers/users.query-typeorm.repository';
+import { UsersTypeOrmRepository } from '../../../users/providers/users.typeorm.repository';
 
 export class RegistrationEmailResendingCommand {
   constructor(public email: string) {}
@@ -15,8 +14,8 @@ export class RegistrationEmailResendingUseCase
   implements ICommandHandler<RegistrationEmailResendingCommand>
 {
   constructor(
-    private userQueryRepository: UsersQuerySqlRepository,
-    private userRepository: UsersSqlRepository,
+    private userQueryRepository: UsersQueryTypeormRepository,
+    private userRepository: UsersTypeOrmRepository,
     private readonly mailService: MailService,
   ) {}
 
