@@ -8,10 +8,10 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { tokenService } from '../../auth/providers/token.service';
-import { UsersQuerySqlRepository } from '../../users/providers/users.query-sql.repository';
 import { CommandBus } from '@nestjs/cqrs';
 import { ValidateUserDeviceSessionCommand } from '../../auth/providers/use-cases/validate-user-device-session.use-case';
 import { JwtPayloadType } from '../../blogs/types/jwt-payload.type';
+import { UsersQueryTypeormRepository } from '../../users/providers/users.query-typeorm.repository';
 
 @Injectable()
 export class RefreshTokenStrategy extends PassportStrategy(
@@ -21,7 +21,7 @@ export class RefreshTokenStrategy extends PassportStrategy(
   constructor(
     private jwtService: JwtService,
     private authService: tokenService,
-    private usersQueryRepository: UsersQuerySqlRepository,
+    private usersQueryRepository: UsersQueryTypeormRepository,
     private commandBus: CommandBus,
   ) {
     super({
