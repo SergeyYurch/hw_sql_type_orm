@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { UsersSqlRepository } from '../../../users/providers/users.sql.repository';
 import { JwtPayloadType } from '../../../blogs/types/jwt-payload.type';
+import { UsersTypeOrmRepository } from '../../../users/providers/users.typeorm.repository';
 
 export class ValidateUserDeviceSessionCommand {
   constructor(public jwtPayload: JwtPayloadType) {}
@@ -9,7 +9,7 @@ export class ValidateUserDeviceSessionCommand {
 export class ValidateUserDeviceSessionUseCase
   implements ICommandHandler<ValidateUserDeviceSessionCommand>
 {
-  constructor(private userRepository: UsersSqlRepository) {}
+  constructor(private userRepository: UsersTypeOrmRepository) {}
 
   async execute(command: ValidateUserDeviceSessionCommand) {
     const { jwtPayload } = command;
