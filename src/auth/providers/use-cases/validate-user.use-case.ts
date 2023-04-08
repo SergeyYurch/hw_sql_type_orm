@@ -1,9 +1,8 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { UsersSqlRepository } from '../../../users/providers/users.sql.repository';
 import { UnauthorizedException } from '@nestjs/common';
 import { UNAUTHORIZED_MESSAGE } from '../../constants/auth.constant';
 import { UsersService } from '../../../users/providers/users.service';
-import { UsersQuerySqlRepository } from '../../../users/providers/users.query-sql.repository';
+import { UsersQueryTypeormRepository } from '../../../users/providers/users.query-typeorm.repository';
 
 export class ValidateUserCommand {
   constructor(public loginOrEmail: string, public password: string) {}
@@ -13,8 +12,7 @@ export class ValidateUserUseCase
   implements ICommandHandler<ValidateUserCommand>
 {
   constructor(
-    private userRepository: UsersSqlRepository,
-    private userQueryRepository: UsersQuerySqlRepository,
+    private userQueryRepository: UsersQueryTypeormRepository,
     private usersService: UsersService,
   ) {}
 
