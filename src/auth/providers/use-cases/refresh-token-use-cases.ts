@@ -1,6 +1,6 @@
 import { tokenService } from '../token.service';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { UsersSqlRepository } from '../../../users/providers/users.sql.repository';
+import { UsersTypeOrmRepository } from '../../../users/providers/users.typeorm.repository';
 
 export class RefreshTokenCommand {
   constructor(public userId: string, public deviceId: string) {}
@@ -12,7 +12,7 @@ export class RefreshTokenUseCases
 {
   constructor(
     private authService: tokenService,
-    private usersRepository: UsersSqlRepository,
+    private usersRepository: UsersTypeOrmRepository,
   ) {}
 
   async execute(command: RefreshTokenCommand) {
