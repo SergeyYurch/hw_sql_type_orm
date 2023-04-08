@@ -60,6 +60,7 @@ export class UsersTypeOrmRepository {
     userEntity.isBanned = user.banInfo?.isBanned;
     userEntity.banDate = user.banInfo?.banDate;
     userEntity.banReason = user.banInfo?.banReason;
+    userEntity.deviceSessions = [];
     //try to map User to UserEntity and save model
 
     if (user.emailConfirmation) {
@@ -87,6 +88,20 @@ export class UsersTypeOrmRepository {
       console.log('save emailConfirmation');
       await this.emailConfirmationRepository.save(passwordRecoveryInformation);
       userEntity.passwordRecoveryInformation = passwordRecoveryInformation;
+    }
+
+    if (user.deviceSessions.length > 0) {
+      for (const ds of user.deviceSessions) {
+        const deviceSession = new DeviceSessionsEntity();
+        deviceSession.userId = +user.id;
+        deviceSession.deviceId = ds.deviceId;
+        deviceSession.ip = ds.ip;
+        deviceSession.title = ds.title;
+        deviceSession.lastActiveDate = ds.lastActiveDate;
+        deviceSession.expiresDate = ds.expiresDate;
+        await this.deviceSessionRepository.save(deviceSession);
+        userEntity.deviceSessions.push(deviceSession);
+      }
     }
     await this.usersRepository.save(userEntity);
     console.log(userEntity);
