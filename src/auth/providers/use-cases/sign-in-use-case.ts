@@ -1,8 +1,9 @@
 import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { v4 as uuidv4 } from 'uuid';
 import { tokenService } from '../token.service';
-import { UsersSqlRepository } from '../../../users/providers/users.sql.repository';
 import { ValidateUserCommand } from './validate-user.use-case';
+import { UsersTypeOrmRepository } from '../../../users/providers/users.typeorm.repository';
+import { User } from '../../../users/domain/user';
 
 export class SignInCommand {
   constructor(
@@ -17,13 +18,13 @@ export class SignInCommand {
 export class SignInUseCase implements ICommandHandler<SignInCommand> {
   constructor(
     private authService: tokenService,
-    private userRepository: UsersSqlRepository,
+    private userRepository: UsersTypeOrmRepository,
     private commandBus: CommandBus,
   ) {}
 
   async execute(command: SignInCommand) {
     const { title, password, loginOrEmail, ip } = command;
-    const userModel = await this.commandBus.execute(
+    const userModel: User = await this.commandBus.execute(
       new ValidateUserCommand(loginOrEmail, password),
     );
     const deviceId = uuidv4();
