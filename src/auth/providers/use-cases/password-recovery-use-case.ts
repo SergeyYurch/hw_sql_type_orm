@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { MailService } from '../../../common/mail.service/mail.service';
-import { UsersQuerySqlRepository } from '../../../users/providers/users.query-sql.repository';
-import { UsersSqlRepository } from '../../../users/providers/users.sql.repository';
+import { UsersTypeOrmRepository } from '../../../users/providers/users.typeorm.repository';
+import { UsersQueryTypeormRepository } from '../../../users/providers/users.query-typeorm.repository';
 export class PasswordRecoveryCommand {
   constructor(public email: string) {}
 }
@@ -10,8 +10,8 @@ export class PasswordRecoveryUseCase
   implements ICommandHandler<PasswordRecoveryCommand>
 {
   constructor(
-    private userRepository: UsersSqlRepository,
-    private userQueryRepository: UsersQuerySqlRepository,
+    private userRepository: UsersTypeOrmRepository,
+    private userQueryRepository: UsersQueryTypeormRepository,
     private readonly mailService: MailService,
   ) {}
 
