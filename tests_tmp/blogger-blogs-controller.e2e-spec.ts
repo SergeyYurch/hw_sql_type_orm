@@ -2,7 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { disconnect } from 'mongoose';
 import { BlogViewModel } from '../src/blogs/dto/view-models/blog.view.model';
-import { getApp } from './test-utils';
+import { getApp } from '../test/test-utils';
 import {
   bannedUser,
   blog1,
@@ -12,7 +12,7 @@ import {
   user1,
   user2,
   user3,
-} from './tsts-input-data';
+} from '../test/tsts-input-data';
 
 //Bloggers: user1, user2, user3
 //User1 created: blog1User1, blog2User1, blog3User1Id
