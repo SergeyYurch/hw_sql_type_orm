@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { disconnect } from 'mongoose';
-import { getApp } from './test-utils';
+import { getApp } from '../test/test-utils';
 import {
   user1,
   user10,
@@ -15,7 +15,7 @@ import {
   user7,
   user8,
   user9,
-} from './tsts-input-data';
+} from '../test/tsts-input-data';
 
 describe('UsersController (e2e)', () => {
   let app: INestApplication;
@@ -148,9 +148,7 @@ describe('UsersController (e2e)', () => {
 
   //get
   it('GET: [HOST]/users: should return code 401 "Unauthorized" for unauthorized request', async () => {
-    const users = await request(app.getHttpServer())
-      .get('/sa/users')
-      .expect(401);
+    await request(app.getHttpServer()).get('/sa/users').expect(401);
   });
   it('GET: [HOST]/users: should return code 200 and array with 12 elements with default paginator', async () => {
     const users = await request(app.getHttpServer())
