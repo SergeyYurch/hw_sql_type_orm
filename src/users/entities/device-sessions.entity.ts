@@ -1,4 +1,11 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryColumn,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { UserEntity } from './user.entity';
 
 @Entity('device_sessions')
@@ -13,9 +20,11 @@ export class DeviceSessionsEntity {
   lastActiveDate: number;
   @Column({ type: 'bigint' })
   expiresDate: number;
-  @ManyToOne(() => UserEntity, (u) => u.deviceSessions, { onDelete: 'CASCADE' })
+  @ManyToOne(() => UserEntity, (u) => u.deviceSessions, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn()
   user: UserEntity;
-  @Column()
-  userId: number;
+  //   @PrimaryColumn()
+  //   userId: number;
 }
