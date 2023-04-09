@@ -21,7 +21,10 @@ export class RefreshTokenUseCases
       await this.authService.getTokens(userId, deviceId);
     const userModel = await this.usersRepository.getUserModel(userId);
     userModel.refreshTokens(deviceId, expiresDate, lastActiveDate);
+    console.log('RefreshTokenCommand');
+    console.log(userModel);
     await this.usersRepository.save(userModel);
+    console.log('return from RefreshTokenCommand after save userEntity');
     return { accessToken, refreshToken, expiresDate };
   }
 }
