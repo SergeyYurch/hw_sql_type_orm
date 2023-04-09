@@ -2,8 +2,15 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { disconnect } from 'mongoose';
 import { BlogViewModel } from '../src/blogs/dto/view-models/blog.view.model';
-import { getApp } from './test-utils';
-import { blog1, blog2, blog3, user1, user2, user3 } from './tsts-input-data';
+import { getApp } from '../test/test-utils';
+import {
+  blog1,
+  blog2,
+  blog3,
+  user1,
+  user2,
+  user3,
+} from '../test/tsts-input-data';
 
 describe('CommentsController (e2e)', () => {
   let app: INestApplication;
