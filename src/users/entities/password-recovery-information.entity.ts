@@ -3,9 +3,11 @@ import { UserEntity } from './user.entity';
 
 @Entity('password_recovery_information')
 export class PasswordRecoveryInformationEntity {
-  @Column()
+  // @PrimaryGeneratedColumn()
+  // id: number;
+  @Column({ nullable: true })
   recoveryCode: string;
-  @Column({ type: 'bigint' })
+  @Column({ type: 'bigint', nullable: true })
   expirationDate: number;
   @OneToOne(() => UserEntity, (u) => u.passwordRecoveryInformation, {
     onDelete: 'CASCADE',
