@@ -4,7 +4,6 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { User } from '../domain/user';
 import { UserEntity } from '../entities/user.entity';
 import { DeviceSessionsEntity } from '../entities/device-sessions.entity';
-import { EmailConfirmationEntity } from '../entities/email-confirmation.entity';
 import { PasswordRecoveryInformationEntity } from '../entities/password-recovery-information.entity';
 import { UsersQueryTypeormRepository } from './users.query-typeorm.repository';
 
@@ -17,8 +16,6 @@ export class UsersTypeOrmRepository {
     private readonly usersRepository: Repository<UserEntity>,
     @InjectRepository(DeviceSessionsEntity)
     private readonly deviceSessionRepository: Repository<DeviceSessionsEntity>,
-    @InjectRepository(EmailConfirmationEntity)
-    private readonly emailConfirmationRepository: Repository<EmailConfirmationEntity>,
     @InjectRepository(PasswordRecoveryInformationEntity)
     private readonly passwordRecoveryInformationRepository: Repository<PasswordRecoveryInformationEntity>,
   ) {}
@@ -46,12 +43,19 @@ export class UsersTypeOrmRepository {
   }
 
   async save(user: User) {
+    console.log('start User save');
+    let userEntity: UserEntity;
     if (!user.id) {
-      return await this.insertNewUser(user);
+      userEntity = new UserEntity();
+    } else {
+      userEntity = await this.usersRepository.findOne({
+        where: { id: +user.id },
+        relations: {
+          deviceSessions: true,
+          passwordRecoveryInformation: true,
+        },
+      });
     }
-    const userEntity: UserEntity = new UserEntity();
-
-    userEntity.id = +user.id;
     userEntity.login = user.accountData.login;
     userEntity.email = user.accountData.email;
     userEntity.passwordHash = user.accountData.passwordHash;
@@ -60,23 +64,13 @@ export class UsersTypeOrmRepository {
     userEntity.isBanned = user.banInfo?.isBanned;
     userEntity.banDate = user.banInfo?.banDate;
     userEntity.banReason = user.banInfo?.banReason;
-    userEntity.deviceSessions = [];
+    userEntity.isConfirmed = user.emailConfirmation?.isConfirmed;
+    userEntity.confirmationCode = user.emailConfirmation?.confirmationCode;
+    userEntity.expirationDate = user.emailConfirmation?.expirationDate;
+    userEntity.dateSendingConfirmEmail =
+      user.emailConfirmation?.dateSendingConfirmEmail;
     //try to map User to UserEntity and save model
-
-    if (user.emailConfirmation) {
-      const emailConfirmation = new EmailConfirmationEntity();
-      emailConfirmation.userId = +user.id;
-      emailConfirmation.confirmationCode =
-        user.emailConfirmation.confirmationCode;
-      emailConfirmation.expirationDate = user.emailConfirmation.expirationDate;
-      emailConfirmation.dateSendingConfirmEmail =
-        user.emailConfirmation.dateSendingConfirmEmail;
-      emailConfirmation.isConfirmed = user.emailConfirmation.isConfirmed;
-      console.log('save emailConfirmation');
-      await this.emailConfirmationRepository.save(emailConfirmation);
-      userEntity.emailConfirmation = emailConfirmation;
-    }
-
+    await this.usersRepository.save(userEntity);
     if (user.passwordRecoveryInformation) {
       const passwordRecoveryInformation =
         new PasswordRecoveryInformationEntity();
@@ -84,16 +78,20 @@ export class UsersTypeOrmRepository {
         user.passwordRecoveryInformation.recoveryCode;
       passwordRecoveryInformation.expirationDate =
         user.passwordRecoveryInformation.expirationDate;
-      passwordRecoveryInformation.userId = +user.id;
-      console.log('save emailConfirmation');
-      await this.emailConfirmationRepository.save(passwordRecoveryInformation);
+      passwordRecoveryInformation.userId = userEntity.id;
+      console.log('save passwordRecoveryInformation');
+      console.log(passwordRecoveryInformation);
+      await this.passwordRecoveryInformationRepository.save(
+        passwordRecoveryInformation,
+      );
       userEntity.passwordRecoveryInformation = passwordRecoveryInformation;
     }
-
-    if (user.deviceSessions.length > 0) {
+    const activeDeviceIds: string[] = [];
+    if (user.deviceSessions?.length > 0) {
       for (const ds of user.deviceSessions) {
+        activeDeviceIds.push(ds.deviceId);
         const deviceSession = new DeviceSessionsEntity();
-        deviceSession.userId = +user.id;
+        deviceSession.user = userEntity;
         deviceSession.deviceId = ds.deviceId;
         deviceSession.ip = ds.ip;
         deviceSession.title = ds.title;
@@ -103,8 +101,15 @@ export class UsersTypeOrmRepository {
         userEntity.deviceSessions.push(deviceSession);
       }
     }
-    await this.usersRepository.save(userEntity);
-    console.log(userEntity);
+    if (userEntity.deviceSessions?.length > 0) {
+      for (const ds of userEntity.deviceSessions) {
+        if (!activeDeviceIds.includes(ds.deviceId)) {
+          await this.deviceSessionRepository.delete({
+            deviceId: ds.deviceId,
+          });
+        }
+      }
+    }
     return userEntity.id;
     // ////
     //
@@ -156,85 +161,81 @@ export class UsersTypeOrmRepository {
     // }
     // return user.id;
   }
-  private async insertNewUser(user: User) {
-    try {
-      const { accountData, emailConfirmation } = user;
-      const userEntity = new UserEntity();
-      userEntity.login = accountData.login;
-      userEntity.email = accountData.email;
-      userEntity.passwordSalt = accountData.passwordSalt;
-      userEntity.passwordHash = accountData.passwordHash;
-      userEntity.createdAt = accountData.createdAt;
-      await this.usersRepository.save(userEntity);
-      const emailConfirmationEntity = new EmailConfirmationEntity();
-      emailConfirmationEntity.user = userEntity;
-      emailConfirmationEntity.isConfirmed = emailConfirmation.isConfirmed;
-      await this.emailConfirmationRepository.save(emailConfirmationEntity);
-      return userEntity.id;
-    } catch (e) {
-      console.log(e);
-    }
-  }
+  // private async insertNewUser(user: User) {
+  //   try {
+  //     const { accountData, emailConfirmation } = user;
+  //     const userEntity = new UserEntity();
+  //     userEntity.login = accountData.login;
+  //     userEntity.email = accountData.email;
+  //     userEntity.passwordSalt = accountData.passwordSalt;
+  //     userEntity.passwordHash = accountData.passwordHash;
+  //     userEntity.createdAt = accountData.createdAt;
+  //     await this.usersRepository.save(userEntity);
+  //     return userEntity.id;
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  // }
 
-  private async insertEmailConfirmationRow(user: User) {
-    try {
-      const { confirmationCode, expirationDate, dateSendingConfirmEmail } =
-        user.emailConfirmation;
-      const queryString = `
-        INSERT INTO email_confirmation 
-            ("confirmationCode", "expirationDate", "dateSendingConfirmEmail", "userId")
-        VALUES ('${confirmationCode}', '${expirationDate}', '${dateSendingConfirmEmail}', '${user.id}')
-        `;
-      await this.dataSource.query(queryString);
-    } catch (e) {
-      console.log(e);
-    }
-  }
+  // private async insertEmailConfirmationRow(user: User) {
+  //   try {
+  //     const { confirmationCode, expirationDate, dateSendingConfirmEmail } =
+  //       user.emailConfirmation;
+  //     const queryString = `
+  //       INSERT INTO email_confirmation
+  //           ("confirmationCode", "expirationDate", "dateSendingConfirmEmail", "userId")
+  //       VALUES ('${confirmationCode}', '${expirationDate}', '${dateSendingConfirmEmail}', '${user.id}')
+  //       `;
+  //     await this.dataSource.query(queryString);
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  // }
 
-  private async insertPasswordRecoveryInfoRow(user: User) {
-    try {
-      const { recoveryCode, expirationDate } = user.passwordRecoveryInformation;
-      const queryString = `
-        INSERT INTO password_recovery_information 
-            ("recoveryCode", "expirationDate", "userId")
-        VALUES ('${recoveryCode}', '${expirationDate}', '${user.id}')
-        `;
-      await this.dataSource.query(queryString);
-    } catch (e) {
-      console.log(e);
-      return null;
-    }
-  }
+  // private async insertPasswordRecoveryInfoRow(user: User) {
+  //   try {
+  //     const { recoveryCode, expirationDate } = user.passwordRecoveryInformation;
+  //     const queryString = `
+  //       INSERT INTO password_recovery_information
+  //           ("recoveryCode", "expirationDate", "userId")
+  //       VALUES ('${recoveryCode}', '${expirationDate}', '${user.id}')
+  //       `;
+  //     await this.dataSource.query(queryString);
+  //   } catch (e) {
+  //     console.log(e);
+  //     return null;
+  //   }
+  // }
+  //
+  // private async deletePasswordRecoveryInfoRow(user: User) {
+  //   try {
+  //     const queryString = `
+  //       DELETE FROM password_recovery_information WHERE "userId"=${user.id}
+  //       `;
+  //     await this.dataSource.query(queryString);
+  //     return true;
+  //   } catch (e) {
+  //     console.log(e);
+  //     return false;
+  //   }
+  // }
 
-  private async deletePasswordRecoveryInfoRow(user: User) {
-    try {
-      const queryString = `
-        DELETE FROM password_recovery_information WHERE "userId"=${user.id} 
-        `;
-      await this.dataSource.query(queryString);
-      return true;
-    } catch (e) {
-      console.log(e);
-      return false;
-    }
-  }
-
-  private async insertDeviceSessionRows(user: User) {
-    try {
-      const sessions = user.deviceSessions;
-      const valuesArray = sessions.map(
-        (s) =>
-          `('${s.deviceId}', '${s.ip}', '${s.title}', '${user.id}', '${s.lastActiveDate}', '${s.expiresDate}')`,
-      );
-      const values = valuesArray.join(',');
-      await this.dataSource.query(
-        `INSERT INTO device_sessions ("deviceId", ip, title, "userId", "lastActiveDate", "expiresDate") VALUES ${values}`,
-      );
-    } catch (e) {
-      console.log(e);
-      return null;
-    }
-  }
+  // private async insertDeviceSessionRows(user: User) {
+  //   try {
+  //     const sessions = user.deviceSessions;
+  //     const valuesArray = sessions.map(
+  //       (s) =>
+  //         `('${s.deviceId}', '${s.ip}', '${s.title}', '${user.id}', '${s.lastActiveDate}', '${s.expiresDate}')`,
+  //     );
+  //     const values = valuesArray.join(',');
+  //     await this.dataSource.query(
+  //       `INSERT INTO device_sessions ("deviceId", ip, title, "userId", "lastActiveDate", "expiresDate") VALUES ${values}`,
+  //     );
+  //   } catch (e) {
+  //     console.log(e);
+  //     return null;
+  //   }
+  // }
 
   // private getChangeQueryString(changes: { field: string; value: any }[]) {
   //   const changesArray = changes.map((c) => {
@@ -248,43 +249,43 @@ export class UsersTypeOrmRepository {
   //   });
   //   return changesArray.join(',');
   // }
-
-  private async banUser(user: User) {
-    try {
-      if (user.banInfo.isBanned) {
-        const { banReason, banDate } = user.banInfo;
-        const queryString = `
-        INSERT INTO ban_info 
-            ("banDate", "banReason", "userId")
-        VALUES ('${banDate}', '${banReason}',  '${user.id}');
-        UPDATE users SET "isBanned"=true WHERE id=${user.id};
-        `;
-        await this.dataSource.query(queryString);
-        return true;
-      }
-      const queryString = `
-        DELETE FROM ban_info WHERE "userId"=${user.id};
-        UPDATE users SET "isBanned"=false WHERE id=${user.id};
-        `;
-      await this.dataSource.query(queryString);
-      return true;
-    } catch (e) {
-      console.log(e);
-      return false;
-    }
-  }
-
-  private async confirmEmail(user: User) {
-    try {
-      const queryString = `
-        UPDATE users SET "isConfirmed"=true WHERE id=${user.id};
-        DELETE FROM email_confirmation WHERE "userId"=${user.id}
-    `;
-      await this.dataSource.query(queryString);
-      return true;
-    } catch (e) {
-      console.log(e);
-      return false;
-    }
-  }
+  //
+  // private async banUser(user: User) {
+  //   try {
+  //     if (user.banInfo.isBanned) {
+  //       const { banReason, banDate } = user.banInfo;
+  //       const queryString = `
+  //       INSERT INTO ban_info
+  //           ("banDate", "banReason", "userId")
+  //       VALUES ('${banDate}', '${banReason}',  '${user.id}');
+  //       UPDATE users SET "isBanned"=true WHERE id=${user.id};
+  //       `;
+  //       await this.dataSource.query(queryString);
+  //       return true;
+  //     }
+  //     const queryString = `
+  //       DELETE FROM ban_info WHERE "userId"=${user.id};
+  //       UPDATE users SET "isBanned"=false WHERE id=${user.id};
+  //       `;
+  //     await this.dataSource.query(queryString);
+  //     return true;
+  //   } catch (e) {
+  //     console.log(e);
+  //     return false;
+  //   }
+  // }
+  //
+  // private async confirmEmail(user: User) {
+  //   try {
+  //     const queryString = `
+  //       UPDATE users SET "isConfirmed"=true WHERE id=${user.id};
+  //       DELETE FROM email_confirmation WHERE "userId"=${user.id}
+  //   `;
+  //     await this.dataSource.query(queryString);
+  //     return true;
+  //   } catch (e) {
+  //     console.log(e);
+  //     return false;
+  //   }
+  // }
 }
