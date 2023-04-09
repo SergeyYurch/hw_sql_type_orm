@@ -13,6 +13,8 @@ import {
 } from 'typeorm';
 import { User } from '../domain/user';
 import { UserEntity } from '../entities/user.entity';
+import { DeviceSessionsEntity } from '../entities/device-sessions.entity';
+import { PasswordRecoveryInformationEntity } from '../entities/password-recovery-information.entity';
 
 @Injectable()
 export class UsersQueryTypeormRepository {
@@ -20,6 +22,10 @@ export class UsersQueryTypeormRepository {
     @InjectDataSource() protected dataSource: DataSource,
     @InjectRepository(UserEntity)
     private readonly usersRepository: Repository<UserEntity>,
+    @InjectRepository(DeviceSessionsEntity)
+    private readonly deviceSessionRepository: Repository<DeviceSessionsEntity>,
+    @InjectRepository(PasswordRecoveryInformationEntity)
+    private readonly passwordRecoveryInformationRepository: Repository<PasswordRecoveryInformationEntity>,
   ) {}
   async doesUserIdExist(
     userId: string,
@@ -56,24 +62,33 @@ export class UsersQueryTypeormRepository {
     ]);
   }
 
-  async findUserByDeviceId(deviceId: string) {
-    try {
-      const result = await this.dataSource.query(
-        `SELECT "userId" FROM device_sessions WHERE "deviceId"='${deviceId}';`,
-      );
-      return await this.findById(result[0].userId);
-    } catch (e) {
-      console.log(e);
-      return null;
-    }
-  }
+  // async findUserByDeviceId(deviceId: string) {
+  //   try {
+  //     const queryBuilder = await this.deviceSessionRepository
+  //       .createQueryBuilder('ds')
+  //       .select('userId')
+  //       .where(`ds.deviceId = ${deviceId}`)
+  //       .getOne();
+  //     console.log(queryBuilder);
+  //     //return await this.findById(result[0].userId);
+  //   } catch (e) {
+  //     console.log(e);
+  //     return null;
+  //   }
+  // }
 
-  async findUserByEmailConfirmationCode(code: string) {
+  async findUserByEmailConfirmationCode(confirmationCode: string) {
     try {
-      const result = await this.dataSource.query(
-        `SELECT "userId" FROM email_confirmation WHERE "confirmationCode"='${code}';`,
-      );
-      return await this.findById(result[0].userId);
+      const userEntity = await this.usersRepository.findOne({
+        where: { confirmationCode },
+        relations: {
+          deviceSessions: true,
+          passwordRecoveryInformation: true,
+        },
+      });
+      debugger;
+      if (userEntity) return this.castToUserModel(userEntity);
+      return null;
     } catch (e) {
       console.log(e);
       return null;
@@ -82,10 +97,13 @@ export class UsersQueryTypeormRepository {
 
   async findUserByPasswordRecoveryCode(recoveryCode: string) {
     try {
-      const result = await this.dataSource.query(
-        `SELECT "userId" FROM password_recovery_information WHERE "recoveryCode"='${recoveryCode}'`,
-      );
-      return await this.findById(result[0].userId);
+      const priEntity = await this.passwordRecoveryInformationRepository
+        .createQueryBuilder('pri')
+        .where(`pri.recoveryCode='${recoveryCode}'`)
+        .getOne();
+      const user = await this.findById(String(priEntity.userId));
+      debugger;
+      return user;
     } catch (e) {
       console.log(e);
       return null;
@@ -96,12 +114,12 @@ export class UsersQueryTypeormRepository {
     console.log(`findById- typeOrm: ${id}`);
     const userEntity: UserEntity = await this.usersRepository.findOne({
       relations: {
-        emailConfirmation: true,
         deviceSessions: true,
         passwordRecoveryInformation: true,
       },
       where: { id: +id },
     });
+    debugger;
     return userEntity ? this.castToUserModel(userEntity) : null;
   }
 
@@ -116,12 +134,12 @@ export class UsersQueryTypeormRepository {
       console.log('find one');
       const userEntity: UserEntity = await this.usersRepository.findOne({
         relations: {
-          emailConfirmation: true,
           deviceSessions: true,
           passwordRecoveryInformation: true,
         },
         where: condition,
       });
+      debugger;
       return userEntity ? this.castToUserModel(userEntity) : null;
     } catch (e) {
       console.log('Did not found users');
@@ -150,7 +168,6 @@ export class UsersQueryTypeormRepository {
       console.log(where);
       const findOptions: FindManyOptions<UserEntity> = {
         relations: {
-          emailConfirmation: true,
           deviceSessions: true,
           passwordRecoveryInformation: true,
         },
@@ -256,13 +273,12 @@ export class UsersQueryTypeormRepository {
       banReason: userEntity.banReason,
       sa: 'superAdmin',
     };
-
+    debugger;
     user.emailConfirmation = {
-      isConfirmed: userEntity.emailConfirmation?.isConfirmed,
-      confirmationCode: userEntity.emailConfirmation?.confirmationCode,
-      expirationDate: +userEntity.emailConfirmation?.expirationDate || null,
-      dateSendingConfirmEmail:
-        +userEntity.emailConfirmation?.dateSendingConfirmEmail || null,
+      isConfirmed: userEntity.isConfirmed,
+      confirmationCode: userEntity.confirmationCode,
+      expirationDate: +userEntity.expirationDate || null,
+      dateSendingConfirmEmail: +userEntity.dateSendingConfirmEmail || null,
     };
     user.passwordRecoveryInformation = {
       recoveryCode: userEntity.passwordRecoveryInformation?.recoveryCode,
@@ -276,6 +292,7 @@ export class UsersQueryTypeormRepository {
       lastActiveDate: +d.lastActiveDate,
       expiresDate: +d.expiresDate,
     }));
+    console.log(user);
     return user;
   }
 
@@ -291,5 +308,16 @@ export class UsersQueryTypeormRepository {
       email: user.accountData.email,
       userId: user.id,
     };
+  }
+
+  async test() {
+    const user = await this.usersRepository.findOne({
+      where: { id: 18 },
+      relations: {
+        deviceSessions: true,
+        passwordRecoveryInformation: true,
+      },
+    });
+    console.log(user);
   }
 }
