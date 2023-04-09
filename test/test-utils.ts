@@ -7,6 +7,7 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { HttpExceptionFilter } from '../src/common/exception-filters/http-exception.filter';
+import cookieParser from 'cookie-parser';
 
 export const getApp = async () => {
   const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -15,6 +16,7 @@ export const getApp = async () => {
 
   const app: INestApplication = moduleFixture.createNestApplication();
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
+  app.use(cookieParser());
   app.useGlobalPipes(
     new ValidationPipe({
       stopAtFirstError: true,
