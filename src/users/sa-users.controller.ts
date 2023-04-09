@@ -21,7 +21,6 @@ import { CommandBus } from '@nestjs/cqrs';
 import { UsersService } from './providers/users.service';
 import { BanUserInputModel } from './dto/input-models/ban -user-input-model.dto';
 import { BanUserCommand } from './providers/use-cases/ban-user-use-case';
-import { UsersQuerySqlRepository } from './providers/users.query-sql.repository';
 import { PaginatorInputType } from '../common/dto/input-models/paginator.input.type';
 import { PaginatorParam } from '../common/decorators/paginator-param.decorator';
 import { CheckUserIdBannedIncludeGuard } from '../common/guards/check-user-id-banned-include.guard';
@@ -59,7 +58,7 @@ export class SaUsersController {
 
   @Get()
   async getUsers(
-    @Query('banStatus') banStatus: string,
+    @Query('banStatus') banStatus = 'all',
     @Query('searchLoginTerm') searchLoginTerm: string,
     @Query('searchEmailTerm') searchEmailTerm: string,
     @PaginatorParam() paginatorParams: PaginatorInputType,
