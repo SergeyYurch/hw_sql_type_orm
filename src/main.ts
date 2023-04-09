@@ -9,7 +9,7 @@ import { useContainer } from 'class-validator';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.enableCors();
-  app.set('trust proxy', 1);
+  app.set('trust proxy', 0);
   // app.setGlobalPrefix('api');
   app.use(cookieParser());
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
