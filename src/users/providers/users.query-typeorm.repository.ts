@@ -173,6 +173,11 @@ export class UsersQueryTypeormRepository {
         }
         conditions.push(emailCondition);
       }
+      if (conditions.length === 0 && banStatus !== 'all') {
+        const condition = {};
+        condition['isBanned'] = banStatus === 'banned';
+        conditions.push(condition);
+      }
       console.log(conditions);
       const findOptions: FindManyOptions<UserEntity> = {
         relations: {
@@ -281,7 +286,6 @@ export class UsersQueryTypeormRepository {
       banReason: userEntity.banReason,
       sa: 'superAdmin',
     };
-    debugger;
     user.emailConfirmation = {
       isConfirmed: userEntity.isConfirmed,
       confirmationCode: userEntity.confirmationCode,
