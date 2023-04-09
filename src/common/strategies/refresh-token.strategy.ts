@@ -35,10 +35,10 @@ export class RefreshTokenStrategy extends PassportStrategy(
   }
 
   private static extractJWT(req: Request): string | null {
-    console.log(req.cookies['refreshToken']);
     if (req.cookies && 'refreshToken' in req.cookies) {
       return req.cookies['refreshToken'];
     }
+    console.log('RefreshTokenStrategy: cookies does not found');
     return null;
   }
 
@@ -48,12 +48,15 @@ export class RefreshTokenStrategy extends PassportStrategy(
     );
     const { userId } = jwtPayload;
     if (!(await this.usersQueryRepository.doesUserIdExist(userId))) {
+      console.log('RefreshTokenStrategy: userId does not exist');
       throw new ForbiddenException('Forbidden');
     }
     const deviceIdIsValid = await this.commandBus.execute(
       new ValidateUserDeviceSessionCommand(jwtPayload),
     );
     if (!deviceIdIsValid) {
+      console.log('RefreshTokenStrategy:deviceId is not valid');
+
       throw new UnauthorizedException();
     }
     return {
