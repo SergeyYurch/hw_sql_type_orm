@@ -1,102 +1,28 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import {
-  BadRequestException,
-  INestApplication,
-  ValidationPipe,
-} from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { AppModule } from '../src/app.module';
 import { disconnect } from 'mongoose';
-import { useContainer } from 'class-validator';
-import { HttpExceptionFilter } from '../src/common/exception-filters/http-exception.filter';
-import cookieParser from 'cookie-parser';
-import { UsersQueryRepository } from '../src/users/providers/users.query.repository';
 import { delay } from '../src/common/helpers/helpers';
-import { UsersRepository } from '../src/users/providers/users.repository';
-import { UsersQuerySqlRepository } from '../src/users/providers/users.query-sql.repository';
-import { UsersSqlRepository } from '../src/users/providers/users.sql.repository';
-
-const user1 = {
-  login: 'user1',
-  password: 'password1',
-  email: 'email1@gmail.com',
-};
-const user2 = {
-  login: 'user2',
-  password: 'password2',
-  email: 'email2@gmail.com',
-};
-const user3 = {
-  login: 'user3',
-  password: 'password3',
-  email: 'email3@gmail.com',
-};
-const blog1 = {
-  name: 'blog1',
-  description: 'description1',
-  websiteUrl: 'https://youtube1.com',
-};
-const blog2 = {
-  name: 'blog2',
-  description: 'description2',
-  websiteUrl: 'https://youtube2.com',
-};
-const blog3 = {
-  name: 'blog3',
-  description: 'description3',
-  websiteUrl: 'https://youtube3.com',
-};
+import { user1 } from './tsts-input-data';
+import { getApp } from './test-utils';
+import { UsersQueryTypeormRepository } from '../src/users/providers/users.query-typeorm.repository';
+import { UsersTypeOrmRepository } from '../src/users/providers/users.typeorm.repository';
 
 describe('CommentsController (e2e)', () => {
   let app: INestApplication;
   let cookies: string[];
-  let userQueryRepository: UsersQuerySqlRepository;
-  let usersRepository: UsersSqlRepository;
+  let userQueryRepository: UsersQueryTypeormRepository;
+  let usersRepository: UsersTypeOrmRepository;
   let user1Id: string;
-  let user2Id: string;
-  let user3Id: string;
   let accessTokenUser1: string;
-  let accessTokenUser2: string;
-  let accessTokenUser3: string;
   let refreshTokenUser1: string;
   let expiredRefreshTokenUser1: string;
-  let refreshTokenUser2: string;
-  let refreshTokenUser3: string;
   let confirmationCode: string;
   let recoveryCode: string;
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-    userQueryRepository = moduleFixture.get<UsersQuerySqlRepository>(
-      UsersQuerySqlRepository,
-    );
-    usersRepository = moduleFixture.get<UsersSqlRepository>(UsersSqlRepository);
-
-    app = moduleFixture.createNestApplication();
-    useContainer(app.select(AppModule), { fallbackOnErrors: true });
-    app.use(cookieParser());
-    app.useGlobalPipes(
-      new ValidationPipe({
-        stopAtFirstError: true,
-        transform: true,
-        exceptionFactory: (errors) => {
-          const errorsForResponse = [];
-          for (const e of errors) {
-            const key = Object.keys(e.constraints)[0];
-            errorsForResponse.push({
-              message: e.constraints[key],
-              field: e.property,
-            });
-          }
-          throw new BadRequestException(errorsForResponse);
-        },
-      }),
-    );
-    app.useGlobalFilters(new HttpExceptionFilter());
-
-    await app.init();
+    app = await getApp();
+    userQueryRepository = await app.resolve(UsersQueryTypeormRepository);
+    usersRepository = await app.resolve(UsersTypeOrmRepository);
   });
   afterAll(async () => {
     await disconnect();
@@ -213,7 +139,6 @@ describe('CommentsController (e2e)', () => {
         .split(';')
         .find((c) => c.includes('refreshToken'))
         ?.split('=')[1] || 'no token';
-
     expiredRefreshTokenUser1 =
       cookies[0]
         .split(';')
@@ -305,12 +230,13 @@ describe('CommentsController (e2e)', () => {
         email: 'emailR@gmail.com',
       })
       .expect(204);
-    console.log('4444444444444444444444444');
+    console.log(
+      '#################################################################',
+    );
     const userR = await userQueryRepository.findUserByLoginOrEmail('userR');
     console.log(userR);
-    confirmationCode = (
-      await userQueryRepository.getEmailConfirmationData(userR.id)
-    ).confirmationCode;
+    confirmationCode = (await userQueryRepository.getUserModel(userR.id))
+      .emailConfirmation.confirmationCode;
     console.log('confirmationCode');
     console.log(confirmationCode);
     await request(app.getHttpServer())
