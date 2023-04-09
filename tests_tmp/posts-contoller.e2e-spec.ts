@@ -1,24 +1,24 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { disconnect } from 'mongoose';
-import { BlogViewModel } from '../src/blogs/dto/view-models/blog.view.model';
-import { getApp } from './test-utils';
-import { blog1, blog2, blog3, user1, user2, user3 } from './tsts-input-data';
+import { getApp } from '../test/test-utils';
+import {
+  blog1,
+  blog2,
+  blog3,
+  user1,
+  user2,
+  user3,
+} from '../test/tsts-input-data';
 
 describe('PostsController (e2e)', () => {
   let app: INestApplication;
-  let user1Id: string;
   let user2Id: string;
   let user3Id: string;
   let blog1Id: string;
   let blog2Id: string;
-  let blog3Id: string;
   let post1Id: string;
-  let post2Id: string;
-  let post3Id: string;
-  let blog1View: BlogViewModel;
-  let blog2View: BlogViewModel;
-  let blog3View: BlogViewModel;
+
   let accessTokenUser1: string;
   let accessTokenUser2: string;
   let accessTokenUser3: string;
