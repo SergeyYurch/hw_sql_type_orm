@@ -156,23 +156,31 @@ export class UsersQueryTypeormRepository {
   ) {
     try {
       const { sortBy, sortDirection, pageSize, pageNumber } = paginatorParams;
-      const where = {};
-      if (searchLoginTerm) where['login'] = ILike(`%${searchLoginTerm}%`);
-      if (searchEmailTerm) where['email'] = ILike(`%${searchEmailTerm}%`);
-      if (banStatus === 'banned') {
-        where['isBanned'] = true;
+      const conditions = [];
+      if (searchLoginTerm) {
+        const loginCondition = {};
+        loginCondition['login'] = ILike(`%${searchLoginTerm}%`);
+        if (banStatus !== 'all') {
+          loginCondition['isBanned'] = banStatus === 'banned';
+        }
+        conditions.push(loginCondition);
       }
-      if (banStatus === 'notBanned') {
-        where['isBanned'] = false;
+      if (searchEmailTerm) {
+        const emailCondition = {};
+        emailCondition['email'] = ILike(`%${searchEmailTerm}%`);
+        if (banStatus !== 'all') {
+          emailCondition['isBanned'] = banStatus === 'banned';
+        }
+        conditions.push(emailCondition);
       }
-      console.log(where);
+      console.log(conditions);
       const findOptions: FindManyOptions<UserEntity> = {
         relations: {
           deviceSessions: true,
           passwordRecoveryInformation: true,
         },
         order: {},
-        where,
+        where: conditions,
         skip: pageSize * (pageNumber - 1),
         take: pageSize,
       };
