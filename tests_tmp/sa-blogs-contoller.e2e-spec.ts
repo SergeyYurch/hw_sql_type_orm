@@ -1,24 +1,22 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { disconnect } from 'mongoose';
-import { BlogViewModel } from '../src/blogs/dto/view-models/blog.view.model';
-import { getApp } from './test-utils';
-import { blog1, blog2, blog3, user1, user2, user3 } from './tsts-input-data';
+import { getApp } from '../test/test-utils';
+import {
+  blog1,
+  blog2,
+  blog3,
+  user1,
+  user2,
+  user3,
+} from '../test/tsts-input-data';
 
 describe('UsersController (e2e)', () => {
   let app: INestApplication;
   let user1Id: string;
-  let user2Id: string;
-  let user3Id: string;
   let blog1Id: string;
   let blog2Id: string;
-  let blog3Id: string;
-  let blog1View: BlogViewModel;
-  let blog2View: BlogViewModel;
-  let blog3View: BlogViewModel;
   let post1Id: string;
-  let post2Id: string;
-  let post3Id: string;
   let accessTokenUser1: string;
   let accessTokenUser2: string;
   let accessTokenUser3: string;
@@ -292,9 +290,7 @@ describe('UsersController (e2e)', () => {
     expect(getBlogsResult.body.items[0]?.banInfo.isBanned).toBe(true);
   });
   it('GET: [HOST]/posts/{:id} should return 404 for post1/blog if blog1 is banned', async () => {
-    const getPostsResult = await request(app.getHttpServer())
-      .get(`/posts/${post1Id}/`)
-      .expect(404);
+    await request(app.getHttpServer()).get(`/posts/${post1Id}/`).expect(404);
   });
   it('GET: [HOST]/posts should return code 200 and posts(unauthorized user)', async () => {
     const getPostsResult = await request(app.getHttpServer())
@@ -309,9 +305,7 @@ describe('UsersController (e2e)', () => {
     expect(blogs.body.items).toHaveLength(2);
   });
   it('GET:[HOST]/blogs/id: should return 404', async () => {
-    const blogs = await request(app.getHttpServer())
-      .get(`/blogs/${blog1Id}`)
-      .expect(404);
+    await request(app.getHttpServer()).get(`/blogs/${blog1Id}`).expect(404);
   });
 
   //unban blog
