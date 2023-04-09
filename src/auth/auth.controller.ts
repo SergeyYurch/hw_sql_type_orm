@@ -54,7 +54,7 @@ export class AuthController {
   }
 
   // @UseGuards(LocalAuthGuard)
-  @SkipThrottle()
+  // @SkipThrottle()
   @HttpCode(200)
   @Post('/login')
   async signIn(
@@ -82,7 +82,7 @@ export class AuthController {
   async logout(@Req() req: Request, @Res() res: Response) {
     const { userId, deviceId } = req.user;
     await this.commandBus.execute(new LogoutCommand(userId, deviceId));
-    res.clearCookie('refreshToken');
+    //  res.clearCookie('refreshToken');
     return res.sendStatus(204);
   }
 
@@ -92,7 +92,7 @@ export class AuthController {
   async refreshTokens(
     @Ip() ip: string,
     @Headers('X-Forwarded-For') title: string,
-    @Res({ passthrough: true }) res: Response,
+    @Res() res: Response, //{ passthrough: true }
     @CurrentUserJwtInfo() { userId, deviceId }: JwtPayloadType,
   ) {
     console.log('POST:/refresh-token');
@@ -151,5 +151,11 @@ export class AuthController {
         newPasswordDto.newPassword,
       ),
     );
+  }
+
+  @HttpCode(204)
+  @Get('/test')
+  async test() {
+    await this.usersQueryRepository.test();
   }
 }
