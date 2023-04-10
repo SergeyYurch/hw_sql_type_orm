@@ -188,7 +188,12 @@ export class User {
       (s) => s.deviceId === deviceId,
     );
   }
-
+  validateIsUserOwnerSession(deviceId) {
+    const deviceSessions = this.deviceSessions.filter(
+      (s) => s.deviceId === deviceId,
+    );
+    return deviceSessions.length > 0;
+  }
   deleteSession(deviceId) {
     this.deviceSessions = this.deviceSessions.filter(
       (s) => s.deviceId !== deviceId,
