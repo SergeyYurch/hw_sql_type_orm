@@ -99,7 +99,7 @@ export class AuthController {
     @CurrentUserJwtInfo() { userId, deviceId }: JwtPayloadType,
   ) {
     console.log(
-      `[AuthController]/POST:/refresh-token: userID: ${userId}, deviceId:${deviceId}`,
+      `[AuthController]/POST:/refresh-token:userID: ${userId}, deviceId:${deviceId}`,
     );
     const { accessToken, refreshToken, expiresDate } =
       await this.commandBus.execute(new RefreshTokenCommand(userId, deviceId));
