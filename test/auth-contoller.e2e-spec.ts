@@ -278,7 +278,32 @@ describe('CommentsController (e2e)', () => {
       })
       .expect(204);
   });
-
+  it('POST:[HOST]/auth/registration-email-resending:  should return status code 429 if more than 5 requests were sent within 10 seconds', async () => {
+    await request(app.getHttpServer())
+      .post('/auth/registration-email-resending')
+      .send({
+        email: 'emailE@gmail.com',
+      })
+      .expect(204);
+    await request(app.getHttpServer())
+      .post('/auth/registration-email-resending')
+      .send({
+        email: 'emailE@gmail.com',
+      })
+      .expect(204);
+    await request(app.getHttpServer())
+      .post('/auth/registration-email-resending')
+      .send({
+        email: 'emailE@gmail.com',
+      })
+      .expect(204);
+    await request(app.getHttpServer())
+      .post('/auth/registration-email-resending')
+      .send({
+        email: 'emailE@gmail.com',
+      })
+      .expect(429);
+  });
   //logout
   it('POST:[HOST]/auth/logout: should return code 401 no refreshToken', async () => {
     await request(app.getHttpServer()).post('/auth/logout').expect(401);

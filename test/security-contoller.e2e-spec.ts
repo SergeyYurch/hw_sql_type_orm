@@ -275,4 +275,115 @@ describe('CommentsController (e2e)', () => {
       .expect(200);
     expect(result.body).toHaveLength(1);
   });
+
+  it('2)/testing/all-data (DELETE) clear DB', async () => {
+    return request(app.getHttpServer()).delete('/testing/all-data').expect(204);
+  });
+  it('2)/sa/users (POST) add new users to the system', async () => {
+    //create new user1
+    const newUser1 = await request(app.getHttpServer())
+      .post('/sa/users')
+      .auth('admin', 'qwerty', { type: 'basic' })
+      .send(user1)
+      .expect(201);
+    user1Id = newUser1.body.id;
+
+    const newUser2 = await request(app.getHttpServer())
+      .post('/sa/users')
+      .auth('admin', 'qwerty', { type: 'basic' })
+      .send(user2)
+      .expect(201);
+    user2Id = newUser2.body.id;
+  });
+  it('2)POST:[HOST]/auth/login: users login from different devices', async () => {
+    await delay(10000);
+    //user1 login
+    const result1LoginUser1 = await request(app.getHttpServer())
+      .post('/auth/login')
+      .set('X-Forwarded-For', `1.2.3.4`)
+      .set('User-Agent', `android`)
+      .send({
+        loginOrEmail: 'user1',
+        password: 'password1',
+      })
+      .expect(200);
+    cookies = result1LoginUser1.get('Set-Cookie');
+    refreshToken1User1 =
+      cookies[0]
+        .split(';')
+        .find((c) => c.includes('refreshToken'))
+        ?.split('=')[1] || 'no token';
+
+    const resultLogin2User1 = await request(app.getHttpServer())
+      .post('/auth/login')
+      .set('X-Forwarded-For', `2.2.3.4`)
+      .set('User-Agent', `winda`)
+      .send({
+        loginOrEmail: 'user1',
+        password: 'password1',
+      })
+      .expect(200);
+    cookies = resultLogin2User1.get('Set-Cookie');
+    refreshToken2User1 =
+      cookies[0]
+        .split(';')
+        .find((c) => c.includes('refreshToken'))
+        ?.split('=')[1] || 'no token';
+
+    const resultLogin3User1 = await request(app.getHttpServer())
+      .post('/auth/login')
+      .set('X-Forwarded-For', `3.2.3.4`)
+      .set('User-Agent', `mac`)
+      .send({
+        loginOrEmail: 'user1',
+        password: 'password1',
+      })
+      .expect(200);
+    cookies = resultLogin3User1.get('Set-Cookie');
+    refreshToken3User1 =
+      cookies[0]
+        .split(';')
+        .find((c) => c.includes('refreshToken'))
+        ?.split('=')[1] || 'no token';
+
+    const resultLogin1User2 = await request(app.getHttpServer())
+      .post('/auth/login')
+      .set('X-Forwarded-For', `3.2.3.4`)
+      .set('User-Agent', `mac`)
+      .send({
+        loginOrEmail: 'user2',
+        password: 'password2',
+      })
+      .expect(200);
+    cookies = resultLogin1User2.get('Set-Cookie');
+    refreshToken1User2 =
+      cookies[0]
+        .split(';')
+        .find((c) => c.includes('refreshToken'))
+        ?.split('=')[1] || 'no token';
+  });
+
+  //GET -> "/security/devices": should return device list without a device logged out; status 204; used additional methods: POST => /auth/logout;
+  it('1)GET:[HOST]/security/devices: should return code 200 and array of 3 sessions', async () => {
+    const result = await request(app.getHttpServer())
+      .get('/security/devices')
+      .set('Cookie', `refreshToken=${refreshToken1User1}`)
+      .expect(200);
+    expect(result.body).toHaveLength(3);
+    deviceId1User1 = result.body[0].deviceId;
+  });
+  it('2)POST:[HOST]/auth/logout: users 1 from device2', async () => {
+    //user1 login
+    await request(app.getHttpServer())
+      .post('/auth/logout')
+      .set('Cookie', `refreshToken=${refreshToken2User1}`)
+      .expect(204);
+  });
+  it('1)GET:[HOST]/security/devices: should return device list without a device logged out;', async () => {
+    const result = await request(app.getHttpServer())
+      .get('/security/devices')
+      .set('Cookie', `refreshToken=${refreshToken1User1}`)
+      .expect(200);
+    expect(result.body).toHaveLength(2);
+  });
 });
