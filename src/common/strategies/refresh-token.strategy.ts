@@ -48,7 +48,9 @@ export class RefreshTokenStrategy extends PassportStrategy(
     );
     const { userId } = jwtPayload;
     if (!(await this.usersQueryRepository.doesUserIdExist(userId))) {
-      console.log('RefreshTokenStrategy: userId does not exist');
+      console.log(
+        'RefreshTokenStrategy: refreshToken is invalid, user does not exist',
+      );
       throw new ForbiddenException('Forbidden');
     }
     const deviceIdIsValid = await this.commandBus.execute(
