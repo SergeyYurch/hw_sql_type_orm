@@ -16,6 +16,7 @@ import { CommandBus } from '@nestjs/cqrs';
 import { GetSessionsByUserIdCommand } from './providers/use-cases/get-sessions-by-user-id.use-case';
 import { DeleteAllSessionExcludeCurrentCommand } from './providers/use-cases/delete-all-sessions-exclude-current.use-case';
 import { DeleteSessionByIdCommand } from './providers/use-cases/delete-session-by-id.use-case';
+import { CheckDeviceIdGuard } from '../common/guards/check-device-id.guard';
 
 @UseGuards(RefreshTokenGuard)
 @Controller('security')
@@ -42,7 +43,7 @@ export class SecurityController {
       new DeleteAllSessionExcludeCurrentCommand(deviceId, userId),
     );
   }
-
+  @UseGuards(CheckDeviceIdGuard)
   @HttpCode(204)
   @Delete('devices/:deviceId')
   async deleteDeviceSession(
