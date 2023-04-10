@@ -73,7 +73,7 @@ export class AuthController {
       httpOnly: true,
     });
     console.log(
-      `[AuthController]/signIn: login user: ${loginDto.loginOrEmail}, refreshToken: ${refreshToken}`,
+      `[AuthController]/signIn: login  user: ${loginDto.loginOrEmail}, refreshToken: ${refreshToken}`,
     );
     return { accessToken: accessToken };
   }
