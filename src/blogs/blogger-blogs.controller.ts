@@ -47,7 +47,6 @@ export class BloggerBlogsController {
     @PaginatorParam() paginatorParams: PaginatorInputType,
     @CurrentUserId() bloggerId: string,
   ) {
-    debugger;
     return await this.commentsQueryRepository.getBloggersComments(
       paginatorParams,
       bloggerId,
