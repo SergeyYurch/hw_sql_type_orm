@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { UsersQuerySqlRepository } from '../../../users/providers/users.query-sql.repository';
+import { UsersQueryTypeormRepository } from '../../../users/providers/users.query-typeorm.repository';
 
 export class GetSessionsByUserIdCommand {
   constructor(public userId: string) {}
@@ -8,7 +8,7 @@ export class GetSessionsByUserIdCommand {
 export class GetSessionsByUserIdUseCase
   implements ICommandHandler<GetSessionsByUserIdCommand>
 {
-  constructor(private userRepository: UsersQuerySqlRepository) {}
+  constructor(private userRepository: UsersQueryTypeormRepository) {}
 
   async execute(command: GetSessionsByUserIdCommand) {
     const user = await this.userRepository.findById(command.userId);
