@@ -169,9 +169,9 @@ export class User {
 
   getSessions() {
     //delete expired sessions
-    this.deviceSessions = this.deviceSessions.filter(
-      (s) => s.expiresDate > +new Date(),
-    );
+    // this.deviceSessions = this.deviceSessions.filter(
+    //   (s) => s.expiresDate > +new Date(),
+    // );
     if (this.deviceSessions.length === 0) {
       this.sigIn = false;
     }
