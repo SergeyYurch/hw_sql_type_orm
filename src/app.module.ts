@@ -179,7 +179,7 @@ export const options: TypeOrmModuleOptions =
   imports: [
     configModule,
     ThrottlerModule.forRoot({
-      ttl: 8,
+      ttl: 6,
       limit: 5,
     }),
     MongooseModule.forFeature([
