@@ -1,105 +1,23 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import {
-  BadRequestException,
-  INestApplication,
-  ValidationPipe,
-} from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { AppModule } from '../src/app.module';
 import { disconnect } from 'mongoose';
-import { useContainer } from 'class-validator';
-import { HttpExceptionFilter } from '../src/common/exception-filters/http-exception.filter';
-import cookieParser from 'cookie-parser';
-import { UsersQueryRepository } from '../src/users/providers/users.query.repository';
 import { delay } from '../src/common/helpers/helpers';
-import { UsersRepository } from '../src/users/providers/users.repository';
-import { UsersQuerySqlRepository } from '../src/users/providers/users.query-sql.repository';
-import { UsersSqlRepository } from '../src/users/providers/users.sql.repository';
-
-const user1 = {
-  login: 'user1',
-  password: 'password1',
-  email: 'email1@gmail.com',
-};
-const user2 = {
-  login: 'user2',
-  password: 'password2',
-  email: 'email2@gmail.com',
-};
-const user3 = {
-  login: 'user3',
-  password: 'password3',
-  email: 'email3@gmail.com',
-};
-const blog1 = {
-  name: 'blog1',
-  description: 'description1',
-  websiteUrl: 'https://youtube1.com',
-};
-const blog2 = {
-  name: 'blog2',
-  description: 'description2',
-  websiteUrl: 'https://youtube2.com',
-};
-const blog3 = {
-  name: 'blog3',
-  description: 'description3',
-  websiteUrl: 'https://youtube3.com',
-};
+import { getApp } from './test-utils';
+import { user1, user2 } from './tsts-input-data';
 
 describe('CommentsController (e2e)', () => {
   let app: INestApplication;
   let cookies: string[];
-  let userQueryRepository: UsersQuerySqlRepository;
-  let usersRepository: UsersSqlRepository;
-  let user1Id: string;
-  let user2Id: string;
-
   let refreshToken1User1: string;
   let refreshToken2User1: string;
   let refreshToken3User1: string;
   let refreshToken1User2: string;
-
   let deviceId1User1: string;
-
-  let expiredRefreshTokenUser1: string;
-  let refreshTokenUser2: string;
-  let refreshTokenUser3: string;
-  let confirmationCode: string;
-  let recoveryCode: string;
+  let user1Id: string;
+  let user2Id: string;
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-    userQueryRepository = moduleFixture.get<UsersQuerySqlRepository>(
-      UsersQuerySqlRepository,
-    );
-    usersRepository = moduleFixture.get<UsersSqlRepository>(UsersSqlRepository);
-
-    app = moduleFixture.createNestApplication();
-    useContainer(app.select(AppModule), { fallbackOnErrors: true });
-    app.use(cookieParser());
-    app.useGlobalPipes(
-      new ValidationPipe({
-        stopAtFirstError: true,
-        transform: true,
-        exceptionFactory: (errors) => {
-          const errorsForResponse = [];
-          for (const e of errors) {
-            const key = Object.keys(e.constraints)[0];
-            errorsForResponse.push({
-              message: e.constraints[key],
-              field: e.property,
-            });
-          }
-          throw new BadRequestException(errorsForResponse);
-        },
-      }),
-    );
-    app.useGlobalFilters(new HttpExceptionFilter());
-
-    await app.init();
+    app = await getApp();
   });
   afterAll(async () => {
     await disconnect();
