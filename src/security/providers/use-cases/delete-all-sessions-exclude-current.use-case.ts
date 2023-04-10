@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { SecurityService } from '../security.service';
-import { UsersSqlRepository } from '../../../users/providers/users.sql.repository';
+import { UsersTypeOrmRepository } from '../../../users/providers/users.typeorm.repository';
+import { UsersQueryTypeormRepository } from '../../../users/providers/users.query-typeorm.repository';
 
 export class DeleteAllSessionExcludeCurrentCommand {
   constructor(public deviceId: string, public userId: string) {}
@@ -10,15 +10,15 @@ export class DeleteAllSessionExcludeCurrentUseCase
   implements ICommandHandler<DeleteAllSessionExcludeCurrentCommand>
 {
   constructor(
-    private userRepository: UsersSqlRepository,
-    private securityService: SecurityService,
+    private usersQueryTypeormRepository: UsersQueryTypeormRepository,
+    private usersRepository: UsersTypeOrmRepository,
   ) {}
 
   async execute(command: DeleteAllSessionExcludeCurrentCommand) {
     const { userId, deviceId } = command;
-    const user = await this.securityService.validateOwner(userId, deviceId);
+    const user = await this.usersQueryTypeormRepository.findById(userId);
     user.deleteSessionsExclude(deviceId);
-    await this.userRepository.save(user);
+    await this.usersRepository.save(user);
     return user.getSessions();
   }
 }
