@@ -1,6 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { SecurityService } from '../security.service';
-import { UsersSqlRepository } from '../../../users/providers/users.sql.repository';
+import { UsersTypeOrmRepository } from '../../../users/providers/users.typeorm.repository';
+import { UsersQueryTypeormRepository } from '../../../users/providers/users.query-typeorm.repository';
 
 export class DeleteSessionByIdCommand {
   constructor(public deviceId: string, public userId: string) {}
@@ -10,13 +11,15 @@ export class DeleteSessionByIdUseCase
   implements ICommandHandler<DeleteSessionByIdCommand>
 {
   constructor(
-    private userRepository: UsersSqlRepository,
+    private userRepository: UsersTypeOrmRepository,
+    private usersQueryRepository: UsersQueryTypeormRepository,
     private securityService: SecurityService,
   ) {}
 
   async execute(command: DeleteSessionByIdCommand) {
     const { userId, deviceId } = command;
-    const user = await this.securityService.validateOwner(userId, deviceId);
+    await this.securityService.validateOwner(userId, deviceId);
+    const user = await this.usersQueryRepository.findById(userId);
     user.deleteSession(deviceId);
     await this.userRepository.save(user);
     return user.getSessions();
