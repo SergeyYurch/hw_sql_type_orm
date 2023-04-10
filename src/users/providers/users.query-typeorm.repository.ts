@@ -36,8 +36,18 @@ export class UsersQueryTypeormRepository {
       let queryString = `SELECT EXISTS (SELECT * FROM users WHERE id=${userId} AND "isBanned"=false)`;
       if (options?.bannedInclude)
         queryString = `SELECT EXISTS (SELECT * FROM users WHERE id=${userId})`;
-      console.log(queryString);
-      return await this.dataSource.query(queryString);
+      const result = await this.dataSource.query(queryString);
+      return result[0].exists;
+    } catch (e) {
+      console.log(e);
+      return false;
+    }
+  }
+  async doesDeviceIdExist(deviceId: string): Promise<boolean> {
+    try {
+      const queryString = `SELECT EXISTS (SELECT * FROM device_sessions WHERE "deviceId"='${deviceId}')`;
+      const result = await this.dataSource.query(queryString);
+      return result[0].exists;
     } catch (e) {
       console.log(e);
       return false;
@@ -64,13 +74,11 @@ export class UsersQueryTypeormRepository {
 
   // async findUserByDeviceId(deviceId: string) {
   //   try {
-  //     const queryBuilder = await this.deviceSessionRepository
+  //     const deviceSessionsEntity = await this.deviceSessionRepository
   //       .createQueryBuilder('ds')
-  //       .select('userId')
-  //       .where(`ds.deviceId = ${deviceId}`)
+  //       .where(`ds.deviceId = '${deviceId}'`)
   //       .getOne();
-  //     console.log(queryBuilder);
-  //     //return await this.findById(result[0].userId);
+  //     return await this.findById(String(deviceSessionsEntity.user.id));
   //   } catch (e) {
   //     console.log(e);
   //     return null;
@@ -86,7 +94,6 @@ export class UsersQueryTypeormRepository {
           passwordRecoveryInformation: true,
         },
       });
-      debugger;
       if (userEntity) return this.castToUserModel(userEntity);
       return null;
     } catch (e) {
@@ -101,9 +108,7 @@ export class UsersQueryTypeormRepository {
         .createQueryBuilder('pri')
         .where(`pri.recoveryCode='${recoveryCode}'`)
         .getOne();
-      const user = await this.findById(String(priEntity.userId));
-      debugger;
-      return user;
+      return await this.findById(String(priEntity.userId));
     } catch (e) {
       console.log(e);
       return null;
@@ -119,7 +124,6 @@ export class UsersQueryTypeormRepository {
       },
       where: { id: +id },
     });
-    debugger;
     return userEntity ? this.castToUserModel(userEntity) : null;
   }
 
@@ -139,7 +143,6 @@ export class UsersQueryTypeormRepository {
         },
         where: condition,
       });
-      debugger;
       return userEntity ? this.castToUserModel(userEntity) : null;
     } catch (e) {
       console.log('Did not found users');
@@ -178,7 +181,6 @@ export class UsersQueryTypeormRepository {
         condition['isBanned'] = banStatus === 'banned';
         conditions.push(condition);
       }
-      console.log(conditions);
       const findOptions: FindManyOptions<UserEntity> = {
         relations: {
           deviceSessions: true,
@@ -304,7 +306,6 @@ export class UsersQueryTypeormRepository {
       lastActiveDate: +d.lastActiveDate,
       expiresDate: +d.expiresDate,
     }));
-    console.log(user);
     return user;
   }
 
@@ -323,13 +324,12 @@ export class UsersQueryTypeormRepository {
   }
 
   async test() {
-    const user = await this.usersRepository.findOne({
-      where: { id: 18 },
-      relations: {
-        deviceSessions: true,
-        passwordRecoveryInformation: true,
-      },
-    });
-    console.log(user);
+    // const user = await this.usersRepository.findOne({
+    //   where: { id: 18 },
+    //   relations: {
+    //     deviceSessions: true,
+    //     passwordRecoveryInformation: true,
+    //   },
+    // });
   }
 }
