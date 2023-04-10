@@ -72,6 +72,9 @@ export class AuthController {
       secure: true,
       httpOnly: true,
     });
+    console.log(
+      `[AuthController]/signIn: login user: ${loginDto.loginOrEmail}, refreshToken: ${refreshToken}`,
+    );
     return { accessToken: accessToken };
   }
 
@@ -82,7 +85,7 @@ export class AuthController {
   async logout(@Req() req: Request, @Res() res: Response) {
     const { userId, deviceId } = req.user;
     await this.commandBus.execute(new LogoutCommand(userId, deviceId));
-    //  res.clearCookie('refreshToken');
+    res.clearCookie('refreshToken');
     return res.sendStatus(204);
   }
 
@@ -95,7 +98,9 @@ export class AuthController {
     @Res() res: Response, //{ passthrough: true }
     @CurrentUserJwtInfo() { userId, deviceId }: JwtPayloadType,
   ) {
-    console.log('POST:/refresh-token');
+    console.log(
+      `[AuthController]/POST:/refresh-token: userID: ${userId}, deviceId:${deviceId}`,
+    );
     const { accessToken, refreshToken, expiresDate } =
       await this.commandBus.execute(new RefreshTokenCommand(userId, deviceId));
     res.cookie('refreshToken', refreshToken, {

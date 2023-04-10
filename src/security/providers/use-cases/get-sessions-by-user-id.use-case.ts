@@ -12,6 +12,8 @@ export class GetSessionsByUserIdUseCase
 
   async execute(command: GetSessionsByUserIdCommand) {
     const user = await this.userRepository.findById(command.userId);
-    return user.getSessions();
+    const sessions = user.getSessions();
+    console.log(`[GetSessionsByUserIdUseCase]: sessions:${sessions}`);
+    return sessions;
   }
 }
