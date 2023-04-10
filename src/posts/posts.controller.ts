@@ -40,7 +40,6 @@ export class PostsController {
     @Body() likeDto: LikeInputModel,
     @CurrentUserId() userId: string,
   ) {
-    debugger;
     await this.commandBus.execute(
       new UpdatePostLikeStatusCommand(postId, userId, likeDto.likeStatus),
     );
