@@ -55,7 +55,7 @@ export class User {
     );
   }
 
-  async signIn(
+  signIn(
     deviceId: string,
     ip: string,
     title: string,
@@ -77,9 +77,9 @@ export class User {
       };
       this.sigIn = true;
       //delete expired sessions
-      this.deviceSessions = this.deviceSessions.filter(
-        (s) => s.expiresDate > +new Date(),
-      );
+      // this.deviceSessions = this.deviceSessions.filter(
+      //   (s) => s.expiresDate > +new Date(),
+      // );
       this.deviceSessions.push(deviceSession);
       return true;
     } catch (e) {

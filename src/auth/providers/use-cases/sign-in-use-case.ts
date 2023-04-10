@@ -30,7 +30,7 @@ export class SignInUseCase implements ICommandHandler<SignInCommand> {
     const deviceId = uuidv4();
     const { accessToken, refreshToken, expiresDate, lastActiveDate } =
       await this.authService.getTokens(userModel.id, deviceId);
-    await userModel.signIn(deviceId, ip, title, expiresDate, lastActiveDate);
+    userModel.signIn(deviceId, ip, title, expiresDate, lastActiveDate);
     await this.userRepository.save(userModel);
     return { accessToken, refreshToken, expiresDate };
   }

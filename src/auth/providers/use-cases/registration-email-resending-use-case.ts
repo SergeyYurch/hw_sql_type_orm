@@ -35,7 +35,9 @@ export class RegistrationEmailResendingUseCase
       ]);
     }
     const confirmationCode = userModel.generateNewEmailConfirmationCode();
-    await this.mailService.sendConfirmationEmail(email, confirmationCode);
-    await this.userRepository.save(userModel);
+    await Promise.all([
+      this.mailService.sendConfirmationEmail(email, confirmationCode),
+      this.userRepository.save(userModel),
+    ]);
   }
 }
