@@ -24,12 +24,9 @@ export class PasswordRecoveryUseCase
       return null;
     }
     const recoveryCode = userModel.generateNewPasswordRecoveryCode();
-    await this.userRepository.save(userModel);
-    const resultSendEmail = await this.mailService.sendPasswordRecoveryEmail(
-      email,
-      recoveryCode,
-    );
-    if (!resultSendEmail) console.log('email did not send');
-    return resultSendEmail;
+    await Promise.all([
+      await this.userRepository.save(userModel),
+      await this.mailService.sendPasswordRecoveryEmail(email, recoveryCode),
+    ]);
   }
 }
