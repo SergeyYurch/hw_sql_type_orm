@@ -16,17 +16,23 @@ export class PasswordRecoveryUseCase
   ) {}
 
   async execute(command: PasswordRecoveryCommand) {
-    const { email } = command;
-    const userModel = await this.userQueryRepository.findUserByLoginOrEmail(
-      email,
-    );
-    if (!userModel) {
-      return null;
+    try {
+      const { email } = command;
+      const userModel = await this.userQueryRepository.findUserByLoginOrEmail(
+        email,
+      );
+      if (!userModel) {
+        return false;
+      }
+      const recoveryCode = userModel.generateNewPasswordRecoveryCode();
+      await Promise.all([
+        await this.userRepository.save(userModel),
+        await this.mailService.sendPasswordRecoveryEmail(email, recoveryCode),
+      ]);
+      return true;
+    } catch (e) {
+      console.log(e);
+      return false;
     }
-    const recoveryCode = userModel.generateNewPasswordRecoveryCode();
-    await Promise.all([
-      await this.userRepository.save(userModel),
-      await this.mailService.sendPasswordRecoveryEmail(email, recoveryCode),
-    ]);
   }
 }
