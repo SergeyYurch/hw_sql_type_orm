@@ -38,13 +38,12 @@ export class RegistrationUserUseCase
       passwordHash,
       isConfirmed: false,
     };
-    const userModel = await this.usersRepository.createUserModel();
-    await userModel.initialize(user);
-    const userId = await this.usersRepository.save(userModel);
-
-    if (!userId) return null;
+    let userModel = this.usersRepository.createUserModel();
+    userModel.initialize(user);
+    userModel = await this.usersRepository.save(userModel);
+    if (!userModel) return null;
     const confirmationCode = userModel.emailConfirmation.confirmationCode;
     await this.mailService.sendConfirmationEmail(email, confirmationCode);
-    return this.usersQueryRepository.getUserById(String(userId));
+    return userModel;
   }
 }
