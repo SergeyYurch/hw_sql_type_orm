@@ -4,7 +4,7 @@ import { BlogViewModel } from '../dto/view-models/blog.view.model';
 import { PaginatorViewModel } from '../../common/dto/view-models/paginator.view.model';
 import { BlogSaViewModel } from '../dto/view-models/blog-sa-view.model';
 import { PaginatorInputType } from '../../common/dto/input-models/paginator.input.type';
-import { BannedUser, BlogEntity } from '../domain/blog.entity';
+import { BannedUser, Blog } from '../domain/blog';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { BlogDbDtoSql } from '../types/blog-db-dto.sql';
@@ -15,7 +15,7 @@ import { BlogsQueryOptionsType } from '../types/blogs-query-options.type';
 @Injectable()
 export class BlogsQuerySqlRepository {
   constructor(
-    @InjectDataSource() protected dataSource: DataSource, // @InjectModel(Blog.name) private BlogModel: Model<BlogDocument>,
+    @InjectDataSource() protected dataSource: DataSource, // @InjectModel(BlogEntity.name) private BlogModel: Model<BlogDocument>,
   ) {}
 
   async doesBlogIdExist(
@@ -80,7 +80,7 @@ export class BlogsQuerySqlRepository {
     return this.getBlogViewModel(blog);
   }
 
-  getBlogViewModel(blog: BlogEntity): BlogViewModel {
+  getBlogViewModel(blog: Blog): BlogViewModel {
     return {
       id: blog.id,
       name: blog.name,
@@ -91,7 +91,7 @@ export class BlogsQuerySqlRepository {
     };
   }
 
-  getSaViewModelWithOwner(blog: BlogEntity): BlogSaViewModel | BlogViewModel {
+  getSaViewModelWithOwner(blog: Blog): BlogSaViewModel | BlogViewModel {
     const blogView = this.getBlogViewModel(blog);
     const banInfo = {
       isBanned: blog.isBanned,
@@ -177,7 +177,7 @@ export class BlogsQuerySqlRepository {
     return queryBannedUsersResult[0].exists;
   }
 
-  async findById(blogId, options?: BlogsQueryOptionsType): Promise<BlogEntity> {
+  async findById(blogId, options?: BlogsQueryOptionsType): Promise<Blog> {
     try {
       const queryString = `SELECT b.*, u.login as "blogOwnerLogin",
                   (SELECT COUNT(*)
@@ -204,7 +204,7 @@ export class BlogsQuerySqlRepository {
     paginatorParams: PaginatorInputType,
     searchNameTerm?: string,
     options?: BlogsQueryOptionsType,
-  ): Promise<{ totalCount: number; blogsEntities: BlogEntity[] }> {
+  ): Promise<{ totalCount: number; blogsEntities: Blog[] }> {
     try {
       const { sortBy, sortDirection, pageSize, pageNumber } = paginatorParams;
       //Define search parameters
@@ -243,15 +243,12 @@ export class BlogsQuerySqlRepository {
       //Get blogs from DB
       const blogs: BlogDbDtoSql[] = await this.dataSource.query(queryString);
       //Convert blogs to BlogEntity type
-      const blogsEntities: BlogEntity[] = [];
+      const blogsEntities: Blog[] = [];
       for (const blog of blogs) {
         let bannedUsers: BannedUser[] = [];
         if (blog.countBannedUsers > 0)
           bannedUsers = await this.findBannedUsers(blog.id);
-        const blogEntity: BlogEntity = await this.castToBlogEntity(
-          blog,
-          bannedUsers,
-        );
+        const blogEntity: Blog = await this.castToBlogEntity(blog, bannedUsers);
         blogsEntities.push(blogEntity);
       }
       return { totalCount: totalCount, blogsEntities };
@@ -277,7 +274,7 @@ export class BlogsQuerySqlRepository {
   }
 
   castToBlogEntity(blogDb: BlogDbDtoSql, bannedUsers: BannedUser[]) {
-    const blogEntity: BlogEntity = new BlogEntity();
+    const blogEntity: Blog = new Blog();
     blogEntity.setDbData(blogDb, bannedUsers);
     return blogEntity;
   }
