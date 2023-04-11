@@ -10,7 +10,7 @@ export class BannedUser {
   banDate: number;
 }
 
-export class BlogEntity {
+export class Blog {
   id: string;
   name: string;
   blogOwnerId: string;
