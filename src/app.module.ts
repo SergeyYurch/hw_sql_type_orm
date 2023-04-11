@@ -92,6 +92,10 @@ import { UserEntity } from './users/entities/user.entity';
 import { DeviceSessionsEntity } from './users/entities/device-sessions.entity';
 import { PasswordRecoveryInformationEntity } from './users/entities/password-recovery-information.entity';
 import { UsersQueryTypeormRepository } from './users/providers/users.query-typeorm.repository';
+import { BlogsTypeOrmRepository } from './blogs/providers/blogs.type-orm.repository';
+import { BlogsQueryTypeOrmRepository } from './blogs/providers/blogs.query.type-orm.repository';
+import { BlogEntity } from './blogs/entities/blog.entity';
+import { BlogsBannedUserEntity } from './blogs/entities/blogs-banned-user.entity';
 
 const configModule = ConfigModule.forRoot();
 const userEntities = [
@@ -99,6 +103,8 @@ const userEntities = [
   DeviceSessionsEntity,
   PasswordRecoveryInformationEntity,
 ];
+
+const blogsEntities = [BlogEntity, BlogsBannedUserEntity];
 
 const blogsUseCases = [
   BindBlogWithUserUseCase,
@@ -179,7 +185,7 @@ export const options: TypeOrmModuleOptions =
   imports: [
     configModule,
     ThrottlerModule.forRoot({
-      ttl: 11,
+      ttl: 10,
       limit: 5,
     }),
     MongooseModule.forFeature([
@@ -189,7 +195,7 @@ export const options: TypeOrmModuleOptions =
       { name: Comment.name, schema: CommentSchema },
     ]),
     TypeOrmModule.forRoot(options),
-    TypeOrmModule.forFeature([...userEntities]),
+    TypeOrmModule.forFeature([...userEntities, ...blogsEntities]),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -266,6 +272,8 @@ export const options: TypeOrmModuleOptions =
     BlogsQueryRepository,
     BlogsSqlRepository,
     BlogsQuerySqlRepository,
+    BlogsTypeOrmRepository,
+    BlogsQueryTypeOrmRepository,
 
     //comments
     CommentsRepository,
