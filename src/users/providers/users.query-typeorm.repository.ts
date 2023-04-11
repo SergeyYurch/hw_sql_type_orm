@@ -151,6 +151,15 @@ export class UsersQueryTypeormRepository {
     }
   }
 
+  getEmailLoginFilter(field: string, searchTerm: string, banStatus: string) {
+    const condition = {};
+    condition[field] = ILike(`%${searchTerm}%`);
+    if (banStatus !== 'all') {
+      condition['isBanned'] = banStatus === 'banned';
+    }
+    return condition;
+  }
+
   async find(
     paginatorParams: PaginatorInputType,
     searchLoginTerm?: string,
@@ -161,21 +170,16 @@ export class UsersQueryTypeormRepository {
       const { sortBy, sortDirection, pageSize, pageNumber } = paginatorParams;
       const conditions = [];
       if (searchLoginTerm) {
-        const loginCondition = {};
-        loginCondition['login'] = ILike(`%${searchLoginTerm}%`);
-        if (banStatus !== 'all') {
-          loginCondition['isBanned'] = banStatus === 'banned';
-        }
-        conditions.push(loginCondition);
+        conditions.push(
+          this.getEmailLoginFilter('login', searchLoginTerm, banStatus),
+        );
       }
       if (searchEmailTerm) {
-        const emailCondition = {};
-        emailCondition['email'] = ILike(`%${searchEmailTerm}%`);
-        if (banStatus !== 'all') {
-          emailCondition['isBanned'] = banStatus === 'banned';
-        }
-        conditions.push(emailCondition);
+        conditions.push(
+          this.getEmailLoginFilter('email', searchEmailTerm, banStatus),
+        );
       }
+
       if (conditions.length === 0 && banStatus !== 'all') {
         const condition = {};
         condition['isBanned'] = banStatus === 'banned';
@@ -272,7 +276,7 @@ export class UsersQueryTypeormRepository {
     };
   }
 
-  private async castToUserModel(userEntity: UserEntity): Promise<User> {
+  castToUserModel(userEntity: UserEntity): User {
     const user = new User();
     user.id = String(userEntity.id);
     user.accountData = {
@@ -299,13 +303,17 @@ export class UsersQueryTypeormRepository {
       expirationDate:
         +userEntity.passwordRecoveryInformation?.expirationDate || null,
     };
-    user.deviceSessions = userEntity.deviceSessions.map((d) => ({
-      deviceId: d.deviceId,
-      ip: d.ip,
-      title: d.title,
-      lastActiveDate: +d.lastActiveDate,
-      expiresDate: +d.expiresDate,
-    }));
+    debugger;
+    if (userEntity.deviceSessions && Array.isArray(userEntity.deviceSessions)) {
+      user.deviceSessions = userEntity.deviceSessions.map((d) => ({
+        deviceId: d.deviceId,
+        ip: d.ip,
+        title: d.title,
+        lastActiveDate: +d.lastActiveDate,
+        expiresDate: +d.expiresDate,
+      }));
+    } else user.deviceSessions = [];
+
     return user;
   }
 
