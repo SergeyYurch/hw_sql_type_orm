@@ -24,7 +24,7 @@ export class UsersTypeOrmRepository {
     return this.userQueryRepository.findById(userId);
   }
 
-  async createUserModel() {
+  createUserModel() {
     return new User();
   }
 
@@ -39,73 +39,78 @@ export class UsersTypeOrmRepository {
   }
 
   async save(user: User) {
-    console.log('start User save');
-    let userEntity: UserEntity;
-    if (!user.id) {
-      userEntity = new UserEntity();
-    } else {
-      userEntity = await this.usersRepository.findOne({
-        where: { id: +user.id },
-        relations: {
-          deviceSessions: true,
-          passwordRecoveryInformation: true,
-        },
-      });
-    }
-    userEntity.login = user.accountData.login;
-    userEntity.email = user.accountData.email;
-    userEntity.passwordHash = user.accountData.passwordHash;
-    userEntity.passwordSalt = user.accountData.passwordSalt;
-    userEntity.createdAt = user.accountData.createdAt;
-    userEntity.isBanned = user.banInfo?.isBanned;
-    userEntity.banDate = user.banInfo?.banDate;
-    userEntity.banReason = user.banInfo?.banReason;
-    userEntity.isConfirmed = user.emailConfirmation?.isConfirmed;
-    userEntity.confirmationCode = user.emailConfirmation?.confirmationCode;
-    userEntity.expirationDate = user.emailConfirmation?.expirationDate;
-    userEntity.dateSendingConfirmEmail =
-      user.emailConfirmation?.dateSendingConfirmEmail;
-    //try to map User to UserEntity and save model
-    await this.usersRepository.save(userEntity);
-    if (user.passwordRecoveryInformation) {
-      const passwordRecoveryInformation =
-        new PasswordRecoveryInformationEntity();
-      passwordRecoveryInformation.recoveryCode =
-        user.passwordRecoveryInformation.recoveryCode;
-      passwordRecoveryInformation.expirationDate =
-        user.passwordRecoveryInformation.expirationDate;
-      passwordRecoveryInformation.userId = userEntity.id;
-      console.log('save passwordRecoveryInformation');
-      console.log(passwordRecoveryInformation);
-      await this.passwordRecoveryInformationRepository.save(
-        passwordRecoveryInformation,
-      );
-      userEntity.passwordRecoveryInformation = passwordRecoveryInformation;
-    }
-    const activeDeviceIds: string[] = [];
-    if (user.deviceSessions?.length > 0) {
-      for (const ds of user.deviceSessions) {
-        activeDeviceIds.push(ds.deviceId);
-        const deviceSession = new DeviceSessionsEntity();
-        deviceSession.user = userEntity;
-        deviceSession.deviceId = ds.deviceId;
-        deviceSession.ip = ds.ip;
-        deviceSession.title = ds.title;
-        deviceSession.lastActiveDate = ds.lastActiveDate;
-        deviceSession.expiresDate = ds.expiresDate;
-        await this.deviceSessionRepository.save(deviceSession);
-        userEntity.deviceSessions.push(deviceSession);
+    try {
+      console.log('start User save');
+      let userEntity: UserEntity;
+      if (!user.id) {
+        userEntity = new UserEntity();
+      } else {
+        userEntity = await this.usersRepository.findOne({
+          where: { id: +user.id },
+          relations: {
+            deviceSessions: true,
+            passwordRecoveryInformation: true,
+          },
+        });
       }
-    }
-    if (userEntity.deviceSessions?.length > 0) {
-      for (const ds of userEntity.deviceSessions) {
-        if (!activeDeviceIds.includes(ds.deviceId)) {
-          await this.deviceSessionRepository.delete({
-            deviceId: ds.deviceId,
-          });
+      userEntity.login = user.accountData.login;
+      userEntity.email = user.accountData.email;
+      userEntity.passwordHash = user.accountData.passwordHash;
+      userEntity.passwordSalt = user.accountData.passwordSalt;
+      userEntity.createdAt = user.accountData.createdAt;
+      userEntity.isBanned = user.banInfo?.isBanned;
+      userEntity.banDate = user.banInfo?.banDate;
+      userEntity.banReason = user.banInfo?.banReason;
+      userEntity.isConfirmed = user.emailConfirmation?.isConfirmed;
+      userEntity.confirmationCode = user.emailConfirmation?.confirmationCode;
+      userEntity.expirationDate = user.emailConfirmation?.expirationDate;
+      userEntity.dateSendingConfirmEmail =
+        user.emailConfirmation?.dateSendingConfirmEmail;
+      //try to map User to UserEntity and save model
+      await this.usersRepository.save(userEntity);
+      if (user.passwordRecoveryInformation) {
+        const passwordRecoveryInformation =
+          new PasswordRecoveryInformationEntity();
+        passwordRecoveryInformation.recoveryCode =
+          user.passwordRecoveryInformation.recoveryCode;
+        passwordRecoveryInformation.expirationDate =
+          user.passwordRecoveryInformation.expirationDate;
+        passwordRecoveryInformation.userId = userEntity.id;
+        console.log('save passwordRecoveryInformation');
+        console.log(passwordRecoveryInformation);
+        await this.passwordRecoveryInformationRepository.save(
+          passwordRecoveryInformation,
+        );
+        userEntity.passwordRecoveryInformation = passwordRecoveryInformation;
+      }
+      const activeDeviceIds: string[] = [];
+      if (user.deviceSessions?.length > 0) {
+        for (const ds of user.deviceSessions) {
+          activeDeviceIds.push(ds.deviceId);
+          const deviceSession = new DeviceSessionsEntity();
+          deviceSession.user = userEntity;
+          deviceSession.deviceId = ds.deviceId;
+          deviceSession.ip = ds.ip;
+          deviceSession.title = ds.title;
+          deviceSession.lastActiveDate = ds.lastActiveDate;
+          deviceSession.expiresDate = ds.expiresDate;
+          await this.deviceSessionRepository.save(deviceSession);
+          userEntity.deviceSessions.push(deviceSession);
         }
       }
+      if (userEntity.deviceSessions?.length > 0) {
+        for (const ds of userEntity.deviceSessions) {
+          if (!activeDeviceIds.includes(ds.deviceId)) {
+            await this.deviceSessionRepository.delete({
+              deviceId: ds.deviceId,
+            });
+          }
+        }
+      }
+      return this.userQueryRepository.castToUserModel(userEntity);
+    } catch (e) {
+      console.log(e);
+      return null;
     }
-    return userEntity.id;
   }
 }
