@@ -111,7 +111,7 @@ export class User {
     }
   }
 
-  async initialize(userDto: UserCreatDto) {
+  initialize(userDto: UserCreatDto) {
     this.accountData = {
       login: userDto.login,
       email: userDto.email,
