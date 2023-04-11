@@ -25,6 +25,7 @@ import { PaginatorInputType } from '../common/dto/input-models/paginator.input.t
 import { PaginatorParam } from '../common/decorators/paginator-param.decorator';
 import { CheckUserIdBannedIncludeGuard } from '../common/guards/check-user-id-banned-include.guard';
 import { UsersQueryTypeormRepository } from './providers/users.query-typeorm.repository';
+import { User } from './domain/user';
 
 @UseGuards(AuthGuard('basic'))
 @Controller('sa/users')
@@ -50,10 +51,10 @@ export class SaUsersController {
 
   @Post()
   async createUser(@Body() userInputDto: UserInputModel) {
-    const userId = await this.commandBus.execute(
+    const user: User = await this.commandBus.execute(
       new CreateNewUserCommand(userInputDto),
     );
-    return this.usersQueryRepository.getUserById(userId, true);
+    return this.usersQueryRepository.getUserById(user.id, true);
   }
 
   @Get()
