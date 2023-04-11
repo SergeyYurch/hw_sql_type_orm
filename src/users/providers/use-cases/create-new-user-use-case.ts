@@ -4,6 +4,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UserCreatDto } from '../../dto/user-creat.dto';
 import { UsersService } from '../users.service';
 import { UsersTypeOrmRepository } from '../users.typeorm.repository';
+import { User } from '../../domain/user';
 
 export class CreateNewUserCommand {
   constructor(public userInputModel: UserInputModel) {}
@@ -18,7 +19,7 @@ export class CreateNewUserUseCase
     private readonly usersRepository: UsersTypeOrmRepository,
     private readonly usersService: UsersService,
   ) {}
-  async execute(command: CreateNewUserCommand) {
+  async execute(command: CreateNewUserCommand): Promise<User> {
     const { userInputModel } = command;
     const { login, email, password } = userInputModel;
     const passwordSalt = await this.usersService.getPasswordSalt();
