@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { BlogEntity, blogSchemaDb } from '../domain/blog.entity';
+import { Blog, blogSchemaDb } from '../domain/blog';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { BlogsQuerySqlRepository } from './blogs.query.sql.repository';
@@ -18,7 +18,7 @@ export class BlogsSqlRepository {
   }
 
   async createBlogModel() {
-    return new BlogEntity();
+    return new Blog();
   }
 
   async deleteBlog(blogId: string) {
@@ -33,15 +33,13 @@ export class BlogsSqlRepository {
     }
   }
 
-  async save(blog: BlogEntity) {
+  async save(blog: Blog) {
     try {
       if (!blog.id && blog.blogOwnerId) return this.insertNewBlog(blog);
       if (!blog.id && !blog.blogOwnerId)
         return this.insertNewBlogWithoutOwner(blog);
 
-      const blogDb: BlogEntity = await this.blogsQueryRepository.findById(
-        blog.id,
-      );
+      const blogDb: Blog = await this.blogsQueryRepository.findById(blog.id);
 
       //detection of changes in blog corresponding to the blogs table
       const changes = changeDetection(blog, blogDb, blogSchemaDb);
@@ -86,7 +84,7 @@ export class BlogsSqlRepository {
     return blog.id;
   }
 
-  private async insertNewBlog(blog: BlogEntity) {
+  private async insertNewBlog(blog: Blog) {
     try {
       const values = `'${blog.name}', '${blog.blogOwnerId}', '${
         blog.description
@@ -102,7 +100,7 @@ export class BlogsSqlRepository {
     }
   }
 
-  private async insertNewBlogWithoutOwner(blog: BlogEntity) {
+  private async insertNewBlogWithoutOwner(blog: Blog) {
     try {
       const values = `'${blog.name}', '${blog.description}', '${
         blog.websiteUrl
