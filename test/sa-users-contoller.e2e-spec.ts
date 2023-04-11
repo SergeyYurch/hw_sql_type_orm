@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { disconnect } from 'mongoose';
-import { getApp } from '../test/test-utils';
+import { getApp } from './test-utils';
 import {
   user1,
   user10,
@@ -15,7 +15,7 @@ import {
   user7,
   user8,
   user9,
-} from '../test/tsts-input-data';
+} from './tsts-input-data';
 
 describe('UsersController (e2e)', () => {
   let app: INestApplication;
