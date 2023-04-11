@@ -16,15 +16,17 @@ export class RefreshTokenUseCases
   ) {}
 
   async execute(command: RefreshTokenCommand) {
-    const { userId, deviceId } = command;
-    const { accessToken, refreshToken, expiresDate, lastActiveDate } =
-      await this.authService.getTokens(userId, deviceId);
-    const userModel = await this.usersRepository.getUserModel(userId);
-    userModel.refreshTokens(deviceId, expiresDate, lastActiveDate);
-    console.log('RefreshTokenCommand');
-    console.log(userModel);
-    await this.usersRepository.save(userModel);
-    console.log('return from RefreshTokenCommand after save userEntity');
-    return { accessToken, refreshToken, expiresDate };
+    try {
+      const { userId, deviceId } = command;
+      const { accessToken, refreshToken, expiresDate, lastActiveDate } =
+        await this.authService.getTokens(userId, deviceId);
+      const userModel = await this.usersRepository.getUserModel(userId);
+      userModel.refreshTokens(deviceId, expiresDate, lastActiveDate);
+      await this.usersRepository.save(userModel);
+      return { accessToken, refreshToken, expiresDate };
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
   }
 }
