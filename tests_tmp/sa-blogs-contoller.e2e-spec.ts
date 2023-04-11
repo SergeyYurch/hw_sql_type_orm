@@ -108,7 +108,7 @@ describe('UsersController (e2e)', () => {
     expect(blog1InDb.id).toBe(blog1Id);
   });
 
-  // PUT: [HOST]sa/blogs/{id}/bind-with-user/{userId} Bind Blog with user
+  // PUT: [HOST]sa/blogs/{id}/bind-with-user/{userId} Bind BlogEntity with user
   it('PUT: [HOST]/sa/blogs/{:id}/bind-with-user/{:userId} should return code 401 for unauthorized user', async () => {
     await request(app.getHttpServer())
       .put(`/sa/blogs/${blog1Id}/bind-with-user/${user1Id}`)
