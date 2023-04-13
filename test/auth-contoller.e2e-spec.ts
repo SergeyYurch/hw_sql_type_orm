@@ -235,7 +235,7 @@ describe('CommentsController (e2e)', () => {
     );
     const userR = await userQueryRepository.findUserByLoginOrEmail('userR');
     console.log(userR);
-    confirmationCode = (await userQueryRepository.getUserModel(userR.id))
+    confirmationCode = (await userQueryRepository.getUserModelById(userR.id))
       .emailConfirmation.confirmationCode;
     console.log('confirmationCode');
     console.log(confirmationCode);
