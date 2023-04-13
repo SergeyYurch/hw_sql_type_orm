@@ -54,7 +54,7 @@ export class SaUsersController {
     const user: User = await this.commandBus.execute(
       new CreateNewUserCommand(userInputDto),
     );
-    return this.usersQueryRepository.getUserById(user.id, true);
+    return this.usersQueryRepository.getUserViewById(user.id, true);
   }
 
   @Get()
