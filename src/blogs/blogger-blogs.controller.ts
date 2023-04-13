@@ -23,7 +23,6 @@ import { EditPostCommand } from '../posts/providers/use-cases/edit-post-use-case
 import { DeletePostCommand } from '../posts/providers/use-cases/delete-post-use-case';
 import { AccessTokenGuard } from '../common/guards/access-token.guard';
 import { CurrentUserId } from '../common/decorators/current-user-id.param.decorator';
-import { BlogsQuerySqlRepository } from './providers/blogs.query.sql.repository';
 import { PaginatorInputType } from '../common/dto/input-models/paginator.input.type';
 import { BlogOwnerGuard } from '../common/guards/blog-owner.guard';
 import { PaginatorParam } from '../common/decorators/paginator-param.decorator';
@@ -31,12 +30,13 @@ import { CheckPostIdGuard } from '../common/guards/check-post-id.guard';
 import { CheckBlogIdGuard } from '../common/guards/check-blog-id-guard.service';
 import { LoggerGuard } from '../common/guards/logger.guard';
 import { CommentsQuerySqlRepository } from '../comments/providers/comments.query.sql.repository';
+import { BlogsQueryTypeOrmRepository } from './providers/blogs.query.type-orm.repository';
 
 @UseGuards(AccessTokenGuard)
 @Controller('blogger/blogs')
 export class BloggerBlogsController {
   constructor(
-    private blogsQueryRepository: BlogsQuerySqlRepository,
+    private blogsQueryRepository: BlogsQueryTypeOrmRepository,
     private postsQueryRepository: PostsQuerySqlRepository,
     private commentsQueryRepository: CommentsQuerySqlRepository,
     private commandBus: CommandBus,
@@ -83,6 +83,7 @@ export class BloggerBlogsController {
     const blogId = await this.commandBus.execute(
       new CreateNewBlogCommand(blog, userId),
     );
+    if (!blogId) return null;
     return this.blogsQueryRepository.getBlogById(blogId);
   }
 
