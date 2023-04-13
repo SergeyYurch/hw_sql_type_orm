@@ -5,17 +5,23 @@ import { PaginatorViewModel } from '../../common/dto/view-models/paginator.view.
 import { BlogSaViewModel } from '../dto/view-models/blog-sa-view.model';
 import { PaginatorInputType } from '../../common/dto/input-models/paginator.input.type';
 import { BannedUser, Blog } from '../domain/blog';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { BlogDbDtoSql } from '../types/blog-db-dto.sql';
 import { BannedUsersDbDtoSql } from '../types/banned-users-db-dto.sql';
 import { BloggerUserViewModel } from '../dto/view-models/blogger.user.view.model';
 import { BlogsQueryOptionsType } from '../types/blogs-query-options.type';
+import { BlogEntity } from '../entities/blog.entity';
+import { BlogsBannedUserEntity } from '../entities/blogs-banned-user.entity';
 
 @Injectable()
 export class BlogsQueryTypeOrmRepository {
   constructor(
     @InjectDataSource() protected dataSource: DataSource, // @InjectModel(BlogEntity.name) private BlogModel: Model<BlogDocument>,
+    @InjectRepository(BlogEntity)
+    private readonly blogsRepository: Repository<BlogEntity>,
+    @InjectRepository(BlogsBannedUserEntity)
+    private readonly blogsBannedUsersRepository: Repository<BlogsBannedUserEntity>,
   ) {}
 
   async doesBlogIdExist(
@@ -75,7 +81,7 @@ export class BlogsQueryTypeOrmRepository {
     id: string,
     options?: BlogsQueryOptionsType,
   ): Promise<BlogViewModel | null> {
-    const blog = await this.findById(id, options);
+    const blog = await this.getBlogModelById(id, options);
     if (!blog || blog.isBanned) return null;
     return this.getBlogViewModel(blog);
   }
@@ -105,7 +111,7 @@ export class BlogsQueryTypeOrmRepository {
   }
 
   async getBlogOwner(blogId: string) {
-    const blog = await this.findById(blogId);
+    const blog = await this.getBlogModelById(blogId);
     return blog?.blogOwnerId
       ? {
           userId: blog.blogOwnerId,
@@ -177,23 +183,31 @@ export class BlogsQueryTypeOrmRepository {
     return queryBannedUsersResult[0].exists;
   }
 
-  async findById(blogId, options?: BlogsQueryOptionsType): Promise<Blog> {
+  async findBlogEntityById(id: number) {
+    return await this.blogsRepository.findOne({
+      relations: {
+        blogOwner: true,
+        bannedUsers: {
+          user: true,
+        },
+      },
+      where: { id },
+      select: {
+        blogOwner: { id: true },
+        bannedUsers: true,
+      },
+    });
+  }
+
+  async getBlogModelById(
+    blogId,
+    options?: BlogsQueryOptionsType,
+  ): Promise<Blog | null> {
     try {
-      const queryString = `SELECT b.*, u.login as "blogOwnerLogin",
-                  (SELECT COUNT(*)
-                  FROM blogs_banned_users 
-                  WHERE "blogId"=b.id 
-                    AND "isBanned"=true)  as "countBannedUsers"
-               FROM blogs b 
-               LEFT JOIN users u ON u.id=b."blogOwnerId"
-              WHERE b.id=${blogId};`;
-      const queryBlogsResult = await this.dataSource.query(queryString);
-      const blogDb: BlogDbDtoSql = queryBlogsResult[0];
-      let bannedUsers: BannedUser[] = [];
-      if (blogDb.countBannedUsers > 0) {
-        bannedUsers = await this.findBannedUsers(blogDb.id);
-      }
-      return this.castToBlogEntity(blogDb, bannedUsers);
+      const blogEntity = await this.findBlogEntityById(+blogId);
+      console.log(blogEntity);
+      console.log(typeof blogEntity.createdAt);
+      return this.castToBlogModel(blogEntity);
     } catch (e) {
       console.log(e);
       return null;
@@ -248,7 +262,7 @@ export class BlogsQueryTypeOrmRepository {
         let bannedUsers: BannedUser[] = [];
         if (blog.countBannedUsers > 0)
           bannedUsers = await this.findBannedUsers(blog.id);
-        const blogEntity: Blog = await this.castToBlogEntity(blog, bannedUsers);
+        const blogEntity: Blog = await this.castToBlogModel(new BlogEntity());
         blogsEntities.push(blogEntity);
       }
       return { totalCount: totalCount, blogsEntities };
@@ -273,9 +287,43 @@ export class BlogsQueryTypeOrmRepository {
     }));
   }
 
-  castToBlogEntity(blogDb: BlogDbDtoSql, bannedUsers: BannedUser[]) {
-    const blogEntity: Blog = new Blog();
-    blogEntity.setDbData(blogDb, bannedUsers);
-    return blogEntity;
+  castToBlogModel(blogEntity: BlogEntity) {
+    const blogModel: Blog = new Blog();
+    blogModel.id = String(blogEntity.id);
+    blogModel.name = blogEntity.name;
+    blogModel.blogOwnerId = String(blogEntity.blogOwner.id);
+    blogModel.blogOwnerLogin = blogEntity.blogOwner.login;
+    blogModel.description = blogEntity.description;
+    blogModel.websiteUrl = blogEntity.websiteUrl;
+    blogModel.createdAt = +blogEntity.createdAt;
+    blogModel.isMembership = blogEntity.isMembership;
+    blogModel.isBanned = blogEntity.isBanned;
+    blogModel.banDate = +blogEntity.banDate;
+    if (blogEntity.bannedUsers) {
+      blogModel.bannedUsers = blogEntity.bannedUsers.map((bu) => ({
+        id: String(bu.userId),
+        banDate: bu.banDate,
+        banReason: bu.banReason,
+        login: bu.user.login,
+      }));
+    } else {
+      blogModel.bannedUsers = [];
+    }
+    return blogModel;
+  }
+
+  async test(blogId: string) {
+    const blogEntity: BlogEntity = new BlogEntity();
+    blogEntity.name = 'blog.name';
+    blogEntity.description = 'blog.description';
+    blogEntity.websiteUrl = 'blog.websiteUrl';
+    blogEntity.createdAt = 4444444444444;
+    blogEntity.isMembership = false;
+    blogEntity.isBanned = false;
+    blogEntity.banDate = 2222222222222222;
+
+    const result = await this.blogsRepository.save(blogEntity);
+    console.log(result);
+    return result;
   }
 }
