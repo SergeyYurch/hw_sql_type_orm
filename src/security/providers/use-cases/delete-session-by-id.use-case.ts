@@ -19,7 +19,7 @@ export class DeleteSessionByIdUseCase
   async execute(command: DeleteSessionByIdCommand) {
     const { userId, deviceId } = command;
     await this.securityService.validateOwner(userId, deviceId);
-    const user = await this.usersQueryRepository.findById(userId);
+    const user = await this.usersQueryRepository.getUserModelById(userId);
     user.deleteSession(deviceId);
     await this.userRepository.save(user);
     return user.getSessions();
