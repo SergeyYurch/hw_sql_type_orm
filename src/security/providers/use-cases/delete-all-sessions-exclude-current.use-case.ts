@@ -16,7 +16,9 @@ export class DeleteAllSessionExcludeCurrentUseCase
 
   async execute(command: DeleteAllSessionExcludeCurrentCommand) {
     const { userId, deviceId } = command;
-    const user = await this.usersQueryTypeormRepository.findById(userId);
+    const user = await this.usersQueryTypeormRepository.getUserModelById(
+      userId,
+    );
     user.deleteSessionsExclude(deviceId);
     await this.usersRepository.save(user);
     return user.getSessions();
