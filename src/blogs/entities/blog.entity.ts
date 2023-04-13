@@ -20,14 +20,14 @@ export class BlogEntity {
   websiteUrl: string;
   @Column({ type: 'bigint' })
   createdAt: number;
-  @Column()
+  @Column({ default: false })
   isMembership: boolean;
-  @Column()
+  @Column({ default: false })
   isBanned: boolean;
-  @Column({ type: 'bigint' })
+  @Column({ type: 'bigint', nullable: true })
   banDate: number | null;
-  @ManyToOne(() => UserEntity)
-  blogOwner: string;
+  @ManyToOne(() => UserEntity, { nullable: true })
+  blogOwner: UserEntity;
   @OneToMany(() => BlogsBannedUserEntity, (bu) => bu.blog)
   bannedUsers: BlogsBannedUserEntity[];
 }
