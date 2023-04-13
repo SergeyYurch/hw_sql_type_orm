@@ -1,9 +1,9 @@
 import { BlogInputModel } from '../../dto/input-models/blog.input.model';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { BlogCreatedDto } from '../../dto/blog-created.dto';
-import { BlogsQuerySqlRepository } from '../blogs.query.sql.repository';
-import { BlogsSqlRepository } from '../blogs.sql.repository';
-import { UsersQuerySqlRepository } from '../../../users/providers/users.query-sql.repository';
+import { BlogsTypeOrmRepository } from '../blogs.type-orm.repository';
+import { BlogsQueryTypeOrmRepository } from '../blogs.query.type-orm.repository';
+import { UsersQueryTypeormRepository } from '../../../users/providers/users.query-typeorm.repository';
 
 export class CreateNewBlogCommand {
   constructor(public inputBlogDto: BlogInputModel, public userId?: string) {}
@@ -14,17 +14,17 @@ export class CreateNewBlogUseCase
   implements ICommandHandler<CreateNewBlogCommand>
 {
   constructor(
-    private blogRepository: BlogsSqlRepository,
-    private blogsQueryRepository: BlogsQuerySqlRepository,
-    private usersQueryRepository: UsersQuerySqlRepository,
+    private blogRepository: BlogsTypeOrmRepository,
+    private blogsQueryRepository: BlogsQueryTypeOrmRepository,
+    private usersQueryRepository: UsersQueryTypeormRepository,
   ) {}
 
   async execute(command: CreateNewBlogCommand) {
     const { inputBlogDto, userId } = command;
     let login: string;
     if (userId)
-      login = (await this.usersQueryRepository.getUserById(userId))?.login;
-    const createdBlog = await this.blogRepository.createBlogModel();
+      login = (await this.usersQueryRepository.getUserViewById(userId))?.login;
+    const blogModel = await this.blogRepository.createBlogModel();
     const createdBlogData: BlogCreatedDto = {
       name: inputBlogDto.name,
       description: inputBlogDto.description,
@@ -32,7 +32,7 @@ export class CreateNewBlogUseCase
       blogOwnerId: userId || null,
       blogOwnerLogin: login || null,
     };
-    createdBlog.initial(createdBlogData);
-    return await this.blogRepository.save(createdBlog);
+    blogModel.initial(createdBlogData);
+    return await this.blogRepository.save(blogModel);
   }
 }
