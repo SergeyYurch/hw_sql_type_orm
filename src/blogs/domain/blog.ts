@@ -71,12 +71,15 @@ export class Blog {
 
   banUser(id: string, login: string, banReason: string, isBanned: boolean) {
     if (isBanned) {
-      this.bannedUsers.push({
-        id,
-        login,
-        banDate: Date.now(),
-        banReason,
-      });
+      const bannedIds = this.bannedUsers.map((bu) => bu.id);
+      if (!bannedIds.includes(id)) {
+        this.bannedUsers.push({
+          id,
+          login,
+          banDate: Date.now(),
+          banReason,
+        });
+      }
     }
     if (!isBanned) {
       this.bannedUsers = this.bannedUsers.filter((item) => item.id !== id);
