@@ -72,19 +72,6 @@ export class UsersQueryTypeormRepository {
     ]);
   }
 
-  // async findUserByDeviceId(deviceId: string) {
-  //   try {
-  //     const deviceSessionsEntity = await this.deviceSessionRepository
-  //       .createQueryBuilder('ds')
-  //       .where(`ds.deviceId = '${deviceId}'`)
-  //       .getOne();
-  //     return await this.findById(String(deviceSessionsEntity.user.id));
-  //   } catch (e) {
-  //     console.log(e);
-  //     return null;
-  //   }
-  // }
-
   async findUserByEmailConfirmationCode(confirmationCode: string) {
     try {
       const userEntity = await this.usersRepository.findOne({
@@ -108,28 +95,33 @@ export class UsersQueryTypeormRepository {
         .createQueryBuilder('pri')
         .where(`pri.recoveryCode='${recoveryCode}'`)
         .getOne();
-      return await this.findById(String(priEntity.userId));
+      return await this.getUserModelById(String(priEntity.userId));
     } catch (e) {
       console.log(e);
       return null;
     }
   }
 
-  async findById(id: string): Promise<User | null> {
+  async getUserEntityById(id: number): Promise<UserEntity | null> {
     console.log(`findById- typeOrm: ${id}`);
-    const userEntity: UserEntity = await this.usersRepository.findOne({
+    return await this.usersRepository.findOne({
       relations: {
         deviceSessions: true,
         passwordRecoveryInformation: true,
       },
-      where: { id: +id },
+      where: { id },
     });
+  }
+
+  async getUserModelById(id: string): Promise<User | null> {
+    console.log(`findById- typeOrm: ${id}`);
+    const userEntity: UserEntity = await this.getUserEntityById(+id);
     return userEntity ? this.castToUserModel(userEntity) : null;
   }
 
-  async getUserModel(id: string) {
-    return this.findById(id);
-  }
+  // async getUserModelById(id: string) {
+  //   return this.getUserModelById(id);
+  // }
 
   async findOne(
     condition: FindOptionsWhere<UserEntity> | FindOptionsWhere<UserEntity>[],
@@ -210,8 +202,8 @@ export class UsersQueryTypeormRepository {
     }
   }
 
-  async getUserById(id: string, withBanStatus?: boolean) {
-    const user = await this.findById(id);
+  async getUserViewById(id: string, withBanStatus?: boolean) {
+    const user = await this.getUserModelById(id);
     if (!user) return null;
     return withBanStatus
       ? this.getUserSaViewModel(user)
@@ -303,7 +295,6 @@ export class UsersQueryTypeormRepository {
       expirationDate:
         +userEntity.passwordRecoveryInformation?.expirationDate || null,
     };
-    debugger;
     if (userEntity.deviceSessions && Array.isArray(userEntity.deviceSessions)) {
       user.deviceSessions = userEntity.deviceSessions.map((d) => ({
         deviceId: d.deviceId,
@@ -318,7 +309,7 @@ export class UsersQueryTypeormRepository {
   }
 
   async getMeInfo(userId: string) {
-    const user = await this.findById(userId);
+    const user = await this.getUserModelById(userId);
     if (!user) return null;
     return this.getMeViewModel(user);
   }
