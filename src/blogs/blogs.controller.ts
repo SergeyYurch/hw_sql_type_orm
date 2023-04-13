@@ -4,14 +4,14 @@ import { PostViewModel } from '../posts/dto/view-models/post.view.model';
 import { PaginatorViewModel } from '../common/dto/view-models/paginator.view.model';
 import { PostsQuerySqlRepository } from '../posts/providers/posts.query.sql.repository';
 import { CurrentUserId } from '../common/decorators/current-user-id.param.decorator';
-import { BlogsQuerySqlRepository } from './providers/blogs.query.sql.repository';
 import { CheckBlogIdGuard } from '../common/guards/check-blog-id-guard.service';
 import { PaginatorParam } from '../common/decorators/paginator-param.decorator';
+import { BlogsQueryTypeOrmRepository } from './providers/blogs.query.type-orm.repository';
 
 @Controller('blogs')
 export class BlogsController {
   constructor(
-    private blogsQueryRepository: BlogsQuerySqlRepository,
+    private blogsQueryRepository: BlogsQueryTypeOrmRepository,
     private postsQueryRepository: PostsQuerySqlRepository,
   ) {}
 
@@ -43,9 +43,13 @@ export class BlogsController {
     );
   }
 
-  @UseGuards(CheckBlogIdGuard)
+  //@UseGuards(CheckBlogIdGuard)
   @Get(':blogId')
   async getBlog(@Param('blogId') blogId: string) {
     return await this.blogsQueryRepository.getBlogById(blogId);
+  }
+  @Get('test/:blogId')
+  async test(@Param('blogId') blogId: string) {
+    return await this.blogsQueryRepository.test(blogId);
   }
 }
