@@ -11,7 +11,7 @@ export class GetSessionsByUserIdUseCase
   constructor(private userRepository: UsersQueryTypeormRepository) {}
 
   async execute(command: GetSessionsByUserIdCommand) {
-    const user = await this.userRepository.findById(command.userId);
+    const user = await this.userRepository.getUserModelById(command.userId);
     const sessions = user.getSessions();
     console.log(`[GetSessionsByUserIdUseCase]: sessions:${sessions}`);
     return sessions;
