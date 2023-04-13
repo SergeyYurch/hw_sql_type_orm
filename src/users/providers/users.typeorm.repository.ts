@@ -21,7 +21,7 @@ export class UsersTypeOrmRepository {
   ) {}
 
   async getUserModel(userId: string) {
-    return this.userQueryRepository.findById(userId);
+    return this.userQueryRepository.getUserModelById(userId);
   }
 
   createUserModel() {
