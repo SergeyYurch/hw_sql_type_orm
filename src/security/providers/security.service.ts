@@ -5,7 +5,7 @@ import { UsersQueryTypeormRepository } from '../../users/providers/users.query-t
 export class SecurityService {
   constructor(private userQueryRepository: UsersQueryTypeormRepository) {}
   async validateOwner(userId: string, deviceId: string) {
-    const user = await this.userQueryRepository.findById(userId);
+    const user = await this.userQueryRepository.getUserModelById(userId);
     const result = user.validateIsUserOwnerSession(deviceId);
     if (!result) {
       throw new ForbiddenException('Forbidden');
