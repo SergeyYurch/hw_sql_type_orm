@@ -1,21 +1,30 @@
 import { Injectable } from '@nestjs/common';
-import { Blog, blogSchemaDb } from '../domain/blog';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
-import { BlogsQuerySqlRepository } from './blogs.query.sql.repository';
+import { Blog } from '../domain/blog';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { ERR_SAVE_TO_DB } from '../constants/blogs.constant';
-import { changeDetection } from '../../common/helpers/change-detection';
 import { BlogsQueryTypeOrmRepository } from './blogs.query.type-orm.repository';
+import { BlogEntity } from '../entities/blog.entity';
+import { BlogsBannedUserEntity } from '../entities/blogs-banned-user.entity';
+import { UserEntity } from '../../users/entities/user.entity';
+import { UsersQueryTypeormRepository } from '../../users/providers/users.query-typeorm.repository';
 
 @Injectable()
 export class BlogsTypeOrmRepository {
   constructor(
-    @InjectDataSource() protected dataSource: DataSource,
     private blogsQueryRepository: BlogsQueryTypeOrmRepository,
+    private usersQueryRepository: UsersQueryTypeormRepository,
+    @InjectDataSource() protected dataSource: DataSource,
+    @InjectRepository(BlogEntity)
+    private readonly blogsRepository: Repository<BlogEntity>,
+    @InjectRepository(BlogsBannedUserEntity)
+    private readonly blogsBannedUsersRepository: Repository<BlogsBannedUserEntity>,
+    @InjectRepository(UserEntity)
+    private readonly usersRepository: Repository<UserEntity>,
   ) {}
 
   async getBlogModel(id: string) {
-    return this.blogsQueryRepository.findById(id);
+    return this.blogsQueryRepository.getBlogModelById(id);
   }
 
   async createBlogModel() {
@@ -36,84 +45,61 @@ export class BlogsTypeOrmRepository {
 
   async save(blog: Blog) {
     try {
-      if (!blog.id && blog.blogOwnerId) return this.insertNewBlog(blog);
-      if (!blog.id && !blog.blogOwnerId)
-        return this.insertNewBlogWithoutOwner(blog);
-
-      const blogDb: Blog = await this.blogsQueryRepository.findById(blog.id);
-
-      //detection of changes in blog corresponding to the blogs table
-      const changes = changeDetection(blog, blogDb, blogSchemaDb);
-      let queryStringChanges = '';
-      for (const ch of changes) {
-        const setItems = [];
-        for (const cf of ch.changedFields) {
-          setItems.push(`${cf.field}=${cf.value}`);
-        }
-        const subQuery = `UPDATE "${ch.table}" SET ${setItems.join(
-          ',',
-        )} WHERE "id"=${blog.id};`;
-        queryStringChanges += subQuery;
+      let blogEntity: BlogEntity;
+      if (blog.id) {
+        blogEntity = await this.blogsQueryRepository.findBlogEntityById(
+          +blog.id,
+        );
+      } else {
+        blogEntity = new BlogEntity();
       }
-      await this.dataSource.query(queryStringChanges);
-      //detection of changes in banned users array
-      let bannedUserQueryString = '';
-      if (blogDb.bannedUsers.length > 0 || blog.bannedUsers.length > 0) {
-        const bannedUsersIdInDB = blogDb.bannedUsers.map((u) => u?.id);
-        const bannedUsersIdNew = blog.bannedUsers.map((u) => u?.id);
-        blogDb.bannedUsers.forEach((bu) => {
-          if (!bannedUsersIdNew.includes(bu.id)) {
-            bannedUserQueryString += `
-                        DELETE FROM "blogs_banned_users" 
-                        WHERE "blogId"=${blog.id} AND "userId"=${bu.id};`;
+      blogEntity.name = blog.name;
+      blogEntity.description = blog.description;
+      blogEntity.websiteUrl = blog.websiteUrl;
+      blogEntity.createdAt = blog.createdAt;
+      blogEntity.isMembership = blog.isMembership;
+      blogEntity.isBanned = blog.isBanned;
+      blogEntity.banDate = blog.banDate;
+      blogEntity.blogOwner = await this.usersQueryRepository.getUserEntityById(
+        +blog.blogOwnerId,
+      );
+      await this.blogsRepository.save(blogEntity);
+      let actualBannedUsersList = [];
+      if (blog.bannedUsers?.length > 0) {
+        actualBannedUsersList = blog.bannedUsers.map((b) => +b.id);
+      }
+      let bannedUserInDb = [];
+      if (blogEntity.bannedUsers?.length > 0) {
+        bannedUserInDb = blogEntity.bannedUsers.map((b) => b.user.id);
+        blogEntity.bannedUsers.map(async (bu) => {
+          if (!actualBannedUsersList.includes(bu.userId)) {
+            await this.blogsBannedUsersRepository
+              .createQueryBuilder('bu')
+              .delete()
+              .from(BlogsBannedUserEntity)
+              .where('userId=:userId', { userId: +bu.userId })
+              .andWhere('blogId=blogId', { blogId: blogEntity.id })
+              .execute();
           }
         });
-        blog.bannedUsers.forEach((bu) => {
-          if (!bannedUsersIdInDB.includes(bu.id)) {
-            bannedUserQueryString += `
-                        INSERT INTO "blogs_banned_users"("userId", "banReason", "blogId", "isBanned", "banDate")
-                        VALUES ('${bu.id}', '${bu.banReason}', '${blog.id}', true, '${bu.banDate}');`;
+      }
+      if (blog.bannedUsers?.length > 0) {
+        if (!blogEntity.bannedUsers) blogEntity.bannedUsers = [];
+        blog.bannedUsers.map(async (b) => {
+          if (!bannedUserInDb.includes(+b.id)) {
+            const bannedUser = new BlogsBannedUserEntity();
+            bannedUser.userId = +b.id;
+            bannedUser.banReason = b.banReason;
+            bannedUser.banDate = b.banDate;
+            await this.blogsBannedUsersRepository.save(bannedUser);
+            blogEntity.bannedUsers.push(bannedUser);
           }
         });
-        console.log(bannedUserQueryString);
-        await this.dataSource.query(bannedUserQueryString);
       }
+      return blogEntity.id;
     } catch (e) {
       console.log(e);
       return ERR_SAVE_TO_DB;
-    }
-    return blog.id;
-  }
-
-  private async insertNewBlog(blog: Blog) {
-    try {
-      const values = `'${blog.name}', '${blog.blogOwnerId}', '${
-        blog.description
-      }', '${blog.websiteUrl}', '${Date.now()}', '${blog.isMembership}'`;
-      const queryString = `INSERT
-            INTO blogs ("name", "blogOwnerId", "description", "websiteUrl", "createdAt", "isMembership")
-            VALUES (${values}) RETURNING id`;
-      const result = await this.dataSource.query(queryString);
-      return result[0].id;
-    } catch (e) {
-      console.log(e);
-      return null;
-    }
-  }
-
-  private async insertNewBlogWithoutOwner(blog: Blog) {
-    try {
-      const values = `'${blog.name}', '${blog.description}', '${
-        blog.websiteUrl
-      }', '${Date.now()}', '${blog.isMembership}'`;
-      const queryString = `INSERT
-            INTO blogs ("name", "description", "websiteUrl", "createdAt", "isMembership")
-            VALUES (${values}) RETURNING id`;
-      const result = await this.dataSource.query(queryString);
-      return result[0].id;
-    } catch (e) {
-      console.log(e);
-      return null;
     }
   }
 }
