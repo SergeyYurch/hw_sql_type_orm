@@ -4,11 +4,11 @@ import {
   ExecutionContext,
   NotFoundException,
 } from '@nestjs/common';
-import { UsersQuerySqlRepository } from '../../users/providers/users.query-sql.repository';
+import { UsersQueryTypeormRepository } from '../../users/providers/users.query-typeorm.repository';
 
 @Injectable()
 export class CheckUserIdGuard implements CanActivate {
-  constructor(private usersQueryRepository: UsersQuerySqlRepository) {}
+  constructor(private usersQueryRepository: UsersQueryTypeormRepository) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     console.log('CheckUserIdGuard');
