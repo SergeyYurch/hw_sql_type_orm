@@ -1,8 +1,8 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { PostsQuerySqlRepository } from '../../../posts/providers/posts.query.sql.repository';
 import { CreatedCommentDto } from '../../dto/created-comment.dto';
-import { UsersQuerySqlRepository } from '../../../users/providers/users.query-sql.repository';
 import { CommentsSqlRepository } from '../comments.sql.repository';
+import { UsersQueryTypeormRepository } from '../../../users/providers/users.query-typeorm.repository';
+import { PostsQueryTypeOrmRepository } from '../../../posts/providers/posts.query.type-orm.repository';
 
 export class CreateCommentCommand {
   constructor(
@@ -17,14 +17,14 @@ export class CreateCommentUseCase
   implements ICommandHandler<CreateCommentCommand>
 {
   constructor(
-    protected usersQueryRepository: UsersQuerySqlRepository,
-    protected postsQueryRepository: PostsQuerySqlRepository,
+    protected usersQueryRepository: UsersQueryTypeormRepository,
+    protected postsQueryRepository: PostsQueryTypeOrmRepository,
     protected commentsRepository: CommentsSqlRepository,
   ) {}
 
   async execute(command: CreateCommentCommand) {
     const { commentatorId, postId, content } = command;
-    const commentator = await this.usersQueryRepository.getUserById(
+    const commentator = await this.usersQueryRepository.getUserModelById(
       commentatorId,
     );
     const post = await this.postsQueryRepository.getPostById(postId);
@@ -34,7 +34,7 @@ export class CreateCommentUseCase
     const createdComment: CreatedCommentDto = {
       content,
       commentatorId,
-      commentatorLogin: commentator.login,
+      commentatorLogin: commentator.accountData.login,
       blogId: post.blogId,
       blogName: post.blogName,
       blogOwnerId,
