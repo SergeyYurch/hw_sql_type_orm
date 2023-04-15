@@ -116,7 +116,7 @@ export class BloggerBlogsController {
     const postId = await this.commandBus.execute(
       new CreateNewPostCommand(userId, blogId, blogPostInputModel),
     );
-    return await this.postsQueryRepository.getPostById(postId);
+    return await this.postsQueryRepository.getPostViewModelById(postId);
   }
 
   @UseGuards(BlogOwnerGuard)
