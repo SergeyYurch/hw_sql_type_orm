@@ -4,7 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { pagesCount } from '../../common/helpers/helpers';
 import { PaginatorInputType } from '../../common/dto/input-models/paginator.input.type';
 import { LikeStatusType } from '../../common/dto/input-models/like.input.model';
-import { Comment, CommentDocument } from '../domain/comment.schema';
+import { Comment, CommentDocument } from '../mongo-shema/comment.schema';
 import { CommentViewModel } from '../dto/view-models/comment.view.model';
 import { GetCommentOptionTypes } from '../types/get-comment-option.types';
 import { CommentsSearchParamsType } from '../types/comments-search-params.type';
