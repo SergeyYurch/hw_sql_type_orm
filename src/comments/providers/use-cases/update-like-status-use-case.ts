@@ -2,7 +2,7 @@ import { LikeStatusType } from '../../../common/dto/input-models/like.input.mode
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UsersQuerySqlRepository } from '../../../users/providers/users.query-sql.repository';
 import { CommentsSqlRepository } from '../comments.sql.repository';
-import { LikeDto } from '../../../common/dto/like.dto';
+import { LikeDto } from '../../../likes/dto/like.dto';
 
 export class UpdateLikeStatusCommand {
   constructor(
