@@ -2,15 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { Post } from '../domain/post';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { PostsQuerySqlRepository } from './posts.query.sql.repository';
 import { changeDetection } from '../../common/helpers/helpers';
 import { LikesQuerySqlRepository } from '../../common/providers/likes.query.sql.repository';
+import { PostsQueryTypeOrmRepository } from './posts.query.type-orm.repository';
 
 @Injectable()
 export class PostsSqlRepository {
   constructor(
     @InjectDataSource() protected dataSource: DataSource,
-    private postQueryRepository: PostsQuerySqlRepository,
+    private postQueryRepository: PostsQueryTypeOrmRepository,
     private likesQuerySqlRepository: LikesQuerySqlRepository,
   ) {}
 
@@ -27,25 +27,23 @@ export class PostsSqlRepository {
     }
   }
   async getPostModelById(postId: string, userId?: string) {
-    return this.postQueryRepository.getPostModel(postId, userId);
+    return this.postQueryRepository.getPostModelById(postId, userId);
   }
 
   async save(post: Post) {
     try {
       if (!post.id) return this.insertNewPost(post);
       //change postData detection
-      const postDb = await this.postQueryRepository.getPostModel(post.id);
+      const postDb = await this.postQueryRepository.getPostModelById(post.id);
       const newData = {
         title: post.title,
         shortDescription: post.shortDescription,
         content: post.content,
-        isBanned: post.isBanned,
       };
       const dbData = {
         title: postDb.title,
         shortDescription: postDb.shortDescription,
         content: postDb.content,
-        isBanned: postDb.isBanned,
       };
       const changes = changeDetection(newData, dbData);
       let queryString = '';
