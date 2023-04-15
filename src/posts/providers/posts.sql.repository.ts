@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PostEntity } from '../domain/post.entity';
+import { Post } from '../domain/post';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { PostsQuerySqlRepository } from './posts.query.sql.repository';
@@ -15,7 +15,7 @@ export class PostsSqlRepository {
   ) {}
 
   async createModel() {
-    return new PostEntity();
+    return new Post();
   }
   async delete(postId: string) {
     try {
@@ -30,7 +30,7 @@ export class PostsSqlRepository {
     return this.postQueryRepository.getPostModel(postId, userId);
   }
 
-  async save(post: PostEntity) {
+  async save(post: Post) {
     try {
       if (!post.id) return this.insertNewPost(post);
       //change postData detection
@@ -77,7 +77,7 @@ export class PostsSqlRepository {
     return result[0].id;
   }
 
-  private async updateLike(post: PostEntity) {
+  private async updateLike(post: Post) {
     try {
       const { likeStatus, userId } = post.updatedLike;
       const likeInDb = await this.likesQuerySqlRepository.findLike(userId, {
