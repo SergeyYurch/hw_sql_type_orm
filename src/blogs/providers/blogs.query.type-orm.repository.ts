@@ -262,6 +262,8 @@ export class BlogsQueryTypeOrmRepository {
   }
 
   castToBlogModel(blogEntity: BlogEntity) {
+    console.log('castToBlogModel was started');
+    console.log(blogEntity);
     const blogModel: Blog = new Blog();
     blogModel.id = String(blogEntity.id);
     blogModel.name = blogEntity.name;
