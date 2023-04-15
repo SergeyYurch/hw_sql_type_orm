@@ -7,12 +7,14 @@ import { UserEntity } from '../../users/entities/user.entity';
 import { BlogEntity } from '../../blogs/entities/blog.entity';
 import { PostEntity } from '../entities/post.entity';
 import { PostsQueryTypeOrmRepository } from './posts.query.type-orm.repository';
+import { LikesTypeOrmRepository } from '../../likes/providers/likes.type-orm.repository';
 
 @Injectable()
 export class PostsTypeOrmRepository {
   constructor(
     private likesQuerySqlRepository: LikesQuerySqlRepository,
     private postsQueryTypeOrmRepository: PostsQueryTypeOrmRepository,
+    private likesTypeOrmRepository: LikesTypeOrmRepository,
     @InjectDataSource() protected dataSource: DataSource,
     @InjectRepository(UserEntity)
     private readonly usersRepository: Repository<UserEntity>,
@@ -55,39 +57,12 @@ export class PostsTypeOrmRepository {
       postEntity.createdAt = post.createdAt;
       postEntity.bloggerId = +post.blogger.id;
       postEntity.blogId = +post.blog.id;
-      return this.postsRepository.save(postEntity);
+      await this.postsRepository.save(postEntity);
+      if (post.updatedLike) await this.likesTypeOrmRepository.updateLike(post);
+      return postEntity.id.toString();
     } catch (e) {
       console.log(e);
       return null;
-    }
-  }
-
-  private async updateLike(post: Post) {
-    try {
-      const { likeStatus, userId } = post.updatedLike;
-      const likeInDb = await this.likesQuerySqlRepository.findLike(userId, {
-        postId: post.id,
-      });
-      if (likeInDb) {
-        const queryString = `
-        UPDATE likes 
-        SET "likeStatus"='${likeStatus}'
-        WHERE "userId"=${userId} AND "postId"=${post.id}
-        `;
-        await this.dataSource.query(queryString);
-        return true;
-      }
-      const values = `'${userId}', '${likeStatus}', '${Date.now()}', '${
-        post.id
-      }'`;
-      const queryString = `INSERT INTO likes
-        ("userId", "likeStatus", "addedAt", "postId")
-        VALUES (${values});`;
-      await this.dataSource.query(queryString);
-      return true;
-    } catch (e) {
-      console.log(e);
-      return false;
     }
   }
 }
