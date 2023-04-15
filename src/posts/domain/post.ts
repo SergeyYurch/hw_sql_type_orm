@@ -6,7 +6,7 @@ import { LikeDto } from '../../common/dto/like.dto';
 import { LikesCountsType } from '../../common/types/likes-counts.type';
 import { LikesInfoType } from '../../common/types/likes-info.type';
 
-export class PostEntity {
+export class Post {
   id: string;
   title: string;
   shortDescription: string;
