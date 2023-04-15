@@ -1,12 +1,11 @@
 import { PostCreateDto } from '../dto/post-create.dto';
 import { PostUpdateDto } from '../dto/post-update.dto';
-import { LikeType } from '../../common/types/like.type';
 import { LikeDetailsViewModel } from '../../common/dto/view-models/like-details.view.model';
-import { LikeDto } from '../../common/dto/like.dto';
 import { LikesCountsType } from '../../common/types/likes-counts.type';
 import { LikesInfoType } from '../../common/types/likes-info.type';
 import { Blog } from '../../blogs/domain/blog';
 import { User } from '../../users/domain/user';
+import { Like } from '../../likes/domain/like';
 
 export class Post {
   id: string;
@@ -18,7 +17,7 @@ export class Post {
   createdAt: number;
   newestLikes: LikeDetailsViewModel[];
   likesCounts: LikesCountsType;
-  updatedLike: LikeType | null;
+  updatedLike: Like | null;
   likes: LikesInfoType;
 
   constructor() {
@@ -48,16 +47,5 @@ export class Post {
     this.title = postDto.title;
     this.shortDescription = postDto.shortDescription;
     this.content = postDto.content;
-  }
-
-  updateLikeStatus(like: LikeDto) {
-    if (!this.updatedLike) {
-      this.updatedLike = {
-        ...like,
-      };
-      return true;
-    }
-    this.updatedLike.likeStatus = like.likeStatus;
-    return true;
   }
 }
