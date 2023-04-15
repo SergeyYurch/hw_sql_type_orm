@@ -79,7 +79,6 @@ import { DeleteAllSessionExcludeCurrentUseCase } from './security/providers/use-
 import { GetSessionsByUserIdUseCase } from './security/providers/use-cases/get-sessions-by-user-id.use-case';
 import { BlogsSqlRepository } from './blogs/providers/blogs.sql.repository';
 import { BlogsQuerySqlRepository } from './blogs/providers/blogs.query.sql.repository';
-import { PostsSqlRepository } from './posts/providers/posts.sql.repository';
 import { PostsQueryRepository } from './posts/providers/posts.query.repository';
 import { ValidateUserDeviceSessionUseCase } from './auth/providers/use-cases/validate-user-device-session.use-case';
 import { ValidateUserUseCase } from './auth/providers/use-cases/validate-user.use-case';
@@ -101,6 +100,8 @@ import { CommentEntity } from './comments/entities/comment.entity';
 import { PostsQueryTypeOrmRepository } from './posts/providers/posts.query.type-orm.repository';
 import { PostsTypeOrmRepository } from './posts/providers/posts.type-orm.repository';
 import { CommentsTypeOrmRepository } from './comments/providers/comments.type-orm.repository';
+import { LikesQueryTypeOrmRepository } from './likes/providers/likes.query.type-orm.repository';
+import { LikesTypeOrmRepository } from './likes/providers/likes.type-orm.repository';
 
 const configModule = ConfigModule.forRoot();
 const userEntities = [
@@ -270,7 +271,8 @@ export const options: TypeOrmModuleOptions =
     AccessTokenStrategy,
     MailService,
     LikesQuerySqlRepository,
-
+    LikesQueryTypeOrmRepository,
+    LikesTypeOrmRepository,
     //decorators
     IsBlogExistConstraint,
     IsUniqLoginOrEmailConstraint,
@@ -296,7 +298,6 @@ export const options: TypeOrmModuleOptions =
     //posts
     PostsRepository,
     BlogsQueryRepository,
-    PostsSqlRepository,
     PostsQueryRepository,
     PostsQueryTypeOrmRepository,
     PostsTypeOrmRepository,
