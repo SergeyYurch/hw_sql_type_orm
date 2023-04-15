@@ -4,7 +4,7 @@ import { LikesCountsType } from '../../common/types/likes-counts.type';
 import { LikeType } from '../../common/types/like.type';
 import { LikeDto } from '../../common/dto/like.dto';
 
-export class CommentEntity {
+export class Comment {
   id: string;
   content: string;
   postId: string;
@@ -52,9 +52,6 @@ export class CommentEntity {
     this.updatedAt = Date.now();
   }
 
-  // banComment(isBanned: boolean) {
-  //   this.isBanned = isBanned;
-  // }
   updateLikeStatus(like: LikeDto) {
     if (!this.newLike) {
       this.newLike = {
