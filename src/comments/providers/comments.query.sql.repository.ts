@@ -8,7 +8,7 @@ import { BloggerCommentViewModel } from '../dto/view-models/blogger-comment.view
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { CommentSqlDbType } from '../types/comment-sql-db.type';
-import { CommentEntity } from '../domain/comment.entity';
+import { Comment } from '../domain/comment';
 import { LikesQuerySqlRepository } from '../../common/providers/likes.query.sql.repository';
 import { LikeStatusType } from '../../common/dto/input-models/like.input.model';
 
@@ -116,7 +116,7 @@ export class CommentsQuerySqlRepository {
   async findById(
     commentId: string,
     options?: GetCommentOptionTypes,
-  ): Promise<CommentEntity> {
+  ): Promise<Comment> {
     console.log(`[findById]`);
     const userId = options?.userId || '0';
     let condition = `WHERE c.id=${commentId} AND b."isBanned"=false AND u."isBanned"=false`;
@@ -160,7 +160,7 @@ export class CommentsQuerySqlRepository {
     paginatorParams: PaginatorInputType,
     searchParams: CommentsSearchParamsType,
     options?: GetCommentOptionTypes,
-  ): Promise<{ totalCount: number; commentEntities: CommentEntity[] }> {
+  ): Promise<{ totalCount: number; commentEntities: Comment[] }> {
     const { sortBy, sortDirection, pageSize, pageNumber } = paginatorParams;
     const { bannedUserInclude } = options;
     const userId = options?.userId || '0';
@@ -218,7 +218,7 @@ export class CommentsQuerySqlRepository {
       queryString,
     );
 
-    const commentEntities: CommentEntity[] = [];
+    const commentEntities: Comment[] = [];
     for (const comment of comments) {
       commentEntities.push(
         await this.castToEntity(comment, {
@@ -254,7 +254,7 @@ export class CommentsQuerySqlRepository {
   //   };
   // }
 
-  getCommentViewModel(comment: CommentEntity): CommentViewModel {
+  getCommentViewModel(comment: Comment): CommentViewModel {
     // const likesInfo = {
     //   likesCount: comment.likesCounts.likesCount,
     //   dislikesCount: comment.likesCounts.dislikesCount,
@@ -272,7 +272,7 @@ export class CommentsQuerySqlRepository {
     };
   }
 
-  getBloggerCommentViewModel(comment: CommentEntity): BloggerCommentViewModel {
+  getBloggerCommentViewModel(comment: Comment): BloggerCommentViewModel {
     // const likesInfo = this.getLikesInfo(comment);
     return {
       id: comment.id,
@@ -299,7 +299,7 @@ export class CommentsQuerySqlRepository {
   ) {
     const likeRequestingUserId = options.likeRequestingUserId;
     const { likesInclude } = options;
-    const commentEntity: CommentEntity = new CommentEntity();
+    const commentEntity: Comment = new Comment();
     commentEntity.id = comment.id;
     commentEntity.content = comment.content;
     commentEntity.postId = comment.postId;
