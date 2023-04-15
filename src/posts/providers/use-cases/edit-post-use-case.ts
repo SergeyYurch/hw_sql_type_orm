@@ -1,7 +1,5 @@
 import { BlogPostInputModel } from '../../../blogs/dto/input-models/blog-post.input.model';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { PostsQuerySqlRepository } from '../posts.query.sql.repository';
-import { PostsSqlRepository } from '../posts.sql.repository';
 import { PostsQueryTypeOrmRepository } from '../posts.query.type-orm.repository';
 import { PostsTypeOrmRepository } from '../posts.type-orm.repository';
 export class EditPostCommand {
@@ -17,7 +15,7 @@ export class EditPostUseCase implements ICommandHandler<EditPostCommand> {
 
   async execute(command: EditPostCommand): Promise<boolean> {
     const { postId, postChanges } = command;
-    const postModel = await this.postQueryRepository.getPostModel(postId);
+    const postModel = await this.postQueryRepository.getPostModelById(postId);
     postModel.updatePost(postChanges);
     const result = await this.postRepository.save(postModel);
     return !!result;
