@@ -2,17 +2,17 @@ import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { PaginatorInputType } from '../common/dto/input-models/paginator.input.type';
 import { PostViewModel } from '../posts/dto/view-models/post.view.model';
 import { PaginatorViewModel } from '../common/dto/view-models/paginator.view.model';
-import { PostsQuerySqlRepository } from '../posts/providers/posts.query.sql.repository';
 import { CurrentUserId } from '../common/decorators/current-user-id.param.decorator';
 import { CheckBlogIdGuard } from '../common/guards/check-blog-id-guard.service';
 import { PaginatorParam } from '../common/decorators/paginator-param.decorator';
 import { BlogsQueryTypeOrmRepository } from './providers/blogs.query.type-orm.repository';
+import { PostsQueryTypeOrmRepository } from '../posts/providers/posts.query.type-orm.repository';
 
 @Controller('blogs')
 export class BlogsController {
   constructor(
     private blogsQueryRepository: BlogsQueryTypeOrmRepository,
-    private postsQueryRepository: PostsQuerySqlRepository,
+    private postsQueryRepository: PostsQueryTypeOrmRepository,
   ) {}
 
   @Get()
