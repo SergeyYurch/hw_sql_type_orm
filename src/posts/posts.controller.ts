@@ -12,7 +12,6 @@ import { PaginatorInputType } from '../common/dto/input-models/paginator.input.t
 import { LikeInputModel } from '../common/dto/input-models/like.input.model';
 import { AccessTokenGuard } from '../common/guards/access-token.guard';
 import { CommentInputModel } from '../comments/dto/comment-input.model';
-import { PostsQuerySqlRepository } from './providers/posts.query.sql.repository';
 import { CommandBus } from '@nestjs/cqrs';
 import { UpdatePostLikeStatusCommand } from './providers/use-cases/update-post-like-status-use-case';
 import { CreateCommentCommand } from '../comments/providers/use-cases/create-comment-use-case';
@@ -21,11 +20,12 @@ import { UserBloggerBanGuard } from '../common/guards/user-blogger-ban.guard';
 import { CheckPostIdGuard } from '../common/guards/check-post-id.guard';
 import { PaginatorParam } from '../common/decorators/paginator-param.decorator';
 import { CommentsQuerySqlRepository } from '../comments/providers/comments.query.sql.repository';
+import { PostsQueryTypeOrmRepository } from './providers/posts.query.type-orm.repository';
 
 @Controller('posts')
 export class PostsController {
   constructor(
-    private postsQueryRepository: PostsQuerySqlRepository,
+    private postsQueryRepository: PostsQueryTypeOrmRepository,
     private commentsQueryRepository: CommentsQuerySqlRepository,
     private commandBus: CommandBus,
   ) {}
