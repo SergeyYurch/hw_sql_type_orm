@@ -1,6 +1,6 @@
 import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { BanPostsCommand } from '../../../posts/providers/use-cases/ban-posts-use-case';
-import { BlogsSqlRepository } from '../blogs.sql.repository';
+import { BlogsTypeOrmRepository } from '../blogs.type-orm.repository';
 
 export class BanBlogCommand {
   constructor(public blogId: string, public isBanned: boolean) {}
@@ -9,7 +9,7 @@ export class BanBlogCommand {
 @CommandHandler(BanBlogCommand)
 export class BanBlogUseCase implements ICommandHandler<BanBlogCommand> {
   constructor(
-    private readonly blogRepository: BlogsSqlRepository,
+    private readonly blogRepository: BlogsTypeOrmRepository,
     private commandBus: CommandBus,
   ) {}
 
