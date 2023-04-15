@@ -3,7 +3,7 @@ import { PaginatorViewModel } from '../../common/dto/view-models/paginator.view.
 import { pagesCount } from '../../common/helpers/helpers';
 import { PostViewModel } from '../dto/view-models/post.view.model';
 import { PaginatorInputType } from '../../common/dto/input-models/paginator.input.type';
-import { PostEntity } from '../domain/post.entity';
+import { Post } from '../domain/post';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { PostSqlDataType } from '../types/postSqlData.type';
@@ -83,7 +83,7 @@ export class PostsQuerySqlRepository {
     return this.findById(id, userId);
   }
 
-  private async findById(postId, userId = '0'): Promise<PostEntity> {
+  private async findById(postId, userId = '0'): Promise<Post> {
     try {
       const queryPostResult = await this.dataSource.query(
         `
@@ -115,7 +115,7 @@ export class PostsQuerySqlRepository {
     paginatorParams: PaginatorInputType,
     blogId?: string,
     userId = '0',
-  ): Promise<{ totalCount: number; postEntities: PostEntity[] }> {
+  ): Promise<{ totalCount: number; postEntities: Post[] }> {
     try {
       const { sortBy, sortDirection, pageSize, pageNumber } = paginatorParams;
       // Calculation of total count
@@ -151,12 +151,9 @@ export class PostsQuerySqlRepository {
       const posts: PostSqlDataType[] = await this.dataSource.query(queryString);
       if (posts.length === 0) return { totalCount: 0, postEntities: [] };
       //Convert blogs to BlogEntity type
-      const postEntities: PostEntity[] = [];
+      const postEntities: Post[] = [];
       for (const post of posts) {
-        const postEntity: PostEntity = await this.castToPostEntity(
-          post,
-          userId,
-        );
+        const postEntity: Post = await this.castToPostEntity(post, userId);
         postEntities.push(postEntity);
       }
       return { totalCount: totalCount, postEntities };
@@ -231,8 +228,8 @@ export class PostsQuerySqlRepository {
   private async castToPostEntity(
     post: PostSqlDataType,
     userId?: string,
-  ): Promise<PostEntity> {
-    const postEntity = new PostEntity();
+  ): Promise<Post> {
+    const postEntity = new Post();
     postEntity.id = post.id;
     postEntity.title = post.title;
     postEntity.shortDescription = post.shortDescription;
@@ -269,7 +266,7 @@ export class PostsQuerySqlRepository {
     return postEntity;
   }
 
-  private castToPostViewModel(post: PostEntity): PostViewModel {
+  private castToPostViewModel(post: Post): PostViewModel {
     return {
       id: post.id,
       title: post.title,
