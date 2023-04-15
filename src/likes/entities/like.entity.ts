@@ -13,8 +13,8 @@ export class LikeEntity {
   addedAt: number;
   @ManyToOne(() => UserEntity)
   user: UserEntity;
-  @ManyToOne(() => PostEntity)
+  @ManyToOne(() => PostEntity, { nullable: true })
   post: PostEntity;
-  @ManyToOne(() => CommentEntity)
+  @ManyToOne(() => CommentEntity, { nullable: true })
   comment: CommentEntity;
 }
