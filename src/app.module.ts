@@ -12,9 +12,9 @@ import { DeleteUserUseCase } from './users/providers/use-cases/delete-user-use-c
 import { CreateNewPostUseCase } from './posts/providers/use-cases/create-new-post-use-case';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from './users/mongo-schema/user.schema';
-import { Blog, BlogSchema } from './blogs/domain/blog.schema';
-import { Post, PostSchema } from './posts/domain/post.schema';
-import { Comment, CommentSchema } from './comments/domain/comment.schema';
+import { Blog, BlogSchema } from './blogs/mongo-shema/blog.schema';
+import { Post, PostSchema } from './posts/mongo-shema/post.schema';
+import { Comment, CommentSchema } from './comments/mongo-shema/comment.schema';
 import { getMongoConfig } from './common/configs/mongo.config';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
