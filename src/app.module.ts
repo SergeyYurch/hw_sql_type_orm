@@ -96,6 +96,9 @@ import { BlogsTypeOrmRepository } from './blogs/providers/blogs.type-orm.reposit
 import { BlogsQueryTypeOrmRepository } from './blogs/providers/blogs.query.type-orm.repository';
 import { BlogEntity } from './blogs/entities/blog.entity';
 import { BlogsBannedUserEntity } from './blogs/entities/blogs-banned-user.entity';
+import { PostEntity } from './posts/entities/post.entity';
+import { LikeEntity } from './likes/entities/like.entity';
+import { CommentEntity } from './comments/entities/comment.entity';
 
 const configModule = ConfigModule.forRoot();
 const userEntities = [
@@ -195,7 +198,13 @@ export const options: TypeOrmModuleOptions =
       { name: Comment.name, schema: CommentSchema },
     ]),
     TypeOrmModule.forRoot(options),
-    TypeOrmModule.forFeature([...userEntities, ...blogsEntities]),
+    TypeOrmModule.forFeature([
+      ...userEntities,
+      ...blogsEntities,
+      PostEntity,
+      LikeEntity,
+      CommentEntity,
+    ]),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
