@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { Post, PostDocument } from '../domain/post.schema';
+import { Post, PostDocument } from '../mongo-shema/post.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { Blog, BlogDocument } from '../../blogs/domain/blog.schema';
+import { Blog, BlogDocument } from '../../blogs/mongo-shema/blog.schema';
 
 @Injectable()
 export class PostsRepository {
