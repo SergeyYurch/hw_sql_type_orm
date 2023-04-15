@@ -4,11 +4,16 @@ import { BlogViewModel } from '../dto/view-models/blog.view.model';
 import { PaginatorViewModel } from '../../common/dto/view-models/paginator.view.model';
 import { BlogSaViewModel } from '../dto/view-models/blog-sa-view.model';
 import { PaginatorInputType } from '../../common/dto/input-models/paginator.input.type';
-import { BannedUser, Blog } from '../domain/blog';
+import { Blog } from '../domain/blog';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
-import { BlogDbDtoSql } from '../types/blog-db-dto.sql';
-import { BannedUsersDbDtoSql } from '../types/banned-users-db-dto.sql';
+import {
+  DataSource,
+  FindManyOptions,
+  FindOptionsWhere,
+  ILike,
+  Like,
+  Repository,
+} from 'typeorm';
 import { BloggerUserViewModel } from '../dto/view-models/blogger.user.view.model';
 import { BlogsQueryOptionsType } from '../types/blogs-query-options.type';
 import { BlogEntity } from '../entities/blog.entity';
@@ -60,14 +65,14 @@ export class BlogsQueryTypeOrmRepository {
     options?: BlogsQueryOptionsType,
   ): Promise<PaginatorViewModel<BlogViewModel>> {
     const { pageSize, pageNumber } = paginatorParams;
-    const { totalCount, blogsEntities } = await this.find(
+    const { totalCount, blogModels } = await this.find(
       paginatorParams,
       searchNameTerm,
       options,
     );
     const items: BlogViewModel[] = options?.bannedBlogInclude
-      ? blogsEntities.map((b) => this.getSaViewModelWithOwner(b))
-      : blogsEntities.map((b) => this.getBlogViewModel(b));
+      ? blogModels.map((b) => this.getSaViewModelWithOwner(b))
+      : blogModels.map((b) => this.getBlogViewModel(b));
     return {
       pagesCount: pagesCount(totalCount, pageSize),
       page: pageNumber,
@@ -126,38 +131,26 @@ export class BlogsQueryTypeOrmRepository {
     searchLoginTerm?: string,
   ): Promise<PaginatorViewModel<BloggerUserViewModel>> {
     const { sortBy, sortDirection, pageSize, pageNumber } = paginatorParams;
-    const searchParams = [];
-    if (searchLoginTerm)
-      searchParams.push(`login ILIKE '%${searchLoginTerm}%'`);
-    searchParams.push(`bu."isBanned"=true`);
-    searchParams.push(`"blogId"=${blogId}`);
-    const searchString = `WHERE ${searchParams.join(' AND ')}`;
-    const totalCount = +(
-      await this.dataSource.query(`
-            SELECT COUNT(*)
-            FROM blogs_banned_users
-            WHERE "blogId"=${blogId} AND "isBanned"=true
-    `)
-    )[0].count;
-
-    const queryString = `
-                SELECT bu."banReason", bu."banDate", bu."userId", u.login 
-                FROM  blogs_banned_users bu
-                LEFT JOIN users u ON u.id=bu."userId"
-                ${searchString}
-                ORDER BY "${sortBy}" ${sortDirection}
-                LIMIT ${pageSize}    
-                OFFSET ${pageSize * (pageNumber - 1)};
-                `;
-    console.log(totalCount);
-    console.log(queryString);
-    const bannedUsers: BannedUsersDbDtoSql[] = await this.dataSource.query(
-      queryString,
-    );
+    const conditions = [];
+    if (searchLoginTerm) {
+      conditions.push({ ['login']: searchLoginTerm });
+    }
+    conditions.push({ ['blogId']: blogId });
+    const findOptions: FindManyOptions<BlogsBannedUserEntity> = {
+      relations: {
+        user: true,
+      },
+      order: { [sortBy]: sortDirection },
+      where: conditions,
+      skip: pageSize * (pageNumber - 1),
+      take: pageSize,
+    };
+    const [bannedUsers, totalCount] =
+      await this.blogsBannedUsersRepository.findAndCount(findOptions);
 
     const items: BloggerUserViewModel[] = bannedUsers.map((u) => ({
-      id: u.userId,
-      login: u.login,
+      id: u.user.id.toString(),
+      login: u.user.login,
       banInfo: {
         isBanned: true,
         banReason: u.banReason,
@@ -177,7 +170,7 @@ export class BlogsQueryTypeOrmRepository {
     const queryString = `
               SELECT EXISTS (SELECT * 
               FROM blogs_banned_users
-              WHERE "blogId"=${blogId} AND "userId"=${userId});
+              WHERE "blogId"=${+blogId} AND "userId"=${+userId});
              `;
     const queryBannedUsersResult = await this.dataSource.query(queryString);
     return queryBannedUsersResult[0].exists;
@@ -218,73 +211,50 @@ export class BlogsQueryTypeOrmRepository {
     paginatorParams: PaginatorInputType,
     searchNameTerm?: string,
     options?: BlogsQueryOptionsType,
-  ): Promise<{ totalCount: number; blogsEntities: Blog[] }> {
+  ): Promise<{ totalCount: number; blogModels: Blog[] }> {
     try {
       const { sortBy, sortDirection, pageSize, pageNumber } = paginatorParams;
-      //Define search parameters
-      let searchString = '';
-      const searchParams = [];
-      if (searchNameTerm)
-        searchParams.push(`b.name ILIKE '%${searchNameTerm}%'`);
-      if (!options?.bannedBlogInclude) searchParams.push(`b."isBanned"=false`);
-      if (options?.blogOwnerId)
-        searchParams.push(`b."blogOwnerId"=${options.blogOwnerId}`);
-      if (searchParams.length > 0)
-        searchString = `WHERE ${searchParams.join(' AND ')}`;
+      const findOptionsWhere: FindOptionsWhere<BlogEntity> = {
+        ['isBanned']: false,
+      };
 
-      // Calculation of total count
-      const totalCount = +(
-        await this.dataSource.query(`
-    SELECT COUNT(*)
-    FROM blogs b
-    ${searchString}
-    `)
-      )[0].count;
-      if (!totalCount) return { totalCount: 0, blogsEntities: [] };
-      const queryString = `
-      SELECT b.*, u.login as "blogOwnerLogin",
-      (SELECT COUNT(*)
-                  FROM blogs_banned_users 
-                  WHERE "blogId"=b.id 
-                    AND "isBanned"=true)  as "countBannedUsers"
-      FROM "blogs" b
-      LEFT JOIN users u ON u.id=b."blogOwnerId"
-      ${searchString}
-      ORDER BY "${sortBy}" ${sortDirection}
-      LIMIT ${pageSize}
-      OFFSET ${pageSize * (pageNumber - 1)};`;
-
-      //Get blogs from DB
-      const blogs: BlogDbDtoSql[] = await this.dataSource.query(queryString);
-      //Convert blogs to BlogEntity type
-      const blogsEntities: Blog[] = [];
-      for (const blog of blogs) {
-        let bannedUsers: BannedUser[] = [];
-        if (blog.countBannedUsers > 0)
-          bannedUsers = await this.findBannedUsers(blog.id);
-        const blogEntity: Blog = await this.castToBlogModel(new BlogEntity());
-        blogsEntities.push(blogEntity);
+      if (options?.bannedBlogInclude) {
+        delete findOptionsWhere['isBanned'];
       }
-      return { totalCount: totalCount, blogsEntities };
+      if (searchNameTerm) {
+        findOptionsWhere['name'] = ILike(`%${searchNameTerm}%`);
+      }
+      if (options?.blogOwnerId) {
+        findOptionsWhere.blogOwner = { ['id']: +options.blogOwnerId };
+      }
+      console.log(findOptionsWhere);
+      const findOptions: FindManyOptions<BlogEntity> = {
+        relations: {
+          blogOwner: true,
+          bannedUsers: { user: true },
+        },
+        select: {
+          blogOwner: { id: true, login: true },
+          bannedUsers: true,
+        },
+        order: { [sortBy]: sortDirection },
+        where: findOptionsWhere,
+        skip: pageSize * (pageNumber - 1),
+        take: pageSize,
+      };
+
+      const [blogs, totalCount] = await this.blogsRepository.findAndCount(
+        findOptions,
+      );
+      const blogModels: Blog[] = [];
+      for (const blog of blogs) {
+        blogModels.push(this.castToBlogModel(blog));
+      }
+      return { totalCount: totalCount, blogModels };
     } catch (e) {
       console.log(e);
       return null;
     }
-  }
-
-  async findBannedUsers(blogId: string): Promise<BannedUser[]> {
-    const bannedUsers: BannedUsersDbDtoSql[] = await this.dataSource.query(
-      `SELECT bu."banReason", bu."banDate", bu."userId", u.login 
-                FROM  blogs_banned_users bu
-                LEFT JOIN users u ON u.id=bu."userId"
-                WHERE bu."blogId"=${blogId} AND bu."isBanned"=true`,
-    );
-    return bannedUsers.map((u) => ({
-      id: u.userId,
-      login: u.login,
-      banReason: u.login,
-      banDate: +u.banDate,
-    }));
   }
 
   castToBlogModel(blogEntity: BlogEntity) {
