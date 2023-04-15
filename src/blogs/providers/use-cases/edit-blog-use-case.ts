@@ -1,7 +1,7 @@
 import { BlogInputModel } from '../../dto/input-models/blog.input.model';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { BlogEditDto } from '../../dto/blog-edit.dto';
-import { BlogsSqlRepository } from '../blogs.sql.repository';
+import { BlogsTypeOrmRepository } from '../blogs.type-orm.repository';
 
 export class EditBlogCommand {
   constructor(public blogId: string, public inputDate: BlogInputModel) {}
@@ -9,7 +9,7 @@ export class EditBlogCommand {
 
 @CommandHandler(EditBlogCommand)
 export class EditBlogUseCase implements ICommandHandler<EditBlogCommand> {
-  constructor(private readonly blogRepository: BlogsSqlRepository) {}
+  constructor(private readonly blogRepository: BlogsTypeOrmRepository) {}
 
   async execute(command: EditBlogCommand) {
     const { blogId, inputDate } = command;
