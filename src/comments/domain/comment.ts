@@ -2,7 +2,7 @@ import { CreatedCommentDto } from '../dto/created-comment.dto';
 import { CommentsLikeEntity } from './comments-like.entity';
 import { LikesCountsType } from '../../common/types/likes-counts.type';
 import { LikeType } from '../../common/types/like.type';
-import { LikeDto } from '../../common/dto/like.dto';
+import { LikeDto } from '../../likes/dto/like.dto';
 
 export class Comment {
   id: string;
