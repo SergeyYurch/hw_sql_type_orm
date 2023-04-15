@@ -95,6 +95,6 @@ export class PostsController {
     @Param('postId') postId: string,
     @CurrentUserId() userId: string,
   ) {
-    return await this.postsQueryRepository.getPostById(postId, userId);
+    return await this.postsQueryRepository.getPostViewModelById(postId, userId);
   }
 }
