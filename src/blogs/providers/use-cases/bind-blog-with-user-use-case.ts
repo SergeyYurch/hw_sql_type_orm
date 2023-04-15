@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { BlogsSqlRepository } from '../blogs.sql.repository';
-import { UsersQuerySqlRepository } from '../../../users/providers/users.query-sql.repository';
+import { BlogsTypeOrmRepository } from '../blogs.type-orm.repository';
+import { UsersQueryTypeormRepository } from '../../../users/providers/users.query-typeorm.repository';
 
 export class BindBlogWithUserCommand {
   constructor(public blogId: string, public userId: string) {}
@@ -11,15 +11,15 @@ export class BindBlogWithUserUseCase
   implements ICommandHandler<BindBlogWithUserCommand>
 {
   constructor(
-    private blogRepository: BlogsSqlRepository,
-    private userQueryRepository: UsersQuerySqlRepository,
+    private blogRepository: BlogsTypeOrmRepository,
+    private userQueryRepository: UsersQueryTypeormRepository,
   ) {}
 
   async execute(command: BindBlogWithUserCommand) {
     const { userId, blogId } = command;
-    const user = await this.userQueryRepository.getUserById(userId);
+    const user = await this.userQueryRepository.getUserModelById(userId);
     const editBlog = await this.blogRepository.getBlogModel(blogId);
-    editBlog.bindUser(userId, user.login);
+    editBlog.bindUser(userId, user.accountData.login);
     return !!(await this.blogRepository.save(editBlog));
   }
 }
