@@ -27,7 +27,7 @@ export class CreateCommentUseCase
     const commentator = await this.usersQueryRepository.getUserModelById(
       commentatorId,
     );
-    const post = await this.postsQueryRepository.getPostById(postId);
+    const post = await this.postsQueryRepository.getPostViewModelById(postId);
     const blogOwnerId = await this.postsQueryRepository.getPostsBloggerId(
       postId,
     );
