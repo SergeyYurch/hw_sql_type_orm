@@ -1,7 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { Comment, CommentDocument } from '../mongo-shema/comment.schema';
-import { Model } from 'mongoose';
-import { InjectModel } from '@nestjs/mongoose';
 import { Comment } from '../domain/comment';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
@@ -11,27 +8,11 @@ import { CommentsQuerySqlRepository } from './comments.query.sql.repository';
 export class CommentsSqlRepository {
   constructor(
     @InjectDataSource() protected dataSource: DataSource,
-    @InjectModel(Comment.name) private CommentModel: Model<CommentDocument>,
     private commentsQuerySqlRepository: CommentsQuerySqlRepository,
   ) {}
 
   async getCommentModelById(id: string) {
     return this.commentsQuerySqlRepository.findById(id);
-  }
-
-  async getCommentsModelsByUserId(userId: string) {
-    return this.CommentModel.find({ commentatorId: userId });
-  }
-
-  async getCommentsModelsForBlogByCommentatorId(
-    commentatorId: string,
-    blogId: string,
-  ) {
-    return this.CommentModel.find({ commentatorId, blogId });
-  }
-
-  async getCommentsModelsByLikeUserId(userId: string) {
-    return this.CommentModel.find({ 'likes.userId': userId });
   }
 
   async createCommentModel() {
