@@ -5,15 +5,13 @@ import { BlogEntity } from '../../blogs/entities/blog.entity';
 @Entity('posts')
 export class PostEntity {
   @PrimaryGeneratedColumn()
-  id: string;
+  id: number;
   @Column()
   title: string;
   @Column()
   shortDescription: string;
   @Column()
   content: string;
-  @Column({ default: false })
-  isBanned: boolean;
   @Column({ type: 'bigint' })
   createdAt: number;
   @ManyToOne(() => UserEntity)
