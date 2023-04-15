@@ -15,5 +15,5 @@ export class CommentEntity {
   @ManyToOne(() => PostEntity)
   post: PostEntity;
   @ManyToOne(() => UserEntity)
-  commentatorId: UserEntity;
+  commentator: UserEntity;
 }
