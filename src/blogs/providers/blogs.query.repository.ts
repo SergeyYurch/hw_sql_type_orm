@@ -1,7 +1,7 @@
 import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Blog, BlogDocument } from '../domain/blog.schema';
+import { Blog, BlogDocument } from '../mongo-shema/blog.schema';
 import { pagesCount } from '../../common/helpers/helpers';
 import { BlogViewModel } from '../dto/view-models/blog.view.model';
 import { PaginatorViewModel } from '../../common/dto/view-models/paginator.view.model';
