@@ -16,8 +16,13 @@ export class CheckPostIdGuard implements CanActivate {
     const postId = request.params.postId;
     if (!Number.isInteger(+postId)) throw new NotFoundException();
     if (+postId < 0) throw new NotFoundException();
-    if (!(await this.postsQueryRepository.doesPostIdExist(postId)))
+    const postIdIsExist = await this.postsQueryRepository.doesPostIdExist(
+      postId,
+    );
+    if (!postIdIsExist) {
+      console.log('post not found, postId does not exist');
       throw new NotFoundException();
+    }
     return true;
   }
 }
