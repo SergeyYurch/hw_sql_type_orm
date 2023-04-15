@@ -71,13 +71,13 @@ export class PostsQueryTypeOrmRepository {
     };
   }
 
-  async getPostById(
+  async getPostViewModelById(
     postId: string,
     userId?: string,
   ): Promise<PostViewModel | null> {
-    const post = await this.findById(postId, userId);
+    const post = await this.getPostModelById(postId, userId);
     if (!post) return null;
-    // return this.castToPostViewModel(post);
+    return this.castToPostViewModel(post);
   }
 
   async getPostsBloggerId(postId: string, userId?: string): Promise<string> {
@@ -87,6 +87,7 @@ export class PostsQueryTypeOrmRepository {
 
   async getPostModelById(id: string, userId?: string) {
     const postEntity = await this.findById(id, userId);
+    console.log(postEntity);
     return this.castToPostModel(postEntity);
   }
 
@@ -95,7 +96,7 @@ export class PostsQueryTypeOrmRepository {
       return await this.postsRepository.findOne({
         relations: {
           blogger: true,
-          blog: true,
+          blog: { blogOwner: true },
         },
         where: { id: +postId },
         select: {},
