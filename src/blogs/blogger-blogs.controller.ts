@@ -13,7 +13,6 @@ import {
 import { BlogInputModel } from './dto/input-models/blog.input.model';
 import { PostViewModel } from '../posts/dto/view-models/post.view.model';
 import { BlogPostInputModel } from './dto/input-models/blog-post.input.model';
-import { PostsQuerySqlRepository } from '../posts/providers/posts.query.sql.repository';
 import { CommandBus } from '@nestjs/cqrs';
 import { CreateNewBlogCommand } from './providers/use-cases/create-new-blog-use-case';
 import { EditBlogCommand } from './providers/use-cases/edit-blog-use-case';
@@ -31,13 +30,14 @@ import { CheckBlogIdGuard } from '../common/guards/check-blog-id-guard.service';
 import { LoggerGuard } from '../common/guards/logger.guard';
 import { CommentsQuerySqlRepository } from '../comments/providers/comments.query.sql.repository';
 import { BlogsQueryTypeOrmRepository } from './providers/blogs.query.type-orm.repository';
+import { PostsQueryTypeOrmRepository } from '../posts/providers/posts.query.type-orm.repository';
 
 @UseGuards(AccessTokenGuard)
 @Controller('blogger/blogs')
 export class BloggerBlogsController {
   constructor(
     private blogsQueryRepository: BlogsQueryTypeOrmRepository,
-    private postsQueryRepository: PostsQuerySqlRepository,
+    private postsQueryRepository: PostsQueryTypeOrmRepository,
     private commentsQueryRepository: CommentsQuerySqlRepository,
     private commandBus: CommandBus,
   ) {}
