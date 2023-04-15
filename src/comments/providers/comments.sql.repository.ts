@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { Comment, CommentDocument } from '../domain/comment.schema';
+import { Comment, CommentDocument } from '../mongo-shema/comment.schema';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { CommentEntity } from '../domain/comment.entity';
+import { Comment } from '../domain/comment';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { CommentsQuerySqlRepository } from './comments.query.sql.repository';
@@ -35,7 +35,7 @@ export class CommentsSqlRepository {
   }
 
   async createCommentModel() {
-    return new CommentEntity();
+    return new Comment();
   }
 
   async deleteComment(commentId: string) {
@@ -49,10 +49,11 @@ export class CommentsSqlRepository {
     }
   }
 
-  async save(comment: CommentEntity) {
+  async save(comment: Comment) {
     if (!comment.id) return await this.insertNewComment(comment);
-    const commentDb: CommentEntity =
-      await this.commentsQuerySqlRepository.findById(comment.id);
+    const commentDb: Comment = await this.commentsQuerySqlRepository.findById(
+      comment.id,
+    );
     //updateContent
     if (comment.content !== commentDb.content)
       return await this.updateCommentContent(comment);
@@ -60,7 +61,7 @@ export class CommentsSqlRepository {
     if (comment.newLike) await this.updateLike(comment);
   }
 
-  private async insertNewComment(comment: CommentEntity) {
+  private async insertNewComment(comment: Comment) {
     const values = `'${comment.content}', '${comment.postId}', '${comment.commentatorId}', '${comment.createdAt}'`;
     const queryString = `INSERT INTO comments 
         (content, "postId", "commentatorId", "createdAt") 
@@ -69,7 +70,7 @@ export class CommentsSqlRepository {
     return result[0].id;
   }
 
-  private async updateCommentContent(comment: CommentEntity) {
+  private async updateCommentContent(comment: Comment) {
     try {
       const queryString = `
         UPDATE comments 
@@ -84,7 +85,7 @@ export class CommentsSqlRepository {
     }
   }
 
-  private async updateLike(comment: CommentEntity) {
+  private async updateLike(comment: Comment) {
     try {
       const { likeStatus, userId } = comment.newLike;
       const likeInDbQueryResult = await this.dataSource.query(`
