@@ -41,7 +41,6 @@ import { BlogsRepository } from './blogs/providers/blogs.repository';
 import { BlogsQueryRepository } from './blogs/providers/blogs.query.repository';
 import { CommentsRepository } from './comments/providers/comments.repository';
 import { PostsRepository } from './posts/providers/posts.repository';
-import { PostsQuerySqlRepository } from './posts/providers/posts.query.sql.repository';
 import { SecurityService } from './security/providers/security.service';
 import { TestingService } from './testing/testing.service';
 import { ThrottlerModule } from '@nestjs/throttler';
@@ -296,7 +295,6 @@ export const options: TypeOrmModuleOptions =
 
     //posts
     PostsRepository,
-    PostsQuerySqlRepository,
     BlogsQueryRepository,
     PostsSqlRepository,
     PostsQueryRepository,
