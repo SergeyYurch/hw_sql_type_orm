@@ -1,9 +1,12 @@
 import { InjectModel } from '@nestjs/mongoose';
-import { Blog, BlogDocument } from '../blogs/domain/blog.schema';
+import { Blog, BlogDocument } from '../blogs/mongo-shema/blog.schema';
 import { Model } from 'mongoose';
-import { Post, PostDocument } from '../posts/domain/post.schema';
+import { Post, PostDocument } from '../posts/mongo-shema/post.schema';
 import { User, UserDocument } from '../users/mongo-schema/user.schema';
-import { Comment, CommentDocument } from '../comments/domain/comment.schema';
+import {
+  Comment,
+  CommentDocument,
+} from '../comments/mongo-shema/comment.schema';
 
 export class TestingRepository {
   constructor(
