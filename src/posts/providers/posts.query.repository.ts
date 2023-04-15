@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { PaginatorViewModel } from '../../common/dto/view-models/paginator.view.model';
 import { pagesCount } from '../../common/helpers/helpers';
-import { Post, PostDocument } from '../domain/post.schema';
+import { Post, PostDocument } from '../mongo-shema/post.schema';
 import { PostViewModel } from '../dto/view-models/post.view.model';
 import { PaginatorInputType } from '../../common/dto/input-models/paginator.input.type';
 import { LikeStatusType } from '../../common/dto/input-models/like.input.model';
