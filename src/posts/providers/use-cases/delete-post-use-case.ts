@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { PostsSqlRepository } from '../posts.sql.repository';
+import { PostsTypeOrmRepository } from '../posts.type-orm.repository';
 
 export class DeletePostCommand {
   constructor(public postId: string) {}
@@ -7,7 +7,7 @@ export class DeletePostCommand {
 
 @CommandHandler(DeletePostCommand)
 export class DeletePostUseCase implements ICommandHandler<DeletePostCommand> {
-  constructor(private postRepository: PostsSqlRepository) {}
+  constructor(private postRepository: PostsTypeOrmRepository) {}
 
   async execute(command: DeletePostCommand): Promise<boolean> {
     const { postId } = command;
