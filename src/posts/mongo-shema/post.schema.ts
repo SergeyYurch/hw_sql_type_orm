@@ -40,9 +40,9 @@ export class Post {
     this.title = postDto.title;
     this.shortDescription = postDto.shortDescription;
     this.content = postDto.content;
-    this.blogId = postDto.blogId;
-    this.bloggerId = postDto.bloggerId;
-    this.blogName = postDto.blogName;
+    this.blogId = postDto.blog.id;
+    this.bloggerId = postDto.blogger.id;
+    this.blogName = postDto.blog.name;
     this.createdAt = new Date();
   }
 
