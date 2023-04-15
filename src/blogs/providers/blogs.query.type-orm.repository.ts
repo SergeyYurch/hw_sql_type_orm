@@ -11,7 +11,6 @@ import {
   FindManyOptions,
   FindOptionsWhere,
   ILike,
-  Like,
   Repository,
 } from 'typeorm';
 import { BloggerUserViewModel } from '../dto/view-models/blogger.user.view.model';
@@ -87,7 +86,7 @@ export class BlogsQueryTypeOrmRepository {
     options?: BlogsQueryOptionsType,
   ): Promise<BlogViewModel | null> {
     const blog = await this.getBlogModelById(id, options);
-    if (!blog || blog.isBanned) return null;
+    if (!blog) return null;
     return this.getBlogViewModel(blog);
   }
 
@@ -176,7 +175,12 @@ export class BlogsQueryTypeOrmRepository {
     return queryBannedUsersResult[0].exists;
   }
 
-  async findBlogEntityById(id: number) {
+  async findBlogEntityById(id: number, options?: BlogsQueryOptionsType) {
+    const findOptionsWhere: FindOptionsWhere<BlogEntity> = {
+      isBanned: false,
+      id,
+    };
+    if (options?.bannedBlogInclude) delete findOptionsWhere.isBanned;
     return await this.blogsRepository.findOne({
       relations: {
         blogOwner: true,
@@ -184,7 +188,7 @@ export class BlogsQueryTypeOrmRepository {
           user: true,
         },
       },
-      where: { id },
+      where: findOptionsWhere,
       select: {
         blogOwner: { id: true },
         bannedUsers: true,
@@ -197,7 +201,7 @@ export class BlogsQueryTypeOrmRepository {
     options?: BlogsQueryOptionsType,
   ): Promise<Blog | null> {
     try {
-      const blogEntity = await this.findBlogEntityById(+blogId);
+      const blogEntity = await this.findBlogEntityById(+blogId, options);
       console.log(blogEntity);
       console.log(typeof blogEntity.createdAt);
       return this.castToBlogModel(blogEntity);
