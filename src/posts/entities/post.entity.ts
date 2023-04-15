@@ -18,6 +18,10 @@ export class PostEntity {
   createdAt: number;
   @ManyToOne(() => UserEntity)
   blogger: UserEntity;
+  @Column()
+  bloggerId: number;
   @ManyToOne(() => BlogEntity)
   blog: BlogEntity;
+  @Column()
+  blogId: number;
 }
