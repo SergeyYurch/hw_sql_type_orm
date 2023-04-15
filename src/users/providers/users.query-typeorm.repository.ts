@@ -144,7 +144,7 @@ export class UsersQueryTypeormRepository {
   }
 
   getEmailLoginFilter(field: string, searchTerm: string, banStatus: string) {
-    const condition = {};
+    const condition: FindOptionsWhere<UserEntity> = {};
     condition[field] = ILike(`%${searchTerm}%`);
     if (banStatus !== 'all') {
       condition['isBanned'] = banStatus === 'banned';
@@ -160,40 +160,38 @@ export class UsersQueryTypeormRepository {
   ) {
     try {
       const { sortBy, sortDirection, pageSize, pageNumber } = paginatorParams;
-      const conditions = [];
+      const findOptionsWhere: FindOptionsWhere<UserEntity>[] = [];
       if (searchLoginTerm) {
-        conditions.push(
+        findOptionsWhere.push(
           this.getEmailLoginFilter('login', searchLoginTerm, banStatus),
         );
       }
       if (searchEmailTerm) {
-        conditions.push(
+        findOptionsWhere.push(
           this.getEmailLoginFilter('email', searchEmailTerm, banStatus),
         );
       }
 
-      if (conditions.length === 0 && banStatus !== 'all') {
-        const condition = {};
-        condition['isBanned'] = banStatus === 'banned';
-        conditions.push(condition);
+      if (findOptionsWhere.length === 0 && banStatus !== 'all') {
+        findOptionsWhere.push({ ['isBanned']: banStatus === 'banned' });
       }
       const findOptions: FindManyOptions<UserEntity> = {
         relations: {
           deviceSessions: true,
           passwordRecoveryInformation: true,
         },
-        order: {},
-        where: conditions,
+        order: { [sortBy]: sortDirection },
+        where: findOptionsWhere,
         skip: pageSize * (pageNumber - 1),
         take: pageSize,
       };
-      findOptions.order[sortBy] = sortDirection;
+      // findOptions.order[sortBy] = sortDirection;
       const [users, totalCount] = await this.usersRepository.findAndCount(
         findOptions,
       );
       const userModels: User[] = [];
       for (const user of users) {
-        userModels.push(await this.castToUserModel(user));
+        userModels.push(this.castToUserModel(user));
       }
       return { totalCount, userModels };
     } catch (e) {
