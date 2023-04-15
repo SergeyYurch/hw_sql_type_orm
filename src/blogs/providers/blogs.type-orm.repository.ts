@@ -33,10 +33,19 @@ export class BlogsTypeOrmRepository {
 
   async deleteBlog(blogId: string) {
     try {
-      await this.dataSource.query(`DELETE FROM blogs WHERE id=${blogId}`);
-      await this.dataSource.query(
-        `DELETE FROM blogs_banned_users WHERE "blogId"=${blogId}`,
-      );
+      await this.blogsRepository
+        .createQueryBuilder()
+        .delete()
+        .from(BlogEntity)
+        .where('id = :id', { id: blogId })
+        .execute();
+
+      await this.blogsBannedUsersRepository
+        .createQueryBuilder()
+        .delete()
+        .from(BlogsBannedUserEntity)
+        .where('blogId = :blogId', { blogId })
+        .execute();
       return true;
     } catch (e) {
       console.log(e);
