@@ -5,16 +5,16 @@ import { LikeDetailsViewModel } from '../../common/dto/view-models/like-details.
 import { LikeDto } from '../../common/dto/like.dto';
 import { LikesCountsType } from '../../common/types/likes-counts.type';
 import { LikesInfoType } from '../../common/types/likes-info.type';
+import { Blog } from '../../blogs/domain/blog';
+import { User } from '../../users/domain/user';
 
 export class Post {
   id: string;
   title: string;
   shortDescription: string;
   content: string;
-  bloggerId: string;
-  blogId: string;
-  blogName: string;
-  isBanned: boolean;
+  blogger: User;
+  blog: Blog;
   createdAt: number;
   newestLikes: LikeDetailsViewModel[];
   likesCounts: LikesCountsType;
@@ -22,7 +22,6 @@ export class Post {
   likes: LikesInfoType;
 
   constructor() {
-    this.isBanned = false;
     this.newestLikes = [];
     this.likesCounts = {
       likesCount: 0,
@@ -40,9 +39,8 @@ export class Post {
     this.title = postDto.title;
     this.shortDescription = postDto.shortDescription;
     this.content = postDto.content;
-    this.blogId = postDto.blogId;
-    this.bloggerId = postDto.bloggerId;
-    this.blogName = postDto.blogName;
+    this.blog = postDto.blog;
+    this.blogger = postDto.blogger;
     this.createdAt = Date.now();
   }
 
@@ -50,11 +48,6 @@ export class Post {
     this.title = postDto.title;
     this.shortDescription = postDto.shortDescription;
     this.content = postDto.content;
-  }
-
-  banPost(isBanned: boolean) {
-    this.isBanned = isBanned;
-    return true;
   }
 
   updateLikeStatus(like: LikeDto) {
