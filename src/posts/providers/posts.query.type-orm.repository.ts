@@ -8,12 +8,15 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { PostSqlDataType } from '../types/postSqlData.type';
 import { LikesQuerySqlRepository } from '../../common/providers/likes.query.sql.repository';
-import { LikeStatusType } from '../../common/dto/input-models/like.input.model';
 import { PostEntity } from '../entities/post.entity';
+import { UsersQueryTypeormRepository } from '../../users/providers/users.query-typeorm.repository';
+import { BlogsQueryTypeOrmRepository } from '../../blogs/providers/blogs.query.type-orm.repository';
 
 @Injectable()
 export class PostsQueryTypeOrmRepository {
   constructor(
+    private usersQueryTypeormRepository: UsersQueryTypeormRepository,
+    private blogsQueryTypeOrmRepository: BlogsQueryTypeOrmRepository,
     @InjectDataSource() protected dataSource: DataSource,
     protected likesQuerySqlRepository: LikesQuerySqlRepository,
     @InjectRepository(PostEntity)
@@ -79,10 +82,10 @@ export class PostsQueryTypeOrmRepository {
 
   async getPostsBloggerId(postId: string, userId?: string): Promise<string> {
     const postInDb = await this.findById(postId, userId);
-    return postInDb.id;
+    return postInDb.id.toString();
   }
 
-  async getPostModel(id: string, userId?: string) {
+  async getPostModelById(id: string, userId?: string) {
     const postEntity = await this.findById(id, userId);
     return this.castToPostModel(postEntity);
   }
@@ -94,7 +97,7 @@ export class PostsQueryTypeOrmRepository {
           blogger: true,
           blog: true,
         },
-        where: {},
+        where: { id: +postId },
         select: {},
       });
       //
@@ -246,39 +249,17 @@ export class PostsQueryTypeOrmRepository {
     userId?: string,
   ): Promise<Post> {
     const postModel = new Post();
-    postModel.id = postEntity.id;
+    postModel.id = postEntity.id.toString();
     postModel.title = postEntity.title;
     postModel.shortDescription = postEntity.shortDescription;
     postModel.content = postEntity.content;
-    postModel.bloggerId = postEntity.blogger.id.toString();
-    postModel.blogId = postEntity.blog.id.toString();
-    postModel.blogName = postEntity.blog.name;
-    postModel.isBanned = postEntity.isBanned;
+    postModel.blogger = this.usersQueryTypeormRepository.castToUserModel(
+      postEntity.blogger,
+    );
+    postModel.blog = this.blogsQueryTypeOrmRepository.castToBlogModel(
+      postEntity.blog,
+    );
     postModel.createdAt = +postEntity.createdAt;
-    // postModel.likes = {
-    //   likesCount: +postEntity.likesCount || 0,
-    //   dislikesCount: +postEntity.dislikesCount || 0,
-    //   myStatus: (postEntity.myStatus as LikeStatusType) || 'None',
-    // };
-
-    // if (userId) {
-    //   postEntity.updatedLike = await this.likesQuerySqlRepository.findLike(
-    //     userId,
-    //     { postId: post.id },
-    //   );
-    // }
-    // postEntity.likesCounts = await this.likesQuerySqlRepository.getLikesCount({
-    //   postId: post.id,
-    // });
-    // if (postModel.likes.likesCount > 0) {
-    //   postModel.newestLikes = (
-    //     await this.likesQuerySqlRepository.findNewestLikes({ postId: postEntity.id })
-    //   ).map((l) => ({
-    //     userId: l.userId,
-    //     login: l.login,
-    //     addedAt: new Date(+l.addedAt).toISOString(),
-    //   }));
-    // }
     return postModel;
   }
 
@@ -288,8 +269,8 @@ export class PostsQueryTypeOrmRepository {
       title: post.title,
       shortDescription: post.shortDescription,
       content: post.content,
-      blogId: post.blogId,
-      blogName: post.blogName,
+      blogId: post.blog.id,
+      blogName: post.blog.name,
       createdAt: new Date(post.createdAt).toISOString(),
       extendedLikesInfo: {
         likesCount: post.likes.likesCount,
