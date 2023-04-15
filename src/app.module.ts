@@ -99,6 +99,9 @@ import { BlogsBannedUserEntity } from './blogs/entities/blogs-banned-user.entity
 import { PostEntity } from './posts/entities/post.entity';
 import { LikeEntity } from './likes/entities/like.entity';
 import { CommentEntity } from './comments/entities/comment.entity';
+import { PostsQueryTypeOrmRepository } from './posts/providers/posts.query.type-orm.repository';
+import { PostsTypeOrmRepository } from './posts/providers/posts.type-orm.repository';
+import { CommentsTypeOrmRepository } from './comments/providers/comments.type-orm.repository';
 
 const configModule = ConfigModule.forRoot();
 const userEntities = [
@@ -288,6 +291,8 @@ export const options: TypeOrmModuleOptions =
     CommentsRepository,
     CommentsSqlRepository,
     CommentsQuerySqlRepository,
+    CommentsTypeOrmRepository,
+    CommentsQuerySqlRepository,
 
     //posts
     PostsRepository,
@@ -295,6 +300,8 @@ export const options: TypeOrmModuleOptions =
     BlogsQueryRepository,
     PostsSqlRepository,
     PostsQueryRepository,
+    PostsQueryTypeOrmRepository,
+    PostsTypeOrmRepository,
 
     //security
     SecurityService,
