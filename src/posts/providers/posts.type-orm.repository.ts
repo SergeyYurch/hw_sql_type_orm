@@ -3,7 +3,6 @@ import { Post } from '../domain/post';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { PostsQuerySqlRepository } from './posts.query.sql.repository';
-import { changeDetection } from '../../common/helpers/helpers';
 import { LikesQuerySqlRepository } from '../../common/providers/likes.query.sql.repository';
 import { UserEntity } from '../../users/entities/user.entity';
 import { BlogEntity } from '../../blogs/entities/blog.entity';
@@ -28,13 +27,13 @@ export class PostsTypeOrmRepository {
   async createModel() {
     return new Post();
   }
-  async delete(postId: number) {
+  async delete(postId: string) {
     try {
       await this.postsRepository
         .createQueryBuilder('p')
         .delete()
         .from(PostEntity)
-        .where('id = :id', { id: postId })
+        .where('id = :id', { id: +postId })
         .execute();
       return true;
     } catch (e) {
