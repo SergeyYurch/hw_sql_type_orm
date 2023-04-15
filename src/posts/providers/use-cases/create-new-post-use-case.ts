@@ -4,6 +4,8 @@ import { PostCreateDto } from '../../dto/post-create.dto';
 import { BlogPostInputModel } from '../../../blogs/dto/input-models/blog-post.input.model';
 import { BlogsQuerySqlRepository } from '../../../blogs/providers/blogs.query.sql.repository';
 import { PostsSqlRepository } from '../posts.sql.repository';
+import { PostsTypeOrmRepository } from '../posts.type-orm.repository';
+import { BlogsQueryTypeOrmRepository } from '../../../blogs/providers/blogs.query.type-orm.repository';
 
 export class CreateNewPostCommand {
   constructor(
@@ -16,11 +18,11 @@ export class CreateNewPostCommand {
 @CommandHandler(CreateNewPostCommand)
 export class CreateNewPostUseCase {
   constructor(
-    private postRepository: PostsSqlRepository,
-    private blogQueryRepository: BlogsQuerySqlRepository,
+    private postRepository: PostsTypeOrmRepository,
+    private blogQueryRepository: BlogsQueryTypeOrmRepository,
   ) {}
 
-  async execute(command: CreateNewPostCommand): Promise<PostViewModel | null> {
+  async execute(command: CreateNewPostCommand) {
     const { userId, blogId, postInputModel } = command;
     const { shortDescription, content, title } = postInputModel;
     const createdPost = await this.postRepository.createModel();
