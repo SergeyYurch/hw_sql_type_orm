@@ -1,9 +1,9 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
-import { UsersQuerySqlRepository } from '../../users/providers/users.query-sql.repository';
+import { UsersQueryTypeormRepository } from '../../users/providers/users.query-typeorm.repository';
 
 @Injectable()
 export class UserBanGuard implements CanActivate {
-  constructor(private usersQueryRepository: UsersQuerySqlRepository) {}
+  constructor(private usersQueryRepository: UsersQueryTypeormRepository) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
