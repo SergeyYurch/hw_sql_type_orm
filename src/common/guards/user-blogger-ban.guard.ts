@@ -13,7 +13,16 @@ export class UserBloggerBanGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
     const postId = request.params.postId;
-    const blogId = (await this.postsQueryRepository.getPostById(postId)).blogId;
-    return !(await this.blogsQueryRepository.isUserBanned(user.userId, blogId));
+    const blogId = (
+      await this.postsQueryRepository.getPostViewModelById(postId)
+    ).blogId;
+    const result = await this.blogsQueryRepository.isUserBanned(
+      user.userId,
+      blogId,
+    );
+    if (!result) {
+      console.log('Access denied, user is banned');
+    }
+    return !result;
   }
 }
