@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { Post } from '../domain/post';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import { PostsQuerySqlRepository } from './posts.query.sql.repository';
 import { LikesQuerySqlRepository } from '../../common/providers/likes.query.sql.repository';
 import { UserEntity } from '../../users/entities/user.entity';
 import { BlogEntity } from '../../blogs/entities/blog.entity';
@@ -15,7 +14,6 @@ export class PostsTypeOrmRepository {
     private likesQuerySqlRepository: LikesQuerySqlRepository,
     private postsQueryTypeOrmRepository: PostsQueryTypeOrmRepository,
     @InjectDataSource() protected dataSource: DataSource,
-    private postQueryRepository: PostsQuerySqlRepository,
     @InjectRepository(UserEntity)
     private readonly usersRepository: Repository<UserEntity>,
     @InjectRepository(BlogEntity)
@@ -54,24 +52,14 @@ export class PostsTypeOrmRepository {
       postEntity.title = post.title;
       postEntity.shortDescription = post.shortDescription;
       postEntity.content = post.content;
-      postEntity.isBanned = post.isBanned;
       postEntity.createdAt = post.createdAt;
-      postEntity.bloggerId = +post.bloggerId;
-      postEntity.blogId = +post.blogId;
+      postEntity.bloggerId = +post.blogger.id;
+      postEntity.blogId = +post.blog.id;
       return this.postsRepository.save(postEntity);
     } catch (e) {
       console.log(e);
       return null;
     }
-  }
-
-  private async insertNewPost(post) {
-    const values = `'${post.title}', '${post.shortDescription}', '${post.content}', '${post.bloggerId}', '${post.blogId}', '${post.isBanned}', '${post.createdAt}'`;
-    const queryString = `INSERT INTO posts 
-        (title, "shortDescription", content, "bloggerId", "blogId", "isBanned", "createdAt") 
-        VALUES (${values}) RETURNING id;`;
-    const result = await this.dataSource.query(queryString);
-    return result[0].id;
   }
 
   private async updateLike(post: Post) {
