@@ -1,11 +1,11 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
-import { PostsQuerySqlRepository } from '../../posts/providers/posts.query.sql.repository';
 import { BlogsQueryTypeOrmRepository } from '../../blogs/providers/blogs.query.type-orm.repository';
+import { PostsQueryTypeOrmRepository } from '../../posts/providers/posts.query.type-orm.repository';
 
 @Injectable()
 export class UserBloggerBanGuard implements CanActivate {
   constructor(
-    private postsQueryRepository: PostsQuerySqlRepository,
+    private postsQueryRepository: PostsQueryTypeOrmRepository,
     private blogsQueryRepository: BlogsQueryTypeOrmRepository,
   ) {}
 
