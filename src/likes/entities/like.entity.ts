@@ -1,6 +1,7 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { UserEntity } from '../../users/entities/user.entity';
 import { PostEntity } from '../../posts/entities/post.entity';
+import { CommentEntity } from '../../comments/entities/comment.entity';
 
 @Entity('likes')
 export class LikeEntity {
@@ -14,5 +15,6 @@ export class LikeEntity {
   user: UserEntity;
   @ManyToOne(() => PostEntity)
   post: PostEntity;
-  // comment:CommentEntity
+  @ManyToOne(() => CommentEntity)
+  comment: CommentEntity;
 }
