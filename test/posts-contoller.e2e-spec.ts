@@ -1,15 +1,8 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { disconnect } from 'mongoose';
-import { getApp } from '../test/test-utils';
-import {
-  blog1,
-  blog2,
-  blog3,
-  user1,
-  user2,
-  user3,
-} from '../test/tsts-input-data';
+import { getApp } from './test-utils';
+import { blog1, blog2, blog3, user1, user2, user3 } from './tsts-input-data';
 
 describe('PostsController (e2e)', () => {
   let app: INestApplication;
