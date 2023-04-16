@@ -49,7 +49,7 @@ export class PostsTypeOrmRepository {
     try {
       let postEntity: PostEntity = new PostEntity();
       if (post.id) {
-        postEntity = await this.postsQueryTypeOrmRepository.findById(+post.id);
+        postEntity = await this.postsQueryTypeOrmRepository.findById(post.id);
       }
       postEntity.title = post.title;
       postEntity.shortDescription = post.shortDescription;
