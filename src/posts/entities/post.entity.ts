@@ -37,7 +37,7 @@ export class PostEntity {
   @VirtualColumn({
     type: 'int',
     query: (PostEntity) =>
-      `SELECT COUNT(*) FROM likes l LEFT JOIN users u ON u.id=l."userId"  WHERE l."postId" = ${PostEntity}.id  AND l."likeStatus"='Like' AND u."isBanned"=false`,
+      `SELECT COUNT(*) FROM likes l LEFT JOIN users u ON u.id=l."userId"  WHERE l."postId" = ${PostEntity}.id AND l."likeStatus"='Like' AND u."isBanned"=false`, // AND u."isBanned"=false
   })
   likesCount: number;
   @VirtualColumn({
