@@ -82,8 +82,6 @@ import { BlogsQuerySqlRepository } from './blogs/providers/blogs.query.sql.repos
 import { PostsQueryRepository } from './posts/providers/posts.query.repository';
 import { ValidateUserDeviceSessionUseCase } from './auth/providers/use-cases/validate-user-device-session.use-case';
 import { ValidateUserUseCase } from './auth/providers/use-cases/validate-user.use-case';
-import { CommentsSqlRepository } from './comments/providers/comments.sql.repository';
-import { CommentsQuerySqlRepository } from './comments/providers/comments.query.sql.repository';
 import { LikesQuerySqlRepository } from './common/providers/likes.query.sql.repository';
 import { UsersTypeOrmRepository } from './users/providers/users.typeorm.repository';
 import { UserEntity } from './users/entities/user.entity';
@@ -102,6 +100,7 @@ import { PostsTypeOrmRepository } from './posts/providers/posts.type-orm.reposit
 import { CommentsTypeOrmRepository } from './comments/providers/comments.type-orm.repository';
 import { LikesQueryTypeOrmRepository } from './likes/providers/likes.query.type-orm.repository';
 import { LikesTypeOrmRepository } from './likes/providers/likes.type-orm.repository';
+import { CommentsQueryTypeOrmRepository } from './comments/providers/comments.query.type-orm.repository';
 
 const configModule = ConfigModule.forRoot();
 const userEntities = [
@@ -290,10 +289,8 @@ export const options: TypeOrmModuleOptions =
 
     //comments
     CommentsRepository,
-    CommentsSqlRepository,
-    CommentsQuerySqlRepository,
     CommentsTypeOrmRepository,
-    CommentsQuerySqlRepository,
+    CommentsQueryTypeOrmRepository,
 
     //posts
     PostsRepository,
