@@ -6,7 +6,6 @@ import { PaginatorInputType } from '../../common/dto/input-models/paginator.inpu
 import { Post } from '../domain/post';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, FindOptionsWhere, In, Repository } from 'typeorm';
-import { LikesQuerySqlRepository } from '../../common/providers/likes.query.sql.repository';
 import { PostEntity } from '../entities/post.entity';
 import { UsersQueryTypeormRepository } from '../../users/providers/users.query-typeorm.repository';
 import { BlogsQueryTypeOrmRepository } from '../../blogs/providers/blogs.query.type-orm.repository';
@@ -19,7 +18,6 @@ export class PostsQueryTypeOrmRepository {
     private usersQueryTypeormRepository: UsersQueryTypeormRepository,
     private blogsQueryTypeOrmRepository: BlogsQueryTypeOrmRepository,
     @InjectDataSource() protected dataSource: DataSource,
-    protected likesQuerySqlRepository: LikesQuerySqlRepository,
     @InjectRepository(PostEntity)
     private readonly postsRepository: Repository<PostEntity>,
     @InjectRepository(LikeEntity)
@@ -83,24 +81,19 @@ export class PostsQueryTypeOrmRepository {
     return this.castToPostViewModel(post);
   }
 
-  async getPostsBloggerId(postId: string): Promise<string> {
-    const postInDb = await this.findById(postId);
-    return postInDb.id.toString();
-  }
-
   async getPostModelById(postId: string, userId?: string) {
     const postEntity = await this.findById(postId);
-    let usersLike: LikeEntity;
-    let newestLikes: LikeEntity[] = [];
-    if (userId) usersLike = await this.findUserLike(postId, userId);
     if (!postEntity) return null;
-    if (postEntity.likesCount > 0)
-      newestLikes = await this.findNewestLikes(+postId);
-    return this.castToPostModel(postEntity, usersLike, newestLikes);
+    let postModel: Post = this.castToPostModel(postEntity);
+    if (userId) postModel = await this.addUserLikeStatus(postModel, userId);
+    console.log(postEntity);
+    if (postModel.likes.likesCount > 0) console.log('Go to findNewestLikes');
+    postModel = await this.findNewestLikes(postModel);
+    return postModel;
   }
 
-  async findNewestLikes(postId: number) {
-    return this.likesRepository.find({
+  async findNewestLikes(postModel: Post) {
+    const newestLikes = await this.likesRepository.find({
       relations: { user: true },
       select: {
         id: true,
@@ -111,17 +104,28 @@ export class PostsQueryTypeOrmRepository {
       take: 3,
       where: {
         user: { isBanned: false },
-        postId,
+        postId: +postModel.id,
         likeStatus: 'Like',
       },
     });
+    newestLikes.map((nl) => {
+      postModel.newestLikes.push({
+        userId: nl.user.id.toString(),
+        login: nl.user.login,
+        addedAt: new Date(+nl.addedAt).toString(),
+      });
+    });
+    return postModel;
   }
 
-  async findUserLike(postId: string, userId: string) {
-    return this.likesRepository.findOne({
-      where: { postId: +postId, userId: +userId },
+  async addUserLikeStatus(postModel: Post, userId: string) {
+    const userLike = await this.likesRepository.findOne({
+      where: { postId: +postModel.id, userId: +userId },
       select: { likeStatus: true },
     });
+    if (userLike?.likeStatus)
+      postModel.likes.myStatus = userLike.likeStatus as LikeStatusType;
+    return postModel;
   }
 
   async findById(postId: string) {
@@ -171,15 +175,13 @@ export class PostsQueryTypeOrmRepository {
       }
       const postModels: Post[] = [];
       for (const postEntity of postEntities) {
-        const usersLike = usersLikes.find((l) => l.postId === postEntity.id);
-        let newestLikes: LikeEntity[];
-        if (postEntity.likesCount > 0)
-          newestLikes = await this.findNewestLikes(postEntity.id);
-        const postModel: Post = await this.castToPostModel(
-          postEntity,
-          usersLike,
-          newestLikes,
+        let postModel: Post = await this.castToPostModel(postEntity);
+        postModel.likes.myStatus = usersLikes.find(
+          (l) => l.postId === postEntity.id,
         );
+        if (postEntity.likesCount > 0)
+          postModel = await this.findNewestLikes(postModel);
+
         postModels.push(postModel);
       }
       return { totalCount: totalCount, postEntities: postModels };
@@ -210,11 +212,7 @@ export class PostsQueryTypeOrmRepository {
     }
   }
 
-  private async castToPostModel(
-    postEntity: PostEntity,
-    usersLike: LikeEntity | null,
-    newestLikes: LikeEntity[],
-  ): Promise<Post> {
+  castToPostModel(postEntity: PostEntity): Post {
     const postModel = new Post();
     postModel.id = postEntity.id.toString();
     postModel.title = postEntity.title;
@@ -228,17 +226,12 @@ export class PostsQueryTypeOrmRepository {
     );
     postModel.createdAt = +postEntity.createdAt;
     postModel.likes = {
-      likesCount: postEntity.likesCount,
-      dislikesCount: postEntity.dislikesCount,
-      myStatus: (usersLike?.likeStatus as LikeStatusType) || 'None',
+      likesCount: +postEntity.likesCount,
+      dislikesCount: +postEntity.dislikesCount,
+      myStatus: 'None',
     };
-    newestLikes.map((nl) => {
-      postModel.newestLikes.push({
-        userId: nl.user.id.toString(),
-        login: nl.user.login,
-        addedAt: new Date(+nl.addedAt).toString(),
-      });
-    });
+    postModel.newestLikes = [];
+
     return postModel;
   }
 
@@ -252,8 +245,8 @@ export class PostsQueryTypeOrmRepository {
       blogName: post.blog.name,
       createdAt: new Date(post.createdAt).toISOString(),
       extendedLikesInfo: {
-        likesCount: post.likes.likesCount,
-        dislikesCount: post.likes.dislikesCount,
+        likesCount: +post.likes.likesCount,
+        dislikesCount: +post.likes.dislikesCount,
         myStatus: post.likes.myStatus || 'None',
         newestLikes: post.newestLikes,
       },
