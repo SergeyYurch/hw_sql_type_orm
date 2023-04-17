@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { CommentsSqlRepository } from '../comments.sql.repository';
+import { CommentsTypeOrmRepository } from '../comments.type-orm.repository';
 
 export class DeleteCommentCommand {
   constructor(public commentId: string) {}
@@ -9,7 +9,7 @@ export class DeleteCommentCommand {
 export class DeleteCommentUseCase
   implements ICommandHandler<DeleteCommentCommand>
 {
-  constructor(protected commentsRepository: CommentsSqlRepository) {}
+  constructor(protected commentsRepository: CommentsTypeOrmRepository) {}
 
   async execute(command: DeleteCommentCommand) {
     return await this.commentsRepository.deleteComment(command.commentId);
