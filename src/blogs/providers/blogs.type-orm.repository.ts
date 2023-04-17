@@ -8,12 +8,16 @@ import { BlogEntity } from '../entities/blog.entity';
 import { BlogsBannedUserEntity } from '../entities/blogs-banned-user.entity';
 import { UserEntity } from '../../users/entities/user.entity';
 import { UsersQueryTypeormRepository } from '../../users/providers/users.query-typeorm.repository';
+import { PostEntity } from '../../posts/entities/post.entity';
+import { CommentEntity } from '../../comments/entities/comment.entity';
+import { CommentsTypeOrmRepository } from '../../comments/providers/comments.type-orm.repository';
 
 @Injectable()
 export class BlogsTypeOrmRepository {
   constructor(
     private blogsQueryRepository: BlogsQueryTypeOrmRepository,
     private usersQueryRepository: UsersQueryTypeormRepository,
+    private commentsTypeOrmRepository: CommentsTypeOrmRepository,
     @InjectDataSource() protected dataSource: DataSource,
     @InjectRepository(BlogEntity)
     private readonly blogsRepository: Repository<BlogEntity>,
@@ -21,11 +25,15 @@ export class BlogsTypeOrmRepository {
     private readonly blogsBannedUsersRepository: Repository<BlogsBannedUserEntity>,
     @InjectRepository(UserEntity)
     private readonly usersRepository: Repository<UserEntity>,
+    @InjectRepository(PostEntity)
+    private readonly postsRepository: Repository<PostEntity>,
+    @InjectRepository(CommentEntity)
+    private readonly commentsRepository: Repository<CommentEntity>,
   ) {}
 
-  async getBlogModel(id: string) {
-    return this.blogsQueryRepository.getBlogModelById(id);
-  }
+  // async getBlogModel(id: string) {
+  //   return this.blogsQueryRepository.getBlogModelById(id);
+  // }
 
   async createBlogModel() {
     return new Blog();
@@ -33,6 +41,8 @@ export class BlogsTypeOrmRepository {
 
   async deleteBlog(blogId: string) {
     try {
+      await this.commentsTypeOrmRepository.deleteComments({ blogId });
+      await this.postsRepository.delete({ blogId: +blogId });
       await this.blogsRepository
         .createQueryBuilder()
         .delete()
@@ -100,6 +110,8 @@ export class BlogsTypeOrmRepository {
             bannedUser.userId = +b.id;
             bannedUser.banReason = b.banReason;
             bannedUser.banDate = b.banDate;
+            bannedUser.createdAt = Date.now();
+            bannedUser.blog = blogEntity;
             await this.blogsBannedUsersRepository.save(bannedUser);
             blogEntity.bannedUsers.push(bannedUser);
           }
