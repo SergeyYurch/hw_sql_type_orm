@@ -17,8 +17,6 @@ import { CommandBus } from '@nestjs/cqrs';
 import { BindBlogWithUserCommand } from './providers/use-cases/bind-blog-with-user-use-case';
 import { BanBlogInputModel } from './dto/input-models/ban-blog.input.model';
 import { BanBlogCommand } from './providers/use-cases/ban-blog-use-case';
-import { BlogsQuerySqlRepository } from './providers/blogs.query.sql.repository';
-import { UsersQuerySqlRepository } from '../users/providers/users.query-sql.repository';
 import { UsersService } from '../users/providers/users.service';
 import { PaginatorInputType } from '../common/dto/input-models/paginator.input.type';
 import { BlogInputModel } from './dto/input-models/blog.input.model';
@@ -26,14 +24,16 @@ import { CreateNewBlogCommand } from './providers/use-cases/create-new-blog-use-
 import { PaginatorParam } from '../common/decorators/paginator-param.decorator';
 import { CheckUserIdGuard } from '../common/guards/check-user-id.guard';
 import { CheckBlogIdGuardForSa } from '../common/guards/check-blog-id-for-sa.guard';
+import { BlogsQueryTypeOrmRepository } from './providers/blogs.query.type-orm.repository';
+import { UsersQueryTypeormRepository } from '../users/providers/users.query-typeorm.repository';
 
 @UseGuards(AuthGuard('basic'))
 @Controller('sa/blogs')
 export class SaBlogsController {
   constructor(
     private usersService: UsersService,
-    private blogsQueryRepository: BlogsQuerySqlRepository,
-    private usersQueryRepository: UsersQuerySqlRepository,
+    private blogsQueryRepository: BlogsQueryTypeOrmRepository,
+    private usersQueryRepository: UsersQueryTypeormRepository,
     private commandBus: CommandBus,
   ) {}
 
