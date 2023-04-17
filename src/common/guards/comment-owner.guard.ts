@@ -4,11 +4,13 @@ import {
   ExecutionContext,
   ForbiddenException,
 } from '@nestjs/common';
-import { CommentsQuerySqlRepository } from '../../comments/providers/comments.query.sql.repository';
+import { CommentsQueryTypeOrmRepository } from '../../comments/providers/comments.query.type-orm.repository';
 
 @Injectable()
 export class CommentOwnerGuard implements CanActivate {
-  constructor(private commentsQueryRepository: CommentsQuerySqlRepository) {}
+  constructor(
+    private commentsQueryRepository: CommentsQueryTypeOrmRepository,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
