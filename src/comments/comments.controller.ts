@@ -17,13 +17,13 @@ import { UpdateCommentCommand } from './providers/use-cases/update-comment-use-c
 import { UpdateLikeStatusCommand } from './providers/use-cases/update-like-status-use-case';
 import { CurrentUserId } from '../common/decorators/current-user-id.param.decorator';
 import { CheckCommentIdGuard } from '../common/guards/check-comment-id.guard';
-import { CommentsQuerySqlRepository } from './providers/comments.query.sql.repository';
 import { CommentOwnerGuard } from '../common/guards/comment-owner.guard';
+import { CommentsQueryTypeOrmRepository } from './providers/comments.query.type-orm.repository';
 
 @Controller('comments')
 export class CommentsController {
   constructor(
-    private commentsQueryRepository: CommentsQuerySqlRepository,
+    private commentsQueryRepository: CommentsQueryTypeOrmRepository,
     private commandBus: CommandBus,
   ) {}
 
