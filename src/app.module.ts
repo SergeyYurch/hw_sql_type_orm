@@ -104,7 +104,7 @@ const userEntities = [
   DeviceSessionsEntity,
   PasswordRecoveryInformationEntity,
 ];
-
+//
 const blogsEntities = [BlogEntity, BlogsBannedUserEntity];
 
 const blogsUseCases = [
