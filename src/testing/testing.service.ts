@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { TestingRepository } from './testing.repository';
-import { TestingSqlRepository } from './testing.sql.repository';
+import { TestingTypeOrmRepository } from './testing.type-orm.repository';
 
 @Injectable()
 export class TestingService {
-  constructor(private testingRepository: TestingSqlRepository) {}
+  constructor(private testingRepository: TestingTypeOrmRepository) {}
   async dataBaseClear() {
     return await this.testingRepository.dataBaseClear();
   }
