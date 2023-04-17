@@ -19,14 +19,14 @@ import { CurrentUserId } from '../common/decorators/current-user-id.param.decora
 import { UserBloggerBanGuard } from '../common/guards/user-blogger-ban.guard';
 import { CheckPostIdGuard } from '../common/guards/check-post-id.guard';
 import { PaginatorParam } from '../common/decorators/paginator-param.decorator';
-import { CommentsQuerySqlRepository } from '../comments/providers/comments.query.sql.repository';
 import { PostsQueryTypeOrmRepository } from './providers/posts.query.type-orm.repository';
+import { CommentsQueryTypeOrmRepository } from '../comments/providers/comments.query.type-orm.repository';
 
 @Controller('posts')
 export class PostsController {
   constructor(
     private postsQueryRepository: PostsQueryTypeOrmRepository,
-    private commentsQueryRepository: CommentsQuerySqlRepository,
+    private commentsQueryRepository: CommentsQueryTypeOrmRepository,
     private commandBus: CommandBus,
   ) {}
 
