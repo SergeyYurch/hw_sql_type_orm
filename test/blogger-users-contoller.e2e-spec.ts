@@ -1,15 +1,7 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import {
-  BadRequestException,
-  INestApplication,
-  ValidationPipe,
-} from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { AppModule } from '../src/app.module';
 import { disconnect } from 'mongoose';
-import { useContainer } from 'class-validator';
-import { HttpExceptionFilter } from '../src/common/exception-filters/http-exception.filter';
-import { BlogViewModel } from '../src/blogs/dto/view-models/blog.view.model';
+import { getApp } from './test-utils';
 
 const user1 = {
   login: 'user1',
@@ -79,16 +71,6 @@ const blog1 = {
   description: 'description1',
   websiteUrl: 'https://youtube1.com',
 };
-const blog2 = {
-  name: 'blog2',
-  description: 'description2',
-  websiteUrl: 'https://youtube2.com',
-};
-const blog3 = {
-  name: 'blog3',
-  description: 'description3',
-  websiteUrl: 'https://youtube3.com',
-};
 
 describe('UsersController (e2e)', () => {
   let app: INestApplication;
@@ -126,32 +108,7 @@ describe('UsersController (e2e)', () => {
   let accessTokenUser5: string;
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
-    useContainer(app.select(AppModule), { fallbackOnErrors: true });
-    app.useGlobalPipes(
-      new ValidationPipe({
-        stopAtFirstError: true,
-        transform: true,
-        exceptionFactory: (errors) => {
-          const errorsForResponse = [];
-          for (const e of errors) {
-            const key = Object.keys(e.constraints)[0];
-            errorsForResponse.push({
-              message: e.constraints[key],
-              field: e.property,
-            });
-          }
-          throw new BadRequestException(errorsForResponse);
-        },
-      }),
-    );
-    app.useGlobalFilters(new HttpExceptionFilter());
-
-    await app.init();
+    app = await getApp();
   });
 
   afterAll(async () => {
@@ -356,62 +313,62 @@ describe('UsersController (e2e)', () => {
       .expect(201);
     post3Id = newPost3.body.id;
   });
-  // it('POST: [HOST]/posts/{:postId}/comments -USER1, USER2, USER4 created comment for blog1/post1, USER3, USER5 created comment for blog1/post2', async () => {
-  //   const newComment1 = await request(app.getHttpServer())
-  //     .post(`/posts/${post1Id}/comments`)
-  //     .auth(accessTokenUser1, { type: 'bearer' })
-  //     .send({
-  //       content: 'user1 -comment1 for blog1/post 1',
-  //     })
-  //     .expect(201);
-  //   comment1Id = newComment1.body.id;
-  //
-  //   const newComment2 = await request(app.getHttpServer())
-  //     .post(`/posts/${post1Id}/comments`)
-  //     .auth(accessTokenUser2, { type: 'bearer' })
-  //     .send({
-  //       content: 'user2 -comment2 for blog1/post 1',
-  //     })
-  //     .expect(201);
-  //   comment2Id = newComment2.body.id;
-  //
-  //   const newComment3 = await request(app.getHttpServer())
-  //     .post(`/posts/${post2Id}/comments`)
-  //     .auth(accessTokenUser3, { type: 'bearer' })
-  //     .send({
-  //       content: 'user3 -comment3 for blog1/post 1',
-  //     })
-  //     .expect(201);
-  //   comment3Id = newComment3.body.id;
-  //
-  //   const newComment4 = await request(app.getHttpServer())
-  //     .post(`/posts/${post1Id}/comments`)
-  //     .auth(accessTokenUser4, { type: 'bearer' })
-  //     .send({
-  //       content: 'user4 -comment4 for blog1/post 1',
-  //     })
-  //     .expect(201);
-  //   comment4Id = newComment4.body.id;
-  //
-  //   const newComment5 = await request(app.getHttpServer())
-  //     .post(`/posts/${post2Id}/comments`)
-  //     .auth(accessTokenUser5, { type: 'bearer' })
-  //     .send({
-  //       content: 'user5 -comment5 for blog1/post 1',
-  //     })
-  //     .expect(201);
-  //   comment5Id = newComment5.body.id;
-  //
-  //   const getCommentForPost1Result = await request(app.getHttpServer())
-  //     .get(`/posts/${post1Id}/comments`)
-  //     .expect(200);
-  //   expect(getCommentForPost1Result.body.items.length).toBe(3);
-  //
-  //   const getCommentForPost2Result = await request(app.getHttpServer())
-  //     .get(`/posts/${post2Id}/comments`)
-  //     .expect(200);
-  //   expect(getCommentForPost2Result.body.items.length).toBe(2);
-  // });
+  it('POST: [HOST]/posts/{:postId}/comments -USER1, USER2, USER4 created comment for blog1/post1, USER3, USER5 created comment for blog1/post2', async () => {
+    const newComment1 = await request(app.getHttpServer())
+      .post(`/posts/${post1Id}/comments`)
+      .auth(accessTokenUser1, { type: 'bearer' })
+      .send({
+        content: 'user1 -comment1 for blog1/post 1',
+      })
+      .expect(201);
+    comment1Id = newComment1.body.id;
+
+    const newComment2 = await request(app.getHttpServer())
+      .post(`/posts/${post1Id}/comments`)
+      .auth(accessTokenUser2, { type: 'bearer' })
+      .send({
+        content: 'user2 -comment2 for blog1/post 1',
+      })
+      .expect(201);
+    comment2Id = newComment2.body.id;
+
+    const newComment3 = await request(app.getHttpServer())
+      .post(`/posts/${post2Id}/comments`)
+      .auth(accessTokenUser3, { type: 'bearer' })
+      .send({
+        content: 'user3 -comment3 for blog1/post 1',
+      })
+      .expect(201);
+    comment3Id = newComment3.body.id;
+
+    const newComment4 = await request(app.getHttpServer())
+      .post(`/posts/${post1Id}/comments`)
+      .auth(accessTokenUser4, { type: 'bearer' })
+      .send({
+        content: 'user4 -comment4 for blog1/post 1',
+      })
+      .expect(201);
+    comment4Id = newComment4.body.id;
+
+    const newComment5 = await request(app.getHttpServer())
+      .post(`/posts/${post2Id}/comments`)
+      .auth(accessTokenUser5, { type: 'bearer' })
+      .send({
+        content: 'user5 -comment5 for blog1/post 1',
+      })
+      .expect(201);
+    comment5Id = newComment5.body.id;
+
+    const getCommentForPost1Result = await request(app.getHttpServer())
+      .get(`/posts/${post1Id}/comments`)
+      .expect(200);
+    expect(getCommentForPost1Result.body.items.length).toBe(3);
+
+    const getCommentForPost2Result = await request(app.getHttpServer())
+      .get(`/posts/${post2Id}/comments`)
+      .expect(200);
+    expect(getCommentForPost2Result.body.items.length).toBe(2);
+  });
 
   //Put (ban/unban)
   it('PUT: [HOST]/blogger/users/${userId}/ban: should return code 401 for unauthorized user', async () => {
@@ -537,70 +494,70 @@ describe('UsersController (e2e)', () => {
       .expect(204);
   });
 
-  // //try to get comments
-  // it('GET: /comments/{:commentId}  /posts/${post1Id}/comments - unauthorized user should get not banned users for blog1/post1, blog1/post2', async () => {
-  //   const getCommentResult1 = await request(app.getHttpServer())
-  //     .get(`/comments/${comment1Id}`)
-  //     .expect(200);
-  //   expect(getCommentResult1.body.commentatorInfo.userId).toBe(user1Id);
-  //
-  //   const getCommentResult2 = await request(app.getHttpServer())
-  //     .get(`/comments/${comment2Id}`)
-  //     .expect(200);
-  //   expect(getCommentResult2.body.commentatorInfo.userId).toBe(user2Id);
-  //
-  //   const getCommentResult3 = await request(app.getHttpServer())
-  //     .get(`/comments/${comment3Id}`)
-  //     .expect(200);
-  //   expect(getCommentResult3.body.commentatorInfo.userId).toBe(user3Id);
-  //
-  //   const getCommentForPost1Result = await request(app.getHttpServer())
-  //     .get(`/posts/${post1Id}/comments`)
-  //     .expect(200);
-  //   expect(getCommentForPost1Result.body.items.length).toBe(2);
-  //
-  //   const getCommentForPost2Result = await request(app.getHttpServer())
-  //     .get(`/posts/${post2Id}/comments`)
-  //     .expect(200);
-  //   expect(getCommentForPost2Result.body.items.length).toBe(1);
-  // });
-  // it('GET: /comments/{:commentId}  /posts/${post1Id}/comments - unauthorized user should get 404 for banned users comments for blog1/post1, blog1/post2', async () => {
-  //   await request(app.getHttpServer())
-  //     .get(`/comments/${comment4Id}`)
-  //     .expect(404);
-  //
-  //   await request(app.getHttpServer())
-  //     .get(`/comments/${comment5Id}`)
-  //     .expect(404);
-  // });
-  //
-  // //try to create comments
-  // it('POST: [HOST]/posts/{:postId}/comments -USER5 try created comment for blog1/post1, blog1/post2 should return 403', async () => {
-  //   await request(app.getHttpServer())
-  //     .post(`/posts/${post1Id}/comments`)
-  //     .auth(accessTokenUser5, { type: 'bearer' })
-  //     .send({
-  //       content: 'user5 -comment for blog1/post 1',
-  //     })
-  //     .expect(403);
-  //
-  //   await request(app.getHttpServer())
-  //     .post(`/posts/${post2Id}/comments`)
-  //     .auth(accessTokenUser5, { type: 'bearer' })
-  //     .send({
-  //       content: 'user5 -comment for blog1/post 1',
-  //     })
-  //     .expect(403);
-  // });
-  // it('POST: [HOST]/posts/{:postId}/comments -USER5 should create comment (return 201) for blog2/post3,', async () => {
-  //   await request(app.getHttpServer())
-  //     .post(`/posts/${post3Id}/comments`)
-  //     .auth(accessTokenUser5, { type: 'bearer' })
-  //     .send({
-  //       content: 'user5 -comment for blog2/post 3',
-  //     })
-  //     .expect(201);
-  // });
+  //try to get comments
+  it('GET: /comments/{:commentId}  /posts/${post1Id}/comments - unauthorized user should get not banned users for blog1/post1, blog1/post2', async () => {
+    const getCommentResult1 = await request(app.getHttpServer())
+      .get(`/comments/${comment1Id}`)
+      .expect(200);
+    expect(getCommentResult1.body.commentatorInfo.userId).toBe(user1Id);
+
+    const getCommentResult2 = await request(app.getHttpServer())
+      .get(`/comments/${comment2Id}`)
+      .expect(200);
+    expect(getCommentResult2.body.commentatorInfo.userId).toBe(user2Id);
+
+    const getCommentResult3 = await request(app.getHttpServer())
+      .get(`/comments/${comment3Id}`)
+      .expect(200);
+    expect(getCommentResult3.body.commentatorInfo.userId).toBe(user3Id);
+
+    const getCommentForPost1Result = await request(app.getHttpServer())
+      .get(`/posts/${post1Id}/comments`)
+      .expect(200);
+    expect(getCommentForPost1Result.body.items.length).toBe(2);
+
+    const getCommentForPost2Result = await request(app.getHttpServer())
+      .get(`/posts/${post2Id}/comments`)
+      .expect(200);
+    expect(getCommentForPost2Result.body.items.length).toBe(1);
+  });
+  it('GET: /comments/{:commentId}  /posts/${post1Id}/comments - unauthorized user should get 404 for banned users comments for blog1/post1, blog1/post2', async () => {
+    await request(app.getHttpServer())
+      .get(`/comments/${comment4Id}`)
+      .expect(404);
+
+    await request(app.getHttpServer())
+      .get(`/comments/${comment5Id}`)
+      .expect(404);
+  });
+
+  //try to create comments
+  it('POST: [HOST]/posts/{:postId}/comments -USER5 try created comment for blog1/post1, blog1/post2 should return 403', async () => {
+    await request(app.getHttpServer())
+      .post(`/posts/${post1Id}/comments`)
+      .auth(accessTokenUser5, { type: 'bearer' })
+      .send({
+        content: 'user5 -comment for blog1/post 1',
+      })
+      .expect(403);
+
+    await request(app.getHttpServer())
+      .post(`/posts/${post2Id}/comments`)
+      .auth(accessTokenUser5, { type: 'bearer' })
+      .send({
+        content: 'user5 -comment for blog1/post 1',
+      })
+      .expect(403);
+  });
+  it('POST: [HOST]/posts/{:postId}/comments -USER5 should create comment (return 201) for blog2/post3,', async () => {
+    await request(app.getHttpServer())
+      .post(`/posts/${post3Id}/comments`)
+      .auth(accessTokenUser5, { type: 'bearer' })
+      .send({
+        content: 'user5 -comment for blog2/post 3',
+      })
+      .expect(201);
+  });
   //
   // //get
   it('GET: [HOST]/blogger/users/blog/:blogId: should return code 401 "Unauthorized" for unauthorized request', async () => {
@@ -673,7 +630,7 @@ describe('UsersController (e2e)', () => {
       .auth(accessTokenUser1, { type: 'bearer' })
       .expect(200);
 
-    expect(users.body.totalCount).toBe(9);
+    expect(users.body.totalCount).toBe(1);
     expect(users.body.pageSize).toBe(10);
     expect(users.body.items.length).toBe(1);
     expect(users.body.items[0]).toEqual({
