@@ -8,6 +8,9 @@ export class TestingSqlRepository {
     console.log('dataBaseClear');
     await this.dataSource.query(
       `
+      DELETE FROM likes;
+      DELETE FROM comments;
+      DELETE FROM posts;
       DELETE FROM blogs_banned_users;
       DELETE FROM blogs;
       DELETE FROM password_recovery_information;
