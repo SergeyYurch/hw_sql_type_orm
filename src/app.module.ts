@@ -70,15 +70,11 @@ import { BloggerUsersController } from './users/blogger-users.controller';
 import { BanBlogCommentByCommentatorIdUseCase } from './comments/providers/use-cases/ban-blog--comments-by-user-id--use-case';
 import { BanBlogUseCase } from './blogs/providers/use-cases/ban-blog-use-case';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { UsersSqlRepository } from './users/providers/users.sql.repository';
-import { UsersQuerySqlRepository } from './users/providers/users.query-sql.repository';
 import { TestingRepository } from './testing/testing.repository';
-import { TestingSqlRepository } from './testing/testing.sql.repository';
+import { TestingTypeOrmRepository } from './testing/testing.type-orm.repository';
 import { DeleteSessionByIdUseCase } from './security/providers/use-cases/delete-session-by-id.use-case';
 import { DeleteAllSessionExcludeCurrentUseCase } from './security/providers/use-cases/delete-all-sessions-exclude-current.use-case';
 import { GetSessionsByUserIdUseCase } from './security/providers/use-cases/get-sessions-by-user-id.use-case';
-import { BlogsSqlRepository } from './blogs/providers/blogs.sql.repository';
-import { BlogsQuerySqlRepository } from './blogs/providers/blogs.query.sql.repository';
 import { PostsQueryRepository } from './posts/providers/posts.query.repository';
 import { ValidateUserDeviceSessionUseCase } from './auth/providers/use-cases/validate-user-device-session.use-case';
 import { ValidateUserUseCase } from './auth/providers/use-cases/validate-user.use-case';
@@ -282,8 +278,6 @@ export const options: TypeOrmModuleOptions =
     //blogs
     BlogsRepository,
     BlogsQueryRepository,
-    BlogsSqlRepository,
-    BlogsQuerySqlRepository,
     BlogsTypeOrmRepository,
     BlogsQueryTypeOrmRepository,
 
@@ -305,14 +299,12 @@ export const options: TypeOrmModuleOptions =
     UsersService,
     UsersRepository,
     UsersQueryRepository,
-    UsersSqlRepository,
-    UsersQuerySqlRepository,
     UsersQueryTypeormRepository,
     UsersTypeOrmRepository,
     //
     TestingService,
     TestingRepository,
-    TestingSqlRepository,
+    TestingTypeOrmRepository,
   ],
 })
 export class AppModule implements NestModule {
