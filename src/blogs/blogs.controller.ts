@@ -30,6 +30,13 @@ export class BlogsController {
   }
 
   @UseGuards(CheckBlogIdGuard)
+  @Get(':blogId')
+  async getBlog(@Param('blogId') blogId: string) {
+    console.log(`[BlogsController ]/getBlog - run...`);
+    return await this.blogsQueryRepository.getBlogById(blogId);
+  }
+
+  @UseGuards(CheckBlogIdGuard)
   @Get(':blogId/posts')
   async getPostsForBlog(
     @Param('blogId') blogId: string,
