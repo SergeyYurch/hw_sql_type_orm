@@ -16,9 +16,13 @@ export class BlogsBannedUserEntity {
   banReason: string;
   @Column({ type: 'bigint' })
   banDate: number;
+  @Column({ type: 'bigint' })
+  createdAt: number;
   @ManyToOne(() => BlogEntity)
   @JoinColumn()
   blog: BlogEntity;
+  @Column()
+  blogId: number;
   @ManyToOne(() => UserEntity)
   @JoinColumn()
   user: UserEntity;
