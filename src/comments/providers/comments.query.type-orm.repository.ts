@@ -5,23 +5,35 @@ import { CommentViewModel } from '../dto/view-models/comment.view.model';
 import { GetCommentOptionTypes } from '../types/get-comment-option.types';
 import { CommentsSearchParamsType } from '../types/comments-search-params.type';
 import { BloggerCommentViewModel } from '../dto/view-models/blogger-comment.view.model';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
-import { CommentSqlDbType } from '../types/comment-sql-db.type';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, FindOptionsWhere, In, Repository } from 'typeorm';
 import { Comment } from '../domain/comment';
 import { LikesQuerySqlRepository } from '../../common/providers/likes.query.sql.repository';
 import { LikeStatusType } from '../../common/dto/input-models/like.input.model';
+import { CommentEntity } from '../entities/comment.entity';
+import { User } from '../../users/domain/user';
+import { UsersQueryTypeormRepository } from '../../users/providers/users.query-typeorm.repository';
+import { PostsQueryTypeOrmRepository } from '../../posts/providers/posts.query.type-orm.repository';
+import { Post } from '../../posts/domain/post';
+import { LikeEntity } from '../../likes/entities/like.entity';
+import { BlogsBannedUserEntity } from '../../blogs/entities/blogs-banned-user.entity';
 
 @Injectable()
-export class CommentsQuerySqlRepository {
+export class CommentsQueryTypeOrmRepository {
   constructor(
     @InjectDataSource() protected dataSource: DataSource,
     private likesQuerySqlRepository: LikesQuerySqlRepository,
+    @InjectRepository(CommentEntity)
+    private readonly commentsRepository: Repository<CommentEntity>,
+    @InjectRepository(LikeEntity)
+    private readonly likesRepository: Repository<LikeEntity>,
+    private readonly usersQueryTypeormRepository: UsersQueryTypeormRepository,
+    private readonly postsQueryTypeOrmRepository: PostsQueryTypeOrmRepository,
   ) {}
 
   async isCommentOwner(userId: string, commentId: string): Promise<boolean> {
-    const comment = await this.findById(commentId);
-    return comment.commentatorId === userId;
+    const comment = await this.findById(+commentId);
+    return comment.commentator.id === +userId;
   }
 
   async doesCommentIdExist(commentId: string, options?: GetCommentOptionTypes) {
@@ -32,7 +44,8 @@ export class CommentsQuerySqlRepository {
           WHERE c.id=${commentId} 
           AND u."isBanned"=false
           AND b."isBanned"=false
-          AND NOT EXISTS (SELECT * FROM blogs_banned_users bbu1 WHERE bbu1."blogId"=b.id AND bbu1."userId"=c."commentatorId")`;
+           AND NOT EXISTS (SELECT * FROM blogs_banned_users bbu1 WHERE bbu1."blogId"=b.id AND bbu1."userId"=c."commentatorId")
+          `;
       if (!options?.bannedUserInclude)
         conditions.replace('AND u."isBanned"=false', '');
       if (options?.bannedBlogInclude)
@@ -62,9 +75,15 @@ export class CommentsQuerySqlRepository {
 
   async getCommentById(commentId: string, options?: GetCommentOptionTypes) {
     console.log('[getCommentById]');
-    const comment = await this.findById(commentId, options);
-    if (!comment) return null;
-    return this.getCommentViewModel(comment);
+    const commentEntity = await this.findById(+commentId);
+    if (!commentEntity) return null;
+    let commentModel = await this.castToCommentModel(commentEntity);
+    if (options?.userId)
+      commentModel = await this.addUsersLikeStatus(
+        commentModel,
+        +options.userId,
+      );
+    return this.getCommentViewModel(commentModel);
   }
 
   async getBloggersComments(
@@ -72,15 +91,13 @@ export class CommentsQuerySqlRepository {
     bloggerId: string,
   ) {
     const { pageSize, pageNumber } = paginatorParams;
-    const { commentEntities, totalCount } = await this.findComments(
+    const { commentModels, totalCount } = await this.findComments(
       paginatorParams,
       { bloggerId },
       { bannedBlogInclude: true, likesInclude: false },
     );
 
-    const items = commentEntities.map((c) =>
-      this.getBloggerCommentViewModel(c),
-    );
+    const items = commentModels.map((c) => this.getBloggerCommentViewModel(c));
     return {
       pagesCount: pagesCount(totalCount, pageSize),
       page: pageNumber,
@@ -96,12 +113,12 @@ export class CommentsQuerySqlRepository {
     options?: GetCommentOptionTypes,
   ) {
     const { pageSize, pageNumber } = paginatorParams;
-    const { commentEntities, totalCount } = await this.findComments(
+    const { commentModels, totalCount } = await this.findComments(
       paginatorParams,
       { postId },
       { ...options, likesInclude: true },
     );
-    const items: CommentViewModel[] = commentEntities.map((c) =>
+    const items: CommentViewModel[] = commentModels.map((c) =>
       this.getCommentViewModel(c),
     );
     return {
@@ -113,46 +130,17 @@ export class CommentsQuerySqlRepository {
     };
   }
 
-  async findById(
-    commentId: string,
-    options?: GetCommentOptionTypes,
-  ): Promise<Comment> {
+  async findById(id: number) {
     console.log(`[findById]`);
-    const userId = options?.userId || '0';
-    let condition = `WHERE c.id=${commentId} AND b."isBanned"=false AND u."isBanned"=false`;
-    if (options?.bannedUserInclude)
-      condition = `WHERE c.id=${commentId} AND b."isBanned"=false`;
-    const queryString = ` 
-       SELECT 
-         c.*, 
-         c.*, 
-         p.title as "postTitle",
-         p."blogId",
-         b."blogOwnerId", 
-         b.name as "blogName", 
-         u.login as "commentatorLogin",
-         l."likeStatus" as "myStatus",
-         ( SELECT count(*) 
-           FROM likes l
-           LEFT JOIN users ur ON ur.id = l."userId" 
-           WHERE l."commentId"=c.id AND l."likeStatus"='Like' AND ur."isBanned"=false) as "likesCount",
-         (SELECT count(*) 
-           FROM likes l
-           LEFT JOIN users ur ON ur.id = l."userId" 
-           WHERE l."commentId"=c.id AND l."likeStatus"='Dislike' AND ur."isBanned"=false) as "dislikesCount"
-        FROM comments c
-        LEFT JOIN posts p ON c."postId"=p.id
-        LEFT JOIN blogs b ON  p."blogId"=b.id
-        LEFT JOIN users u ON  c."commentatorId"=u.id
-        LEFT JOIN likes l ON  (l."commentId"=c.id AND l."userId"= ${userId})
-        ${condition};
-        `;
-    console.log(queryString);
-    const queryResult = await this.dataSource.query(queryString);
-    if (!queryResult[0]) return null;
-    return this.castToEntity(queryResult[0], {
-      likesInclude: true,
-      likeRequestingUserId: options?.userId,
+    return await this.commentsRepository.findOne({
+      relations: {
+        post: {
+          blogger: true,
+          blog: { blogOwner: true, bannedUsers: { user: true } },
+        },
+        commentator: true,
+      },
+      where: { id, commentator: { isBanned: false } },
     });
   }
 
@@ -160,112 +148,76 @@ export class CommentsQuerySqlRepository {
     paginatorParams: PaginatorInputType,
     searchParams: CommentsSearchParamsType,
     options?: GetCommentOptionTypes,
-  ): Promise<{ totalCount: number; commentEntities: Comment[] }> {
+  ): Promise<{ totalCount: number; commentModels: Comment[] }> {
     const { sortBy, sortDirection, pageSize, pageNumber } = paginatorParams;
-    const { bannedUserInclude } = options;
-    const userId = options?.userId || '0';
+    const userId = options?.userId;
     const { postId, bloggerId } = searchParams;
-    let conditionsList = [`u."isBanned"=false`];
-    if (bannedUserInclude) conditionsList = [];
-    if (postId) conditionsList.push(`c."postId"=${postId}`);
-    if (bloggerId) conditionsList.push(`b."blogOwnerId"=${bloggerId}`);
-    let condition = '';
-    if (conditionsList.length > 0)
-      condition = 'WHERE ' + conditionsList.join(' AND ');
-    const totalCount = +(
-      await this.dataSource.query(`
-                        SELECT count(*)
-                        FROM comments c
-                        LEFT JOIN posts p ON c."postId"=p.id
-                        LEFT JOIN blogs b ON  p."blogId"=b.id
-                        LEFT JOIN users u ON  c."commentatorId"=u.id
-                        ${condition};
-                `)
-    )[0].count;
-    if (!totalCount) return { totalCount: 0, commentEntities: [] };
-    //Query to db
-    const likesCountString = `
-    (SELECT count(*) 
-     FROM likes l
-     LEFT JOIN users ur ON ur.id = l."userId" 
-     WHERE l."commentId"=c.id AND l."likeStatus"='Like' AND ur."isBanned"=false) as "likesCount"`;
-
-    const dislikesCountString = `
-    (SELECT count(*) 
-     FROM likes l
-     LEFT JOIN users ur ON ur.id = l."userId" 
-     WHERE l."commentId"=c.id AND l."likeStatus"='Dislike' AND ur."isBanned"=false) as "dislikesCount"`;
-    const queryString = ` SELECT c.*,  
-                               p.title as "postTitle",
-                               p."blogId",
-                               b."blogOwnerId", 
-                               b.name as "blogName", 
-                               u.login as "commentatorLogin",
-                               ${likesCountString},
-                               ${dislikesCountString},
-                               l."likeStatus" as "myStatus"
-                        FROM comments c
-                        LEFT JOIN posts p ON c."postId"=p.id
-                        LEFT JOIN blogs b ON  p."blogId"=b.id
-                        LEFT JOIN users u ON  c."commentatorId"=u.id
-                        LEFT JOIN likes l ON  (l."commentId"=c.id AND l."userId"= ${userId})
-                        ${condition}
-                        ORDER BY "${sortBy}" ${sortDirection}
-                        LIMIT ${pageSize}
-                        OFFSET ${pageSize * (pageNumber - 1)};
-                        `;
-    const comments: CommentSqlDbType[] = await this.dataSource.query(
-      queryString,
-    );
-
-    const commentEntities: Comment[] = [];
-    for (const comment of comments) {
-      commentEntities.push(
-        await this.castToEntity(comment, {
-          likesInclude: options.likesInclude,
-          likeRequestingUserId: options?.userId,
-        }),
-      );
+    const findOptionsWhere: FindOptionsWhere<CommentEntity> = {
+      commentator: { ['isBanned']: false },
+    };
+    if (postId) findOptionsWhere['postId'] = +postId;
+    if (bloggerId) {
+      findOptionsWhere.post = {};
+      findOptionsWhere.post['bloggerId'] = +bloggerId;
     }
-
-    return { totalCount, commentEntities };
+    let queryBuilder = this.commentsRepository
+      .createQueryBuilder('c')
+      .leftJoinAndSelect('c.commentator', 'commentator')
+      .leftJoinAndSelect('c.post', 'post')
+      .leftJoinAndSelect('post.blogger', 'blogger')
+      .leftJoinAndSelect('post.blog', 'blog')
+      .leftJoinAndSelect('blog.blogOwner', 'blogOwner')
+      .where('commentator.isBanned = :isBanned', { isBanned: false })
+      .andWhere((qb) => {
+        if (options?.bannedUserInclude) return;
+        return (
+          'c."commentatorId" NOT IN' +
+          qb
+            .subQuery()
+            .from(BlogsBannedUserEntity, 'bbu')
+            .select('bbu."userId"')
+            .where('bbu."blogId"=blog.id')
+            .getQuery()
+        );
+      })
+      .limit(pageSize)
+      .offset(pageSize * (pageNumber - 1))
+      .orderBy(`c.${sortBy}`, sortDirection.toUpperCase() as 'ASC' | 'DESC');
+    if (postId)
+      queryBuilder = queryBuilder.andWhere('post.id = :postId', { postId });
+    if (bloggerId)
+      queryBuilder = queryBuilder.andWhere('post.bloggerId = :bloggerId', {
+        bloggerId,
+      });
+    const totalCount = await queryBuilder.getCount();
+    const commentEntities = await queryBuilder.getMany();
+    if (!totalCount || commentEntities.length === 0)
+      return { totalCount: 0, commentModels: [] };
+    const commentIds = commentEntities.map((c) => c.id);
+    let usersLikeStatuses: LikeEntity[];
+    if (userId)
+      usersLikeStatuses = await this.findUsersLikeStatuses(commentIds, userId);
+    const commentModels: Comment[] = [];
+    for (const comment of commentEntities) {
+      const commentModel = await this.castToCommentModel(comment);
+      if (userId) {
+        const myStatus = usersLikeStatuses.find(
+          (ls) => ls.commentId === +commentModel.id,
+        )?.likeStatus;
+        if (myStatus) commentModel.likes.myStatus = myStatus as LikeStatusType;
+      }
+      commentModels.push(commentModel);
+    }
+    return { totalCount, commentModels };
   }
 
-  // getLikesInfo(comment: CommentDocument, userId?: string) {
-  //   let likesCount = 0;
-  //   let dislikesCount = 0;
-  //   let myStatus: LikeStatusType = 'None';
-  //   if (comment.likes.length > 0) {
-  //     likesCount = comment.likes.filter(
-  //       (c) => c.likeStatus === 'Like' && !c.userIsBanned,
-  //     ).length;
-  //     dislikesCount = comment.likes.filter(
-  //       (c) => c.likeStatus === 'Dislike' && !c.userIsBanned,
-  //     ).length;
-  //     if (userId) {
-  //       const myLike = comment.likes.find((l) => l.userId === userId);
-  //       if (myLike) myStatus = myLike.likeStatus;
-  //     }
-  //   }
-  //   return {
-  //     likesCount,
-  //     dislikesCount,
-  //     myStatus,
-  //   };
-  // }
-
   getCommentViewModel(comment: Comment): CommentViewModel {
-    // const likesInfo = {
-    //   likesCount: comment.likesCounts.likesCount,
-    //   dislikesCount: comment.likesCounts.dislikesCount,
-    //   myStatus: comment.likeRequestingUser?.likeStatus || 'None',
-    // };
     return {
       id: comment.id,
       content: comment.content,
       commentatorInfo: {
-        userId: comment.commentatorId,
-        userLogin: comment.commentatorLogin,
+        userId: comment.commentator.id,
+        userLogin: comment.commentator.accountData.login,
       },
       createdAt: new Date(+comment.createdAt).toISOString(),
       likesInfo: comment.likes,
@@ -273,60 +225,76 @@ export class CommentsQuerySqlRepository {
   }
 
   getBloggerCommentViewModel(comment: Comment): BloggerCommentViewModel {
-    // const likesInfo = this.getLikesInfo(comment);
     return {
       id: comment.id,
       content: comment.content,
       commentatorInfo: {
-        userId: comment.commentatorId,
-        userLogin: comment.commentatorLogin,
+        userId: comment.commentator.id,
+        userLogin: comment.commentator.accountData.login,
       },
       createdAt: new Date(+comment.createdAt).toISOString(),
       postInfo: {
-        id: comment.postId,
-        title: comment.postTitle,
-        blogId: comment.blogId,
-        blogName: comment.blogName,
+        id: comment.post.id,
+        title: comment.post.title,
+        blogId: comment.post.blog.id,
+        blogName: comment.post.blog.name,
       },
     };
   }
 
-  private async castToEntity(
-    comment: CommentSqlDbType,
-    options: { likesInclude: boolean; likeRequestingUserId?: string } = {
-      likesInclude: true,
-    },
-  ) {
-    const likeRequestingUserId = options.likeRequestingUserId;
-    const { likesInclude } = options;
-    const commentEntity: Comment = new Comment();
-    commentEntity.id = comment.id;
-    commentEntity.content = comment.content;
-    commentEntity.postId = comment.postId;
-    commentEntity.postTitle = comment.postTitle;
-    commentEntity.blogId = comment.blogId;
-    commentEntity.blogOwnerId = comment.blogOwnerId;
-    commentEntity.blogName = comment.blogName;
-    commentEntity.commentatorId = comment.commentatorId;
-    commentEntity.commentatorLogin = comment.commentatorLogin;
-    commentEntity.createdAt = +comment.createdAt;
-    commentEntity.updatedAt = +comment.updatedAt;
-    commentEntity.likes = {
-      likesCount: +comment.likesCount,
-      dislikesCount: +comment.dislikesCount,
-      myStatus: (comment.myStatus as LikeStatusType) || 'None',
+  castToCommentModel(commentEntity: CommentEntity): Comment {
+    const commentator: User = this.usersQueryTypeormRepository.castToUserModel(
+      commentEntity.commentator,
+    );
+    const post: Post = this.postsQueryTypeOrmRepository.castToPostModel(
+      commentEntity.post,
+    );
+    const commentModel: Comment = new Comment(
+      commentator,
+      post,
+      commentEntity.content,
+    );
+    commentModel.id = commentEntity.id.toString();
+    commentModel.createdAt = +commentEntity.createdAt;
+    commentModel.updatedAt = +commentEntity.updatedAt;
+    commentModel.likes = {
+      likesCount: +commentEntity.likesCount,
+      dislikesCount: +commentEntity.dislikesCount,
+      myStatus: 'None',
     };
-    // if (likesInclude) {
-    //   commentEntity.likesCounts =
-    //     await this.likesQuerySqlRepository.getLikesCount({
-    //       commentId: comment.id,
-    //     });
-    //   if (likeRequestingUserId)
-    //     commentEntity.likeRequestingUser =
-    //       await this.likesQuerySqlRepository.findLike(likeRequestingUserId, {
-    //         commentId: comment.id,
-    //       });
-    // }
-    return commentEntity;
+    return commentModel;
+  }
+
+  async getCommentModelById(commentId: string) {
+    const commentEntity = await this.findById(+commentId);
+    return this.castToCommentModel(commentEntity);
+  }
+
+  private async addUsersLikeStatus(commentModel: Comment, userId: number) {
+    const userLike = await this.likesRepository.findOne({
+      where: { commentId: +commentModel.id, userId: +userId },
+      select: { likeStatus: true },
+    });
+    if (userLike?.likeStatus)
+      commentModel.likes.myStatus = userLike.likeStatus as LikeStatusType;
+    return commentModel;
+  }
+
+  private async findUsersLikeStatuses(commentIds: number[], userId: string) {
+    return await this.likesRepository.find({
+      relations: { user: true },
+      select: {
+        id: true,
+        userId: true,
+        likeStatus: true,
+        commentId: true,
+        user: { id: false },
+      },
+      where: {
+        commentId: In(commentIds),
+        user: { isBanned: false },
+        userId: +userId,
+      },
+    });
   }
 }
