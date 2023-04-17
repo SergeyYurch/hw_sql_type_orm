@@ -4,11 +4,13 @@ import {
   ExecutionContext,
   NotFoundException,
 } from '@nestjs/common';
-import { CommentsQuerySqlRepository } from '../../comments/providers/comments.query.sql.repository';
+import { CommentsQueryTypeOrmRepository } from '../../comments/providers/comments.query.type-orm.repository';
 
 @Injectable()
 export class CheckCommentIdGuard implements CanActivate {
-  constructor(private commentsQueryRepository: CommentsQuerySqlRepository) {}
+  constructor(
+    private commentsQueryRepository: CommentsQueryTypeOrmRepository,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     console.log('CheckCommentIdGuard');
