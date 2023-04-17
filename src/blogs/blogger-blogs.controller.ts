@@ -28,9 +28,9 @@ import { PaginatorParam } from '../common/decorators/paginator-param.decorator';
 import { CheckPostIdGuard } from '../common/guards/check-post-id.guard';
 import { CheckBlogIdGuard } from '../common/guards/check-blog-id-guard.service';
 import { LoggerGuard } from '../common/guards/logger.guard';
-import { CommentsQuerySqlRepository } from '../comments/providers/comments.query.sql.repository';
 import { BlogsQueryTypeOrmRepository } from './providers/blogs.query.type-orm.repository';
 import { PostsQueryTypeOrmRepository } from '../posts/providers/posts.query.type-orm.repository';
+import { CommentsQueryTypeOrmRepository } from '../comments/providers/comments.query.type-orm.repository';
 
 @UseGuards(AccessTokenGuard)
 @Controller('blogger/blogs')
@@ -38,7 +38,7 @@ export class BloggerBlogsController {
   constructor(
     private blogsQueryRepository: BlogsQueryTypeOrmRepository,
     private postsQueryRepository: PostsQueryTypeOrmRepository,
-    private commentsQueryRepository: CommentsQuerySqlRepository,
+    private commentsQueryRepository: CommentsQueryTypeOrmRepository,
     private commandBus: CommandBus,
   ) {}
 
