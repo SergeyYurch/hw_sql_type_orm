@@ -21,4 +21,6 @@ export class LikeEntity {
   postId: number;
   @ManyToOne(() => CommentEntity, { nullable: true })
   comment: CommentEntity;
+  @Column({ nullable: true })
+  commentId: number;
 }
