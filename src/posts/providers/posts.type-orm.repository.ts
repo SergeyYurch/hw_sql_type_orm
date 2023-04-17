@@ -8,6 +8,7 @@ import { BlogEntity } from '../../blogs/entities/blog.entity';
 import { PostEntity } from '../entities/post.entity';
 import { PostsQueryTypeOrmRepository } from './posts.query.type-orm.repository';
 import { LikesTypeOrmRepository } from '../../likes/providers/likes.type-orm.repository';
+import { CommentsTypeOrmRepository } from '../../comments/providers/comments.type-orm.repository';
 
 @Injectable()
 export class PostsTypeOrmRepository {
@@ -15,6 +16,7 @@ export class PostsTypeOrmRepository {
     private likesQuerySqlRepository: LikesQuerySqlRepository,
     private postsQueryTypeOrmRepository: PostsQueryTypeOrmRepository,
     private likesTypeOrmRepository: LikesTypeOrmRepository,
+    private commentsTypeOrmRepository: CommentsTypeOrmRepository,
     @InjectDataSource() protected dataSource: DataSource,
     @InjectRepository(UserEntity)
     private readonly usersRepository: Repository<UserEntity>,
@@ -29,6 +31,7 @@ export class PostsTypeOrmRepository {
   }
   async delete(postId: string) {
     try {
+      await this.commentsTypeOrmRepository.deleteComments({ postId });
       await this.postsRepository
         .createQueryBuilder('p')
         .delete()
@@ -58,7 +61,8 @@ export class PostsTypeOrmRepository {
       postEntity.bloggerId = +post.blogger.id;
       postEntity.blogId = +post.blog.id;
       await this.postsRepository.save(postEntity);
-      if (post.updatedLike) await this.likesTypeOrmRepository.updateLike(post);
+      if (post.updatedLike)
+        await this.likesTypeOrmRepository.updateLike({ post });
       return postEntity.id.toString();
     } catch (e) {
       console.log(e);
