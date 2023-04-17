@@ -1,7 +1,7 @@
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 
-export class TestingSqlRepository {
+export class TestingTypeOrmRepository {
   constructor(@InjectDataSource() protected dataSource: DataSource) {}
 
   async dataBaseClear(): Promise<boolean> {
