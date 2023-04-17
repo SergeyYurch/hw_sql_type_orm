@@ -43,7 +43,7 @@ export class BlogsController {
     );
   }
 
-  //@UseGuards(CheckBlogIdGuard)
+  @UseGuards(CheckBlogIdGuard)
   @Get(':blogId')
   async getBlog(@Param('blogId') blogId: string) {
     return await this.blogsQueryRepository.getBlogById(blogId);
