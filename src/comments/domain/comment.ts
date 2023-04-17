@@ -1,28 +1,28 @@
-import { CreatedCommentDto } from '../dto/created-comment.dto';
 import { CommentsLikeEntity } from './comments-like.entity';
 import { LikesCountsType } from '../../common/types/likes-counts.type';
 import { LikeType } from '../../common/types/like.type';
-import { LikeDto } from '../../likes/dto/like.dto';
+import { User } from '../../users/domain/user';
+import { Post } from '../../posts/domain/post';
+import { LikeStatusType } from '../../common/dto/input-models/like.input.model';
 
 export class Comment {
   id: string;
   content: string;
-  postId: string;
-  postTitle: string;
-  blogId: string;
-  blogOwnerId: string;
-  blogName: string;
-  commentatorId: string;
-  commentatorLogin: string;
-  // isBanned: boolean;
+  post: Post;
+  commentator: User;
   createdAt: number;
   updatedAt: number;
   likes: CommentsLikeEntity;
   likeRequestingUser: LikeType | null;
   likesCounts: LikesCountsType;
-  newLike: LikeType | null;
+  newLike: { user: User; likeStatus: LikeStatusType } | null;
 
-  constructor() {
+  constructor(commentator: User, post: Post, content: string) {
+    this.commentator = commentator;
+    this.post = post;
+    this.content = content;
+    this.createdAt = Date.now();
+    this.updatedAt = Date.now();
     this.likes = {
       myStatus: 'None',
       likesCount: 0,
@@ -33,33 +33,32 @@ export class Comment {
     this.newLike = null;
   }
 
-  initial(createdComment: CreatedCommentDto) {
-    this.content = createdComment.content;
-    this.postId = createdComment.postId;
-    this.postTitle = createdComment.postTitle;
-    this.blogId = createdComment.blogId;
-    this.blogOwnerId = createdComment.blogId;
-    this.blogName = createdComment.blogName;
-    this.commentatorId = createdComment.commentatorId;
-    this.commentatorLogin = createdComment.commentatorLogin;
-    // this.isBanned = false;
-    this.createdAt = Date.now();
-    this.updatedAt = Date.now();
-  }
+  // initial(createdComment: CreatedCommentDto) {
+  //   this.content = createdComment.content;
+  //   this.postId = createdComment.postId;
+  //   this.postTitle = createdComment.postTitle;
+  //   this.blogId = createdComment.blogId;
+  //   this.blogOwnerId = createdComment.blogId;
+  //   this.blogName = createdComment.blogName;
+  //   this.commentatorId = createdComment.commentatorId;
+  //   this.commentatorLogin = createdComment.commentatorLogin;
+  //   // this.isBanned = false;
+  // }
 
   updateContent(content: string) {
     this.content = content;
     this.updatedAt = Date.now();
   }
 
-  updateLikeStatus(like: LikeDto) {
+  updateLikeStatus(likeStatus: LikeStatusType, user: User) {
     if (!this.newLike) {
       this.newLike = {
-        ...like,
+        user,
+        likeStatus,
       };
       return true;
     }
-    this.newLike.likeStatus = like.likeStatus;
+    this.newLike.likeStatus = likeStatus;
     return true;
   }
 }
