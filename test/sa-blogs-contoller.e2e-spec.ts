@@ -7,9 +7,17 @@ import { blog1, blog2, blog3, user1, user2, user3 } from './tsts-input-data';
 describe('UsersController (e2e)', () => {
   let app: INestApplication;
   let user1Id: string;
+  let user2Id: string;
+  let user3Id: string;
   let blog1Id: string;
   let blog2Id: string;
+  let blog3Id: string;
+  let blog1View: any;
+  let blog2View: any;
+  let blog3View: any;
   let post1Id: string;
+  let post2Id: string;
+  let post3Id: string;
   let accessTokenUser1: string;
   let accessTokenUser2: string;
   let accessTokenUser3: string;
@@ -97,7 +105,7 @@ describe('UsersController (e2e)', () => {
       .get(`/sa/blogs`)
       .auth('admin', 'qwerty', { type: 'basic' });
     const blog1InDb = getBlogsResult.body.items[0];
-    expect(blog1InDb.blogOwnerInfo.userId).toBeNull();
+    expect(blog1InDb.blogOwnerInfo.userId).toBeUndefined();
     expect(blog1InDb.id).toBe(blog1Id);
   });
 
