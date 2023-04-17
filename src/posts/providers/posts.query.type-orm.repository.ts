@@ -135,7 +135,7 @@ export class PostsQueryTypeOrmRepository {
           blogger: true,
           blog: { blogOwner: true },
         },
-        where: { id: +postId },
+        where: { id: +postId, blog: { isBanned: false } },
       });
     } catch (e) {
       console.log(e);
