@@ -1,8 +1,9 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { CreatedCommentDto } from '../../dto/created-comment.dto';
-import { CommentsSqlRepository } from '../comments.sql.repository';
 import { UsersQueryTypeormRepository } from '../../../users/providers/users.query-typeorm.repository';
 import { PostsQueryTypeOrmRepository } from '../../../posts/providers/posts.query.type-orm.repository';
+import { CommentsTypeOrmRepository } from '../comments.type-orm.repository';
+import { Post } from '../../../posts/domain/post';
+import { Comment } from '../../domain/comment';
 
 export class CreateCommentCommand {
   constructor(
@@ -19,7 +20,7 @@ export class CreateCommentUseCase
   constructor(
     protected usersQueryRepository: UsersQueryTypeormRepository,
     protected postsQueryRepository: PostsQueryTypeOrmRepository,
-    protected commentsRepository: CommentsSqlRepository,
+    protected commentsRepository: CommentsTypeOrmRepository,
   ) {}
 
   async execute(command: CreateCommentCommand) {
@@ -27,22 +28,8 @@ export class CreateCommentUseCase
     const commentator = await this.usersQueryRepository.getUserModelById(
       commentatorId,
     );
-    const post = await this.postsQueryRepository.getPostViewModelById(postId);
-    const blogOwnerId = await this.postsQueryRepository.getPostsBloggerId(
-      postId,
-    );
-    const createdComment: CreatedCommentDto = {
-      content,
-      commentatorId,
-      commentatorLogin: commentator.accountData.login,
-      blogId: post.blogId,
-      blogName: post.blogName,
-      blogOwnerId,
-      postId,
-      postTitle: post.title,
-    };
-    const commentModel = await this.commentsRepository.createCommentModel();
-    commentModel.initial(createdComment);
+    const post: Post = await this.postsQueryRepository.getPostModelById(postId);
+    const commentModel = new Comment(commentator, post, content);
     return await this.commentsRepository.save(commentModel);
   }
 }
