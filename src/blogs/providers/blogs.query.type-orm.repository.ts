@@ -9,6 +9,7 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import {
   DataSource,
   FindManyOptions,
+  FindOptionsOrder,
   FindOptionsWhere,
   ILike,
   Repository,
@@ -130,32 +131,42 @@ export class BlogsQueryTypeOrmRepository {
     searchLoginTerm?: string,
   ): Promise<PaginatorViewModel<BloggerUserViewModel>> {
     const { sortBy, sortDirection, pageSize, pageNumber } = paginatorParams;
-    const conditions = [];
-    if (searchLoginTerm) {
-      conditions.push({ ['login']: searchLoginTerm });
+    let findOptionsOrder: FindOptionsOrder<BlogsBannedUserEntity>;
+    if (sortBy === 'login') {
+      findOptionsOrder = { user: { login: sortDirection } };
+    } else {
+      findOptionsOrder = { [sortBy]: sortDirection };
     }
-    conditions.push({ ['blogId']: blogId });
+    const conditions: FindOptionsWhere<BlogsBannedUserEntity> = {
+      ['blogId']: +blogId,
+    };
+    if (searchLoginTerm) {
+      conditions.user = { ['login']: ILike(`%${searchLoginTerm}%`) };
+    }
+    console.log(conditions);
     const findOptions: FindManyOptions<BlogsBannedUserEntity> = {
       relations: {
         user: true,
       },
-      order: { [sortBy]: sortDirection },
+      order: findOptionsOrder,
       where: conditions,
       skip: pageSize * (pageNumber - 1),
       take: pageSize,
     };
     const [bannedUsers, totalCount] =
       await this.blogsBannedUsersRepository.findAndCount(findOptions);
-
-    const items: BloggerUserViewModel[] = bannedUsers.map((u) => ({
-      id: u.user.id.toString(),
-      login: u.user.login,
-      banInfo: {
-        isBanned: true,
-        banReason: u.banReason,
-        banDate: new Date(+u.banDate).toISOString(),
-      },
-    }));
+    console.log(bannedUsers);
+    let items: BloggerUserViewModel[] = [];
+    if (bannedUsers.length > 0)
+      items = bannedUsers.map((u) => ({
+        id: u.user.id.toString(),
+        login: u.user.login,
+        banInfo: {
+          isBanned: true,
+          banReason: u.banReason,
+          banDate: new Date(+u.banDate).toISOString(),
+        },
+      }));
     return {
       pagesCount: pagesCount(totalCount, pageSize),
       page: pageNumber,
@@ -202,8 +213,7 @@ export class BlogsQueryTypeOrmRepository {
   ): Promise<Blog | null> {
     try {
       const blogEntity = await this.findBlogEntityById(+blogId, options);
-      console.log(blogEntity);
-      console.log(typeof blogEntity.createdAt);
+      if (!blogEntity) return null;
       return this.castToBlogModel(blogEntity);
     } catch (e) {
       console.log(e);
@@ -266,15 +276,17 @@ export class BlogsQueryTypeOrmRepository {
     const blogModel: Blog = new Blog();
     blogModel.id = String(blogEntity.id);
     blogModel.name = blogEntity.name;
-    blogModel.blogOwnerId = String(blogEntity.blogOwner.id);
-    blogModel.blogOwnerLogin = blogEntity.blogOwner.login;
+    if (blogEntity.blogOwner) {
+      blogModel.blogOwnerId = String(blogEntity.blogOwner.id);
+      blogModel.blogOwnerLogin = blogEntity.blogOwner.login;
+    }
     blogModel.description = blogEntity.description;
     blogModel.websiteUrl = blogEntity.websiteUrl;
     blogModel.createdAt = +blogEntity.createdAt;
     blogModel.isMembership = blogEntity.isMembership;
     blogModel.isBanned = blogEntity.isBanned;
     blogModel.banDate = +blogEntity.banDate;
-    if (blogEntity.bannedUsers) {
+    if (blogEntity.bannedUsers?.length > 0) {
       blogModel.bannedUsers = blogEntity.bannedUsers.map((bu) => ({
         id: String(bu.userId),
         banDate: bu.banDate,
@@ -285,20 +297,5 @@ export class BlogsQueryTypeOrmRepository {
       blogModel.bannedUsers = [];
     }
     return blogModel;
-  }
-
-  async test(blogId: string) {
-    const blogEntity: BlogEntity = new BlogEntity();
-    blogEntity.name = 'blog.name';
-    blogEntity.description = 'blog.description';
-    blogEntity.websiteUrl = 'blog.websiteUrl';
-    blogEntity.createdAt = 4444444444444;
-    blogEntity.isMembership = false;
-    blogEntity.isBanned = false;
-    blogEntity.banDate = 2222222222222222;
-
-    const result = await this.blogsRepository.save(blogEntity);
-    console.log(result);
-    return result;
   }
 }
