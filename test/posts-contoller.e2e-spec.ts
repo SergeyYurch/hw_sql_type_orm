@@ -6,11 +6,18 @@ import { blog1, blog2, blog3, user1, user2, user3 } from './tsts-input-data';
 
 describe('PostsController (e2e)', () => {
   let app: INestApplication;
+  let user1Id: string;
   let user2Id: string;
   let user3Id: string;
   let blog1Id: string;
-  let blog2Id: string;
   let post1Id: string;
+  let post2Id: string;
+  let post3Id: string;
+  let blog2Id: string;
+  let blog3Id: string;
+  let blog1View: any;
+  let blog2View: any;
+  let blog3View: any;
 
   let accessTokenUser1: string;
   let accessTokenUser2: string;
