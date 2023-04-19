@@ -98,6 +98,8 @@ import { LikesQueryTypeOrmRepository } from './likes/providers/likes.query.type-
 import { LikesTypeOrmRepository } from './likes/providers/likes.type-orm.repository';
 import { CommentsQueryTypeOrmRepository } from './comments/providers/comments.query.type-orm.repository';
 import { SaQuizQuestionsController } from './quiz/sa-quiz-questions.controller';
+import { QuizQuestionEntity } from './quiz/entities/quiz-question.entity';
+import { QuizQuestionRepository } from './quiz/providers/quiz-question.repository';
 
 const configModule = ConfigModule.forRoot();
 const userEntities = [
@@ -203,6 +205,7 @@ export const options: TypeOrmModuleOptions =
       PostEntity,
       LikeEntity,
       CommentEntity,
+      QuizQuestionEntity,
     ]),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
@@ -273,6 +276,9 @@ export const options: TypeOrmModuleOptions =
     //decorators
     IsBlogExistConstraint,
     IsUniqLoginOrEmailConstraint,
+
+    //quiz
+    QuizQuestionRepository,
 
     //auth
     tokenService,

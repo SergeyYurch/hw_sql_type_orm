@@ -6,10 +6,10 @@ export class QuizQuestionEntity {
   id: number;
   @Column()
   body: string;
-  @Column({ type: 'array' })
+  @Column('char', { array: true })
   correctAnswers: string[];
   @Column({ default: false })
-  published: false;
+  published: boolean;
   @Column()
   createdAt: number;
   @Column()

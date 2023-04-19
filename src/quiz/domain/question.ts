@@ -1,6 +1,6 @@
 import { CreateQuestionDto } from '../dto/create-question.dto';
 
-export class QuizQuestionEntity {
+export class Question {
   id: number;
   body: string;
   correctAnswers: string[];
