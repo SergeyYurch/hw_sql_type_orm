@@ -187,11 +187,16 @@ export class BlogsQueryTypeOrmRepository {
   }
 
   async findBlogEntityById(id: number, options?: BlogsQueryOptionsType) {
+    console.log('findBlogEntityById  - options');
+    console.log(options);
     const findOptionsWhere: FindOptionsWhere<BlogEntity> = {
-      isBanned: false,
       id,
     };
     if (options?.bannedBlogInclude) delete findOptionsWhere.isBanned;
+
+    console.log('findOptionsWhere');
+    console.log(options?.bannedBlogInclude);
+    console.log(findOptionsWhere);
     return await this.blogsRepository.findOne({
       relations: {
         blogOwner: true,
@@ -212,6 +217,8 @@ export class BlogsQueryTypeOrmRepository {
     options?: BlogsQueryOptionsType,
   ): Promise<Blog | null> {
     try {
+      console.log('getBlogModelById - options');
+      console.log(options);
       const blogEntity = await this.findBlogEntityById(+blogId, options);
       if (!blogEntity) return null;
       return this.castToBlogModel(blogEntity);
@@ -241,7 +248,6 @@ export class BlogsQueryTypeOrmRepository {
       if (options?.blogOwnerId) {
         findOptionsWhere.blogOwner = { ['id']: +options.blogOwnerId };
       }
-      console.log(findOptionsWhere);
       const findOptions: FindManyOptions<BlogEntity> = {
         relations: {
           blogOwner: true,
@@ -257,9 +263,29 @@ export class BlogsQueryTypeOrmRepository {
         take: pageSize,
       };
 
+      const query = this.blogsRepository
+        .createQueryBuilder('b')
+        .leftJoinAndSelect('b.blogOwner', 'bo')
+        .leftJoinAndSelect('b.bannedUsers', 'bu')
+        .leftJoinAndSelect('bu.user', 'u')
+        .where('b.isBanned=:value', { value: false })
+        .select('b')
+        .addSelect('u.id')
+        .addSelect('u.login')
+        .orderBy(':sortField', sortDirection.toUpperCase() as 'ASC' | 'DESC')
+        .limit(pageSize)
+        .offset(pageSize * (pageNumber - 1))
+        .setParameter('sortField', `'b.${sortBy}'`);
+
       const [blogs, totalCount] = await this.blogsRepository.findAndCount(
         findOptions,
       );
+      // const [blogs, totalCount] = await Promise.all([
+      //   query.getRawMany(),
+      //   query.getCount(),
+      // ]);
+
+      console.log(blogs);
       const blogModels: Blog[] = [];
       for (const blog of blogs) {
         blogModels.push(this.castToBlogModel(blog));
