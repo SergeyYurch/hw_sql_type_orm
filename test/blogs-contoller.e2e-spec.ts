@@ -224,15 +224,15 @@ describe('BlogsController (e2e)', () => {
       ' queryParams:pageNumber=2&pageSize=1&sortDirection=asc',
     async () => {
       const blogs = await request(app.getHttpServer())
-        .get('/blogs?pageNumber=2&pageSize=1&sortDirection=asc')
+        .get('/blogs?pageNumber=1&pageSize=10&sortDirection=asc&sortBy=name')
         .expect(200);
-      expect(blogs.body.items.length).toBe(1);
+      expect(blogs.body.items.length).toBe(3);
 
       expect(blogs.body.items[0]).toEqual({
         id: expect.any(String),
-        name: 'blog2',
-        description: 'description2',
-        websiteUrl: 'https://youtube2.com',
+        name: 'blog1',
+        description: 'description1',
+        websiteUrl: 'https://youtube1.com',
         createdAt: expect.any(String),
         isMembership: false,
       });
