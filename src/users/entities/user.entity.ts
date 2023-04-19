@@ -12,9 +12,9 @@ import { PasswordRecoveryInformationEntity } from './password-recovery-informati
 export class UserEntity {
   @PrimaryGeneratedColumn()
   id: number;
-  @Column({ unique: true })
+  @Column({ unique: true, collation: 'C' })
   login: string;
-  @Column({ unique: true })
+  @Column({ unique: true, collation: 'C' })
   email: string;
   @Column()
   passwordHash: string;

@@ -54,7 +54,7 @@ export class AuthController {
   }
 
   // @UseGuards(LocalAuthGuard)
-  // @SkipThrottle()
+  @SkipThrottle()
   @HttpCode(200)
   @Post('/login')
   async signIn(
