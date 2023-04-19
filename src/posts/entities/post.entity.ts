@@ -15,7 +15,7 @@ import { LikeEntity } from '../../likes/entities/like.entity';
 export class PostEntity {
   @PrimaryGeneratedColumn()
   id: number;
-  @Column()
+  @Column({ collation: 'C' })
   title: string;
   @Column()
   shortDescription: string;
