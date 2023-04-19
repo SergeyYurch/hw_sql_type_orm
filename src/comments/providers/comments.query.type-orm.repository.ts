@@ -239,6 +239,7 @@ export class CommentsQueryTypeOrmRepository {
         blogId: comment.post.blog.id,
         blogName: comment.post.blog.name,
       },
+      likesInfo: { likesCount: 0, dislikesCount: 0, myStatus: 'None' },
     };
   }
 
