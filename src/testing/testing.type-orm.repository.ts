@@ -16,6 +16,7 @@ export class TestingTypeOrmRepository {
       DELETE FROM password_recovery_information;
       DELETE FROM device_sessions;
       DELETE FROM users;
+      DELETE FROM quiz_questions;
       
     `,
     );

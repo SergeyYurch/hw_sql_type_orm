@@ -99,7 +99,8 @@ import { LikesTypeOrmRepository } from './likes/providers/likes.type-orm.reposit
 import { CommentsQueryTypeOrmRepository } from './comments/providers/comments.query.type-orm.repository';
 import { SaQuizQuestionsController } from './quiz/sa-quiz-questions.controller';
 import { QuizQuestionEntity } from './quiz/entities/quiz-question.entity';
-import { QuizQuestionRepository } from './quiz/providers/quiz-question.repository';
+import { QuizQuestionTypeOrmRepository } from './quiz/providers/quiz-question-type-orm.repository';
+import { CreateQuestionUseCase } from './quiz/providers/use-cases/create-question.use-case';
 
 const configModule = ConfigModule.forRoot();
 const userEntities = [
@@ -161,6 +162,8 @@ const securityUseCases = [
   DeleteAllSessionExcludeCurrentUseCase,
   GetSessionsByUserIdUseCase,
 ];
+
+const quizUseCases = [CreateQuestionUseCase];
 export const options: TypeOrmModuleOptions =
   process.env.DB_LOCATION === 'LOCAL'
     ? {
@@ -262,6 +265,7 @@ export const options: TypeOrmModuleOptions =
     ...usersUseCases,
     ...commentsUseCases,
     ...authUseCases,
+    ...quizUseCases,
     //common
     ConfigService,
     JwtService,
@@ -278,7 +282,7 @@ export const options: TypeOrmModuleOptions =
     IsUniqLoginOrEmailConstraint,
 
     //quiz
-    QuizQuestionRepository,
+    QuizQuestionTypeOrmRepository,
 
     //auth
     tokenService,

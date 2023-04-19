@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { QuizQuestionEntity } from '../entities/quiz-question.entity';
 import { Repository } from 'typeorm';
 
-export class QuizQuestionRepository {
+export class QuizQuestionTypeOrmRepository {
   constructor(
     @InjectRepository(QuizQuestionEntity)
     private quizQuestionRepository: Repository<QuizQuestionEntity>,
@@ -16,8 +16,8 @@ export class QuizQuestionRepository {
     questionEntity.createdAt = questionModel.createdAt;
     questionEntity.updatedAt = questionModel.updatedAt;
     questionEntity.published = questionModel.published;
-
-    await this.quizQuestionRepository.save(questionEntity);
+    const result = await this.quizQuestionRepository.save(questionEntity);
+    console.log(result);
     return questionEntity.id;
   }
 }

@@ -6,12 +6,12 @@ export class QuizQuestionEntity {
   id: number;
   @Column()
   body: string;
-  @Column('char', { array: true })
+  @Column('text', { array: true })
   correctAnswers: string[];
   @Column({ default: false })
   published: boolean;
-  @Column()
+  @Column({ type: 'bigint' })
   createdAt: number;
-  @Column()
+  @Column({ type: 'bigint' })
   updatedAt: number;
 }

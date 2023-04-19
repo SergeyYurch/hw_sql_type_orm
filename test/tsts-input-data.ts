@@ -1,3 +1,5 @@
+import { QuestionInputModel } from '../src/quiz/dto/inputModels/question.input.model';
+
 export const user1 = {
   login: 'user1',
   password: 'password1',
@@ -86,4 +88,14 @@ export const blog4 = {
   name: 'blog4',
   description: 'description4',
   websiteUrl: 'https://youtube4.com',
+};
+
+export const question1: QuestionInputModel = {
+  body: 'body question1',
+  correctAnswers: ['answer1 for q1', 'answer2 for q1'],
+};
+
+export const question2: QuestionInputModel = {
+  body: 'body question2',
+  correctAnswers: ['answer1 for q2', 'answer2 for q2'],
 };
