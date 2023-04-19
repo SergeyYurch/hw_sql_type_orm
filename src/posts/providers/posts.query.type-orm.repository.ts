@@ -86,9 +86,8 @@ export class PostsQueryTypeOrmRepository {
     if (!postEntity) return null;
     let postModel: Post = this.castToPostModel(postEntity);
     if (userId) postModel = await this.addUserLikeStatus(postModel, userId);
-    console.log(postEntity);
-    if (postModel.likes.likesCount > 0) console.log('Go to findNewestLikes');
-    postModel = await this.findNewestLikes(postModel);
+    if (postModel.likes.likesCount > 0)
+      postModel = await this.findNewestLikes(postModel);
     return postModel;
   }
 
@@ -154,6 +153,16 @@ export class PostsQueryTypeOrmRepository {
         blog: { ['isBanned']: false },
       };
       if (blogId) findOptionsWhere['blogId'] = +blogId;
+      let findOptionsOrder = {};
+      if (sortBy) {
+        if (sortBy === 'blogName') {
+          findOptionsOrder = { blog: { name: sortDirection } };
+        } else {
+          {
+            findOptionsOrder = { [sortBy]: sortDirection };
+          }
+        }
+      }
       const [postEntities, totalCount] =
         await this.postsRepository.findAndCount({
           relations: {
@@ -161,7 +170,7 @@ export class PostsQueryTypeOrmRepository {
             blog: { blogOwner: true },
           },
           where: findOptionsWhere,
-          order: { [sortBy]: sortDirection },
+          order: findOptionsOrder,
           skip: pageSize * (pageNumber - 1),
           take: pageSize,
         });
