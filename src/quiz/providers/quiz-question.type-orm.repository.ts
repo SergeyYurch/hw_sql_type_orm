@@ -10,14 +10,13 @@ export class QuizQuestionTypeOrmRepository {
   ) {}
   async save(questionModel: Question) {
     const questionEntity = new QuizQuestionEntity();
-    if (questionModel.id) questionEntity.id = questionModel.id;
+    if (questionModel.id) questionEntity.id = +questionModel.id;
     questionEntity.body = questionModel.body;
     questionEntity.correctAnswers = questionModel.correctAnswers;
     questionEntity.createdAt = questionModel.createdAt;
     questionEntity.updatedAt = questionModel.updatedAt;
     questionEntity.published = questionModel.published;
     const result = await this.quizQuestionRepository.save(questionEntity);
-    console.log(result);
-    return questionEntity.id;
+    return result.id;
   }
 }

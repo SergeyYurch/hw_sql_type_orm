@@ -1,7 +1,7 @@
 import { CreateQuestionDto } from '../dto/create-question.dto';
 
 export class Question {
-  id: number;
+  id: string;
   body: string;
   correctAnswers: string[];
   published: boolean;

@@ -99,8 +99,9 @@ import { LikesTypeOrmRepository } from './likes/providers/likes.type-orm.reposit
 import { CommentsQueryTypeOrmRepository } from './comments/providers/comments.query.type-orm.repository';
 import { SaQuizQuestionsController } from './quiz/sa-quiz-questions.controller';
 import { QuizQuestionEntity } from './quiz/entities/quiz-question.entity';
-import { QuizQuestionTypeOrmRepository } from './quiz/providers/quiz-question-type-orm.repository';
+import { QuizQuestionTypeOrmRepository } from './quiz/providers/quiz-question.type-orm.repository';
 import { CreateQuestionUseCase } from './quiz/providers/use-cases/create-question.use-case';
+import { QuizQuestionsQueryTypeOrmRepository } from './quiz/providers/quiz-questions.query-type-orm.repository';
 
 const configModule = ConfigModule.forRoot();
 const userEntities = [
@@ -283,6 +284,7 @@ export const options: TypeOrmModuleOptions =
 
     //quiz
     QuizQuestionTypeOrmRepository,
+    QuizQuestionsQueryTypeOrmRepository,
 
     //auth
     tokenService,
