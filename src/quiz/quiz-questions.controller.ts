@@ -1,6 +1,6 @@
 import { Controller, Delete, Get, Post, Put } from '@nestjs/common';
 
-@Controller('quiz/quiestions')
+@Controller('quiz/questions')
 export class QuizQuestionsController {
   @Get()
   async getQuestions() {
