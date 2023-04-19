@@ -12,4 +12,5 @@ export interface BloggerCommentViewModel {
     blogId: string;
     blogName: string;
   };
+  likesInfo: { likesCount: number; dislikesCount: number; myStatus: 'None' };
 }
