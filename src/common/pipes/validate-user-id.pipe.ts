@@ -1,9 +1,9 @@
 import { PipeTransform, Injectable, NotFoundException } from '@nestjs/common';
-import { UsersQuerySqlRepository } from '../../users/providers/users.query-sql.repository';
+import { UsersQueryTypeormRepository } from '../../users/providers/users.query-typeorm.repository';
 
 @Injectable()
 export class ValidateUserIdPipe implements PipeTransform {
-  constructor(private usersQueryRepository: UsersQuerySqlRepository) {}
+  constructor(private usersQueryRepository: UsersQueryTypeormRepository) {}
   async transform(value: string) {
     if (!(await this.usersQueryRepository.doesUserIdExist(value))) {
       throw new NotFoundException();
