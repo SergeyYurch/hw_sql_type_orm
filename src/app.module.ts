@@ -97,6 +97,7 @@ import { CommentsTypeOrmRepository } from './comments/providers/comments.type-or
 import { LikesQueryTypeOrmRepository } from './likes/providers/likes.query.type-orm.repository';
 import { LikesTypeOrmRepository } from './likes/providers/likes.type-orm.repository';
 import { CommentsQueryTypeOrmRepository } from './comments/providers/comments.query.type-orm.repository';
+import { SaQuizQuestionsController } from './quiz/sa-quiz-questions.controller';
 
 const configModule = ConfigModule.forRoot();
 const userEntities = [
@@ -248,6 +249,7 @@ export const options: TypeOrmModuleOptions =
     PostsController,
     SecurityController,
     TestingController,
+    SaQuizQuestionsController,
   ],
 
   providers: [

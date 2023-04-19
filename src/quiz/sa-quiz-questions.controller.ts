@@ -1,7 +1,9 @@
-import { Controller, Delete, Get, Post, Put } from '@nestjs/common';
+import { Controller, Delete, Get, Post, Put, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 
-@Controller('quiz/questions')
-export class QuizQuestionsController {
+@UseGuards(AuthGuard('basic'))
+@Controller('sa/quiz/questions')
+export class SaQuizQuestionsController {
   @Get()
   async getQuestions() {
     return true;
