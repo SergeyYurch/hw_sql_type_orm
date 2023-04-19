@@ -12,7 +12,7 @@ import { UserEntity } from '../../users/entities/user.entity';
 export class BlogEntity {
   @PrimaryGeneratedColumn()
   id: number;
-  @Column()
+  @Column({ collation: 'C' })
   name: string;
   @Column()
   description: string;
