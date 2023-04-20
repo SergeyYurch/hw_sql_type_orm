@@ -18,6 +18,8 @@ import { QuizQuestionsQueryTypeOrmRepository } from './providers/quiz-questions.
 import { UpdateQuestionCommand } from './providers/use-cases/update-question.use-case';
 import { PaginatorParam } from '../common/decorators/paginator-param.decorator';
 import { PaginatorInputType } from '../common/dto/input-models/paginator.input.type';
+import { PublishQuestionCommand } from './providers/use-cases/publish-question.use-case';
+import { PublishInputModel } from './dto/inputModels/publish.input.model';
 
 @UseGuards(AuthGuard('basic'))
 @Controller('sa/quiz/questions')
@@ -63,7 +65,12 @@ export class SaQuizQuestionsController {
 
   @Put(':id/publish')
   @HttpCode(204)
-  async publishQuestion() {
-    return true;
+  async publishQuestion(
+    @Body() data: PublishInputModel,
+    @Param('id') id: string,
+  ) {
+    return this.commandBus.execute(
+      new PublishQuestionCommand(id, data.published),
+    );
   }
 }

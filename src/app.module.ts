@@ -103,6 +103,7 @@ import { QuizQuestionTypeOrmRepository } from './quiz/providers/quiz-question.ty
 import { CreateQuestionUseCase } from './quiz/providers/use-cases/create-question.use-case';
 import { QuizQuestionsQueryTypeOrmRepository } from './quiz/providers/quiz-questions.query-type-orm.repository';
 import { UpdateQuestionUseCase } from './quiz/providers/use-cases/update-question.use-case';
+import { PublishQuestionUseCase } from './quiz/providers/use-cases/publish-question.use-case';
 
 const configModule = ConfigModule.forRoot();
 const userEntities = [
@@ -165,7 +166,11 @@ const securityUseCases = [
   GetSessionsByUserIdUseCase,
 ];
 
-const quizUseCases = [CreateQuestionUseCase, UpdateQuestionUseCase];
+const quizUseCases = [
+  CreateQuestionUseCase,
+  UpdateQuestionUseCase,
+  PublishQuestionUseCase,
+];
 export const options: TypeOrmModuleOptions =
   process.env.DB_LOCATION === 'LOCAL'
     ? {

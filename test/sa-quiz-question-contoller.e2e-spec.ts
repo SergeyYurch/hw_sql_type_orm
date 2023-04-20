@@ -85,7 +85,7 @@ describe('QuizQuestionController (e2e)', () => {
   });
 
   //checking edit question
-  it('/sa/quiz/questions (POST) Update question1. Should return 204.', async () => {
+  it('/sa/quiz/questions/:id (PUT) Update question1. Should return 204.', async () => {
     //create new question
     await request(app.getHttpServer())
       .put(`/sa/quiz/questions/${questions[0].id}`)
@@ -95,5 +95,56 @@ describe('QuizQuestionController (e2e)', () => {
         correctAnswers: ['update answ1', 'update answ2'],
       })
       .expect(204);
+  });
+
+  //checking publish question
+  it('/sa/quiz/questions/:id/publish (PUT) Publish question2. Wrong id. Should return 404.', async () => {
+    //create new question
+    await request(app.getHttpServer())
+      .put(`/sa/quiz/questions/1111111/publish`)
+      .auth('admin', 'qwerty', { type: 'basic' })
+      .send({
+        published: true,
+      })
+      .expect(204);
+  });
+
+  it('/sa/quiz/questions/:id/publish (PUT) Publish question2. Should return 204.', async () => {
+    //create new question
+    await request(app.getHttpServer())
+      .put(`/sa/quiz/questions/${questions[1].id}/publish`)
+      .auth('admin', 'qwerty', { type: 'basic' })
+      .send({
+        published: true,
+      })
+      .expect(204);
+  });
+  it('/sa/quiz/questions (GET). Query param: publishedStatus=published. Should return 200.', async () => {
+    //create new question
+    const res = await request(app.getHttpServer())
+      .get('/sa/quiz/questions?publishedStatus=published')
+      .auth('admin', 'qwerty', { type: 'basic' })
+      .expect(200);
+    expect(res.body.totalCount).toBe(1);
+    expect(res.body.items.length).toBe(1);
+    expect(res.body.items[0].body).toBe('body question2');
+  });
+  it('/sa/quiz/questions (GET). Query param: publishedStatus=notPublished.Should return 200.', async () => {
+    //create new question
+    const res = await request(app.getHttpServer())
+      .get('/sa/quiz/questions?publishedStatus=notPublished')
+      .auth('admin', 'qwerty', { type: 'basic' })
+      .expect(200);
+    expect(res.body.totalCount).toBe(4);
+    expect(res.body.items.length).toBe(4);
+  });
+  it('/sa/quiz/questions (GET). Query param: publishedStatus=all. Should return 200.', async () => {
+    //create new question
+    const res = await request(app.getHttpServer())
+      .get('/sa/quiz/questions?publishedStatus=all')
+      .auth('admin', 'qwerty', { type: 'basic' })
+      .expect(200);
+    expect(res.body.totalCount).toBe(5);
+    expect(res.body.items.length).toBe(5);
   });
 });

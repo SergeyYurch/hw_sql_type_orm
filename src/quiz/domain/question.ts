@@ -15,7 +15,7 @@ export class Question {
     this.createdAt = Date.now();
     this.updatedAt = Date.now();
   }
-  publishedQuestion(published: boolean) {
+  publish(published: boolean) {
     this.published = published;
     this.updatedAt = Date.now();
   }
