@@ -4,7 +4,7 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 export class QuizQuestionEntity {
   @PrimaryGeneratedColumn()
   id: number;
-  @Column()
+  @Column({ collation: 'C' })
   body: string;
   @Column('text', { array: true })
   correctAnswers: string[];
