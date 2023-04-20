@@ -1,4 +1,5 @@
 import { CreateQuestionDto } from '../dto/create-question.dto';
+import { UpdateQuestionDto } from '../dto/update-question.dto';
 
 export class Question {
   id: string;
@@ -17,5 +18,10 @@ export class Question {
   publishedQuestion(published: boolean) {
     this.published = published;
     this.updatedAt = Date.now();
+  }
+
+  update(data: UpdateQuestionDto) {
+    this.body = data.body;
+    this.correctAnswers = data.correctAnswers;
   }
 }

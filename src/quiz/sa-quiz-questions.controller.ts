@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   HttpCode,
+  Param,
   Post,
   Put,
   UseGuards,
@@ -13,6 +14,7 @@ import { QuestionInputModel } from './dto/inputModels/question.input.model';
 import { CommandBus } from '@nestjs/cqrs';
 import { CreateQuestionCommand } from './providers/use-cases/create-question.use-case';
 import { QuizQuestionsQueryTypeOrmRepository } from './providers/quiz-questions.query-type-orm.repository';
+import { UpdateQuestionCommand } from './providers/use-cases/update-question.use-case';
 
 @UseGuards(AuthGuard('basic'))
 @Controller('sa/quiz/questions')
@@ -41,8 +43,11 @@ export class SaQuizQuestionsController {
 
   @Put(':id')
   @HttpCode(204)
-  async updateQuestion() {
-    return true;
+  async updateQuestion(
+    @Body() updateData: QuestionInputModel,
+    @Param('id') id: string,
+  ) {
+    return this.commandBus.execute(new UpdateQuestionCommand(id, updateData));
   }
 
   @Put(':id/publish')

@@ -10,12 +10,15 @@ export class QuizQuestionsQueryTypeOrmRepository {
     private quizQuestionRepository: Repository<QuizQuestionEntity>,
   ) {}
   async getQuestionById(id: string) {
-    const questionEntity = await this.quizQuestionRepository.findOne({
-      where: { id: +id },
-    });
-    if (!questionEntity) return null;
-    const questionModel = this.castToQuestionModel(questionEntity);
+    const questionModel = await this.getQuestionModel(id);
+    if (!questionModel) return null;
     return this.castToViewModel(questionModel);
+  }
+
+  async findById(id: number) {
+    return await this.quizQuestionRepository.findOne({
+      where: { id },
+    });
   }
 
   castToQuestionModel(entity: QuizQuestionEntity): Question {
@@ -39,5 +42,11 @@ export class QuizQuestionsQueryTypeOrmRepository {
       published: model.published,
       id: model.id,
     };
+  }
+
+  async getQuestionModel(id: string) {
+    const questionEntity = await this.findById(+id);
+    if (!questionEntity) return null;
+    return this.castToQuestionModel(questionEntity);
   }
 }

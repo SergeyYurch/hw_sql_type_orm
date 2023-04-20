@@ -3,7 +3,6 @@ import request from 'supertest';
 import { disconnect } from 'mongoose';
 import { getApp } from './test-utils';
 import { question1 } from './tsts-input-data';
-import any = jasmine.any;
 
 describe('QuizQuestionController (e2e)', () => {
   let app: INestApplication;
@@ -32,7 +31,6 @@ describe('QuizQuestionController (e2e)', () => {
       .expect(401);
     question1Id = newUser1.body.id;
   });
-
   it('/sa/quiz/questions (POST) Add new question. Wrong input data. Should return 400.', async () => {
     //create new question
     const newQuestion1 = await request(app.getHttpServer())
@@ -42,8 +40,7 @@ describe('QuizQuestionController (e2e)', () => {
       .expect(400);
     question1Id = newQuestion1.body.id;
   });
-
-  it('/sa/quiz/questions (POST) Add new question. Should return 201.', async () => {
+  it('/sa/quiz/questions (POST) Add new question1. Should return 201.', async () => {
     //create new question
     const newQuestion1 = await request(app.getHttpServer())
       .post('/sa/quiz/questions')
@@ -59,5 +56,16 @@ describe('QuizQuestionController (e2e)', () => {
       published: false,
       id: expect.any(String),
     });
+  });
+  it('/sa/quiz/questions (POST) Update question1. Should return 204.', async () => {
+    //create new question
+    const newQuestion1 = await request(app.getHttpServer())
+      .put(`/sa/quiz/questions/${question1Id}`)
+      .auth('admin', 'qwerty', { type: 'basic' })
+      .send({
+        body: 'update body',
+        correctAnswers: ['update answ1', 'update answ2'],
+      })
+      .expect(204);
   });
 });
