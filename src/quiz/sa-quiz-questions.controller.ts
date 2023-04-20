@@ -7,6 +7,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
@@ -15,6 +16,8 @@ import { CommandBus } from '@nestjs/cqrs';
 import { CreateQuestionCommand } from './providers/use-cases/create-question.use-case';
 import { QuizQuestionsQueryTypeOrmRepository } from './providers/quiz-questions.query-type-orm.repository';
 import { UpdateQuestionCommand } from './providers/use-cases/update-question.use-case';
+import { PaginatorParam } from '../common/decorators/paginator-param.decorator';
+import { PaginatorInputType } from '../common/dto/input-models/paginator.input.type';
 
 @UseGuards(AuthGuard('basic'))
 @Controller('sa/quiz/questions')
@@ -24,8 +27,16 @@ export class SaQuizQuestionsController {
     private readonly quizQuestionsQueryTypeOrmRepository: QuizQuestionsQueryTypeOrmRepository,
   ) {}
   @Get()
-  async getQuestions() {
-    return true;
+  async getQuestions(
+    @Query('bodySearchTerm') bodySearchTerm: string,
+    @Query('publishedStatus') publishedStatus = 'all',
+    @PaginatorParam() paginatorParams: PaginatorInputType,
+  ) {
+    return await this.quizQuestionsQueryTypeOrmRepository.getQuestions(
+      paginatorParams,
+      publishedStatus,
+      bodySearchTerm,
+    );
   }
 
   @Post()

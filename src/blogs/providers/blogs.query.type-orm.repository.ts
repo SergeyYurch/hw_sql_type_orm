@@ -284,8 +284,6 @@ export class BlogsQueryTypeOrmRepository {
       //   query.getRawMany(),
       //   query.getCount(),
       // ]);
-
-      console.log(blogs);
       const blogModels: Blog[] = [];
       for (const blog of blogs) {
         blogModels.push(this.castToBlogModel(blog));

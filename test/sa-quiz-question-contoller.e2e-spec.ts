@@ -6,8 +6,7 @@ import { question1 } from './tsts-input-data';
 
 describe('QuizQuestionController (e2e)', () => {
   let app: INestApplication;
-  let question1Id: string;
-  let question2Id: string;
+  const questions = [];
 
   beforeAll(async () => {
     app = await getApp();
@@ -25,42 +24,71 @@ describe('QuizQuestionController (e2e)', () => {
   });
   it('/sa/quiz/questions (POST) Add new question. Not authorization. Should return 401.', async () => {
     //create new question
-    const newUser1 = await request(app.getHttpServer())
+    await request(app.getHttpServer())
       .post('/sa/quiz/questions')
       .send(question1)
       .expect(401);
-    question1Id = newUser1.body.id;
   });
   it('/sa/quiz/questions (POST) Add new question. Wrong input data. Should return 400.', async () => {
     //create new question
-    const newQuestion1 = await request(app.getHttpServer())
+    await request(app.getHttpServer())
       .post('/sa/quiz/questions')
       .auth('admin', 'qwerty', { type: 'basic' })
       .send({ body: 'ssss', correctAnswers: ['a1', 'a2'] })
       .expect(400);
-    question1Id = newQuestion1.body.id;
   });
-  it('/sa/quiz/questions (POST) Add new question1. Should return 201.', async () => {
+  it('/sa/quiz/questions (POST) Add new 5 questions. Should return 201.', async () => {
     //create new question
-    const newQuestion1 = await request(app.getHttpServer())
-      .post('/sa/quiz/questions')
-      .auth('admin', 'qwerty', { type: 'basic' })
-      .send(question1)
-      .expect(201);
-    question1Id = newQuestion1.body.id;
-    expect(newQuestion1.body).toEqual({
-      body: 'body question1',
-      correctAnswers: ['answer1 for q1', 'answer2 for q1'],
-      createdAt: expect.any(String),
-      updatedAt: expect.any(String),
-      published: false,
-      id: expect.any(String),
-    });
+    for (let i = 1; i < 6; i++) {
+      const res = await request(app.getHttpServer())
+        .post('/sa/quiz/questions')
+        .auth('admin', 'qwerty', { type: 'basic' })
+        .send({
+          body: `body question${i}`,
+          correctAnswers: [`answ1 for q${i}`, `answ2 for q${i}`],
+        })
+        .expect(201);
+      questions.push(res.body);
+    }
   });
+
+  //checking GET questions && pagination. Returns all questions with pagination and filtering Parameters
+  it('/sa/quiz/questions (GET). Default pagination. No search filters. Should return 200.', async () => {
+    //create new question
+    const res = await request(app.getHttpServer())
+      .get('/sa/quiz/questions')
+      .auth('admin', 'qwerty', { type: 'basic' })
+      .expect(200);
+    expect(res.body.totalCount).toBe(5);
+    expect(res.body.items.length).toBe(5);
+    expect(res.body.items[0].body).toBe('body question5');
+  });
+  it('/sa/quiz/questions (GET). Query param: sortDirection=asc. No search filters. Should return 200.', async () => {
+    //create new question
+    const res = await request(app.getHttpServer())
+      .get('/sa/quiz/questions?sortDirection=asc')
+      .auth('admin', 'qwerty', { type: 'basic' })
+      .expect(200);
+    expect(res.body.totalCount).toBe(5);
+    expect(res.body.items.length).toBe(5);
+    expect(res.body.items[0].body).toBe('body question1');
+  });
+  it('/sa/quiz/questions (GET). Query param: bodySearchTerm=dy3. No search filters. Should return 200.', async () => {
+    //create new question
+    const res = await request(app.getHttpServer())
+      .get('/sa/quiz/questions?bodySearchTerm=Ion3')
+      .auth('admin', 'qwerty', { type: 'basic' })
+      .expect(200);
+    expect(res.body.totalCount).toBe(1);
+    expect(res.body.items.length).toBe(1);
+    expect(res.body.items[0].body).toBe('body question3');
+  });
+
+  //checking edit question
   it('/sa/quiz/questions (POST) Update question1. Should return 204.', async () => {
     //create new question
-    const newQuestion1 = await request(app.getHttpServer())
-      .put(`/sa/quiz/questions/${question1Id}`)
+    await request(app.getHttpServer())
+      .put(`/sa/quiz/questions/${questions[0].id}`)
       .auth('admin', 'qwerty', { type: 'basic' })
       .send({
         body: 'update body',
