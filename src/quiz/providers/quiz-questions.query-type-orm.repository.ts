@@ -1,7 +1,13 @@
 import { Question } from '../domain/question';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { QuizQuestionEntity } from '../entities/quiz-question.entity';
-import { FindManyOptions, FindOptionsWhere, ILike, Repository } from 'typeorm';
+import {
+  DataSource,
+  FindManyOptions,
+  FindOptionsWhere,
+  ILike,
+  Repository,
+} from 'typeorm';
 import { QuestionViewModel } from '../dto/viewModels/question.view.model';
 import { PaginatorInputType } from '../../common/dto/input-models/paginator.input.type';
 import { BlogEntity } from '../../blogs/entities/blog.entity';
@@ -9,9 +15,21 @@ import { pagesCount } from '../../common/helpers/helpers';
 
 export class QuizQuestionsQueryTypeOrmRepository {
   constructor(
+    @InjectDataSource() protected dataSource: DataSource,
     @InjectRepository(QuizQuestionEntity)
     private quizQuestionRepository: Repository<QuizQuestionEntity>,
   ) {}
+
+  async doesQuestionIdExist(id: string) {
+    const queryString = `
+              SELECT EXISTS (SELECT * 
+              FROM quiz_questions 
+              WHERE id=${+id});
+             `;
+    console.log(queryString);
+    const queryResult = await this.dataSource.query(queryString);
+    return queryResult[0].exists;
+  }
   async getQuestionById(id: string) {
     const questionModel = await this.getQuestionModel(id);
     if (!questionModel) return null;

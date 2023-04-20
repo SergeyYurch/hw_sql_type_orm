@@ -85,6 +85,39 @@ describe('QuizQuestionController (e2e)', () => {
   });
 
   //checking edit question
+  it('/sa/quiz/questions/:id (PUT) Update question1. wrong password. Should return 401.', async () => {
+    //create new question
+    await request(app.getHttpServer())
+      .put(`/sa/quiz/questions/${questions[0].id}`)
+      .auth('admin', 'qwerty2', { type: 'basic' })
+      .send({
+        body: 'update body',
+        correctAnswers: ['update answ1', 'update answ2'],
+      })
+      .expect(401);
+  });
+  it('/sa/quiz/questions/:id (PUT) Update question1.  Wrong id. Should return 404.', async () => {
+    //create new question
+    await request(app.getHttpServer())
+      .put(`/sa/quiz/questions/222222`)
+      .auth('admin', 'qwerty', { type: 'basic' })
+      .send({
+        body: 'update body',
+        correctAnswers: ['update answ1', 'update answ2'],
+      })
+      .expect(404);
+  });
+  it('/sa/quiz/questions/:id (PUT) Update question1.  Wrong input data. Should return 400..', async () => {
+    //create new question
+    await request(app.getHttpServer())
+      .put(`/sa/quiz/questions/${questions[0].id}`)
+      .auth('admin', 'qwerty', { type: 'basic' })
+      .send({
+        body: 'up',
+        correctAnswers: ['update answ1', 'update answ2'],
+      })
+      .expect(400);
+  });
   it('/sa/quiz/questions/:id (PUT) Update question1. Should return 204.', async () => {
     //create new question
     await request(app.getHttpServer())
@@ -98,6 +131,16 @@ describe('QuizQuestionController (e2e)', () => {
   });
 
   //checking publish question
+  it('/sa/quiz/questions/:id/publish (PUT) Publish question2 - wrong password. Should return 401.', async () => {
+    //create new question
+    await request(app.getHttpServer())
+      .put(`/sa/quiz/questions/${questions[1].id}/publish`)
+      .auth('admin', 'qwerty1', { type: 'basic' })
+      .send({
+        published: true,
+      })
+      .expect(401);
+  });
   it('/sa/quiz/questions/:id/publish (PUT) Publish question2. Wrong id. Should return 404.', async () => {
     //create new question
     await request(app.getHttpServer())
@@ -106,9 +149,18 @@ describe('QuizQuestionController (e2e)', () => {
       .send({
         published: true,
       })
-      .expect(204);
+      .expect(404);
   });
-
+  it('/sa/quiz/questions/:id/publish (PUT) Publish question2. Wrong input data. Should return 400.', async () => {
+    //create new question
+    await request(app.getHttpServer())
+      .put(`/sa/quiz/questions/${questions[1].id}/publish`)
+      .auth('admin', 'qwerty', { type: 'basic' })
+      .send({
+        published: 'true',
+      })
+      .expect(400);
+  });
   it('/sa/quiz/questions/:id/publish (PUT) Publish question2. Should return 204.', async () => {
     //create new question
     await request(app.getHttpServer())

@@ -20,6 +20,7 @@ import { PaginatorParam } from '../common/decorators/paginator-param.decorator';
 import { PaginatorInputType } from '../common/dto/input-models/paginator.input.type';
 import { PublishQuestionCommand } from './providers/use-cases/publish-question.use-case';
 import { PublishInputModel } from './dto/inputModels/publish.input.model';
+import { CheckQuestionIdGuard } from '../common/guards/check-question-id-guard.service';
 
 @UseGuards(AuthGuard('basic'))
 @Controller('sa/quiz/questions')
@@ -49,11 +50,13 @@ export class SaQuizQuestionsController {
     return this.quizQuestionsQueryTypeOrmRepository.getQuestionById(questionId);
   }
 
+  @UseGuards(CheckQuestionIdGuard)
   @Delete(':id')
   async deleteQuestion() {
     return true;
   }
 
+  @UseGuards(CheckQuestionIdGuard)
   @Put(':id')
   @HttpCode(204)
   async updateQuestion(
@@ -62,7 +65,7 @@ export class SaQuizQuestionsController {
   ) {
     return this.commandBus.execute(new UpdateQuestionCommand(id, updateData));
   }
-
+  @UseGuards(CheckQuestionIdGuard)
   @Put(':id/publish')
   @HttpCode(204)
   async publishQuestion(
