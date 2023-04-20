@@ -13,7 +13,6 @@ export class Question {
     this.correctAnswers = createData.correctAnswers;
     this.published = false;
     this.createdAt = Date.now();
-    this.updatedAt = Date.now();
   }
   publish(published: boolean) {
     this.published = published;
@@ -23,5 +22,6 @@ export class Question {
   update(data: UpdateQuestionDto) {
     this.body = data.body;
     this.correctAnswers = data.correctAnswers;
+    this.updatedAt = Date.now();
   }
 }

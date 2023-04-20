@@ -82,7 +82,9 @@ export class QuizQuestionsQueryTypeOrmRepository {
       body: model.body,
       correctAnswers: model.correctAnswers,
       createdAt: new Date(model.createdAt).toISOString(),
-      updatedAt: new Date(model.updatedAt).toISOString(),
+      updatedAt: model.updatedAt
+        ? new Date(model.updatedAt).toISOString()
+        : null,
       published: model.published,
       id: model.id,
     };

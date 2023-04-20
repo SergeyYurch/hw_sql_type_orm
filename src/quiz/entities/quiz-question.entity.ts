@@ -12,6 +12,6 @@ export class QuizQuestionEntity {
   published: boolean;
   @Column({ type: 'bigint' })
   createdAt: number;
-  @Column({ type: 'bigint' })
+  @Column({ type: 'bigint', nullable: true })
   updatedAt: number;
 }

@@ -14,7 +14,7 @@ export class QuizQuestionTypeOrmRepository {
     questionEntity.body = questionModel.body;
     questionEntity.correctAnswers = questionModel.correctAnswers;
     questionEntity.createdAt = questionModel.createdAt;
-    questionEntity.updatedAt = questionModel.updatedAt;
+    questionEntity.updatedAt = questionModel.updatedAt || null;
     questionEntity.published = questionModel.published;
     const result = await this.quizQuestionRepository.save(questionEntity);
     return result.id;
