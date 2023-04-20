@@ -21,6 +21,7 @@ import { PaginatorInputType } from '../common/dto/input-models/paginator.input.t
 import { PublishQuestionCommand } from './providers/use-cases/publish-question.use-case';
 import { PublishInputModel } from './dto/inputModels/publish.input.model';
 import { CheckQuestionIdGuard } from '../common/guards/check-question-id-guard.service';
+import { DeleteQuestionCommand } from './providers/use-cases/delete-question.use-case';
 
 @UseGuards(AuthGuard('basic'))
 @Controller('sa/quiz/questions')
@@ -52,8 +53,9 @@ export class SaQuizQuestionsController {
 
   @UseGuards(CheckQuestionIdGuard)
   @Delete(':id')
-  async deleteQuestion() {
-    return true;
+  @HttpCode(204)
+  async deleteQuestion(@Param('id') id: string) {
+    return this.commandBus.execute(new DeleteQuestionCommand(id));
   }
 
   @UseGuards(CheckQuestionIdGuard)

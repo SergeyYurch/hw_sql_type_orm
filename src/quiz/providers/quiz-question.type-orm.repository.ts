@@ -19,4 +19,11 @@ export class QuizQuestionTypeOrmRepository {
     const result = await this.quizQuestionRepository.save(questionEntity);
     return result.id;
   }
+
+  async delete(questionId: string): Promise<boolean> {
+    const result = await this.quizQuestionRepository.delete({
+      id: +questionId,
+    });
+    return result.affected === 1;
+  }
 }

@@ -199,4 +199,36 @@ describe('QuizQuestionController (e2e)', () => {
     expect(res.body.totalCount).toBe(5);
     expect(res.body.items.length).toBe(5);
   });
+
+  //delete question
+  it('/sa/quiz/questions/:id (DELETE) Delete question1. wrong password. Should return 401.', async () => {
+    //create new question
+    await request(app.getHttpServer())
+      .delete(`/sa/quiz/questions/${questions[4].id}`)
+      .auth('admin', 'qwerty22', { type: 'basic' })
+      .expect(401);
+  });
+  it('/sa/quiz/questions/:id (DELETE) Delete question1. SWrong id. Should return 404.', async () => {
+    //create new question
+    await request(app.getHttpServer())
+      .delete(`/sa/quiz/questions/111`)
+      .auth('admin', 'qwerty', { type: 'basic' })
+      .expect(404);
+  });
+  it('/sa/quiz/questions/:id (DELETE) Delete question1. Should return 204.', async () => {
+    //create new question
+    await request(app.getHttpServer())
+      .delete(`/sa/quiz/questions/${questions[4].id}`)
+      .auth('admin', 'qwerty', { type: 'basic' })
+      .expect(204);
+  });
+  it('/sa/quiz/questions (GET).Should return 4 questions %% status 200.', async () => {
+    //create new question
+    const res = await request(app.getHttpServer())
+      .get('/sa/quiz/questions?publishedStatus=all')
+      .auth('admin', 'qwerty', { type: 'basic' })
+      .expect(200);
+    expect(res.body.totalCount).toBe(4);
+    expect(res.body.items.length).toBe(4);
+  });
 });
