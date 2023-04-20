@@ -1,6 +1,5 @@
 import { BlogCreatedDto } from '../dto/blog-created.dto';
 import { BlogEditDto } from '../dto/blog-edit.dto';
-import { BlogDbDtoSql } from '../types/blog-db-dto.sql';
 
 export class BannedUser {
   id: string;

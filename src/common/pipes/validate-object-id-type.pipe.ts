@@ -1,14 +1,9 @@
-import {
-  PipeTransform,
-  Injectable,
-  ArgumentMetadata,
-  NotFoundException,
-} from '@nestjs/common';
+import { PipeTransform, Injectable, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 
 @Injectable()
 export class ValidateObjectIdTypePipe implements PipeTransform {
-  transform(value: string, metadata: ArgumentMetadata) {
+  transform(value: string) {
     if (!Types.ObjectId.isValid(value)) {
       throw new NotFoundException('Invalid blogId!!');
     }

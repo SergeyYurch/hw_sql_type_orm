@@ -263,19 +263,19 @@ export class BlogsQueryTypeOrmRepository {
         take: pageSize,
       };
 
-      const query = this.blogsRepository
-        .createQueryBuilder('b')
-        .leftJoinAndSelect('b.blogOwner', 'bo')
-        .leftJoinAndSelect('b.bannedUsers', 'bu')
-        .leftJoinAndSelect('bu.user', 'u')
-        .where('b.isBanned=:value', { value: false })
-        .select('b')
-        .addSelect('u.id')
-        .addSelect('u.login')
-        .orderBy(':sortField', sortDirection.toUpperCase() as 'ASC' | 'DESC')
-        .limit(pageSize)
-        .offset(pageSize * (pageNumber - 1))
-        .setParameter('sortField', `'b.${sortBy}'`);
+      // const query = this.blogsRepository
+      //   .createQueryBuilder('b')
+      //   .leftJoinAndSelect('b.blogOwner', 'bo')
+      //   .leftJoinAndSelect('b.bannedUsers', 'bu')
+      //   .leftJoinAndSelect('bu.user', 'u')
+      //   .where('b.isBanned=:value', { value: false })
+      //   .select('b')
+      //   .addSelect('u.id')
+      //   .addSelect('u.login')
+      //   .orderBy(':sortField', sortDirection.toUpperCase() as 'ASC' | 'DESC')
+      //   .limit(pageSize)
+      //   .offset(pageSize * (pageNumber - 1))
+      //   .setParameter('sortField', `'b.${sortBy}'`);
 
       const [blogs, totalCount] = await this.blogsRepository.findAndCount(
         findOptions,
