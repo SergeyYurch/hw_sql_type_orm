@@ -121,4 +121,18 @@ export class QuizQuestionsQueryTypeOrmRepository {
       items,
     };
   }
+
+  async getRandomSetOfQuestionsForPair(count: number) {
+    const result = await this.quizQuestionRepository.find({
+      select: { id: true },
+      where: { published: true },
+    });
+    const allIds = result.map((q) => q.id);
+    const questionSet = [];
+    for (let i = 0; i < count; i++) {
+      const n = Math.floor(Math.random() * allIds.length);
+      questionSet.push(allIds[n]);
+    }
+    return questionSet;
+  }
 }
