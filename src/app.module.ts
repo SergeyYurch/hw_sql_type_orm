@@ -105,6 +105,11 @@ import { QuizQuestionsQueryTypeOrmRepository } from './quiz/providers/quiz-quest
 import { UpdateQuestionUseCase } from './quiz/providers/use-cases/update-question.use-case';
 import { PublishQuestionUseCase } from './quiz/providers/use-cases/publish-question.use-case';
 import { DeleteQuestionUseCase } from './quiz/providers/use-cases/delete-question.use-case';
+import { PairsTypeOrmRepository } from './game/providers/pairs.type-orm.repository';
+import { PairsQueryTypeOrmRepository } from './game/providers/pairs.query.type-orm.repository';
+import { PairEntity } from './game/entities/pair.entity';
+import { PlayerEntity } from './game/entities/player.entity';
+import { AnswerEntity } from './game/entities/ansver.entity';
 
 const configModule = ConfigModule.forRoot();
 const userEntities = [
@@ -112,6 +117,7 @@ const userEntities = [
   DeviceSessionsEntity,
   PasswordRecoveryInformationEntity,
 ];
+const gameEntities = [PairEntity, PlayerEntity, AnswerEntity];
 //
 const blogsEntities = [BlogEntity, BlogsBannedUserEntity];
 
@@ -214,6 +220,7 @@ export const options: TypeOrmModuleOptions =
     TypeOrmModule.forFeature([
       ...userEntities,
       ...blogsEntities,
+      ...gameEntities,
       PostEntity,
       LikeEntity,
       CommentEntity,
@@ -293,6 +300,8 @@ export const options: TypeOrmModuleOptions =
     //quiz
     QuizQuestionTypeOrmRepository,
     QuizQuestionsQueryTypeOrmRepository,
+    PairsTypeOrmRepository,
+    PairsQueryTypeOrmRepository,
 
     //auth
     tokenService,
@@ -323,6 +332,7 @@ export const options: TypeOrmModuleOptions =
     UsersQueryRepository,
     UsersQueryTypeormRepository,
     UsersTypeOrmRepository,
+
     //
     TestingService,
     TestingRepository,
