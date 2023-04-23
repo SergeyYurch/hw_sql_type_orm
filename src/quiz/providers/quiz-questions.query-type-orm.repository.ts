@@ -6,6 +6,7 @@ import {
   FindManyOptions,
   FindOptionsWhere,
   ILike,
+  In,
   Repository,
 } from 'typeorm';
 import { QuestionViewModel } from '../dto/viewModels/question.view.model';
@@ -29,11 +30,6 @@ export class QuizQuestionsQueryTypeOrmRepository {
     console.log(queryString);
     const queryResult = await this.dataSource.query(queryString);
     return queryResult[0].exists;
-  }
-  async getQuestionById(id: string) {
-    const questionModel = await this.getQuestionModel(id);
-    if (!questionModel) return null;
-    return this.castToViewModel(questionModel);
   }
 
   async findById(id: number) {
@@ -66,6 +62,7 @@ export class QuizQuestionsQueryTypeOrmRepository {
   }
 
   castToQuestionModel(entity: QuizQuestionEntity): Question {
+    console.log('castToQuestionModel');
     const questionModel = new Question({
       body: entity.body,
       correctAnswers: entity.correctAnswers,
@@ -90,10 +87,28 @@ export class QuizQuestionsQueryTypeOrmRepository {
     };
   }
 
-  async getQuestionModel(id: string) {
+  async getQuestionModelById(id: string) {
     const questionEntity = await this.findById(+id);
     if (!questionEntity) return null;
     return this.castToQuestionModel(questionEntity);
+  }
+
+  async getQuestionViewById(id: string) {
+    const questionModel = await this.getQuestionModelById(id);
+    if (!questionModel) return null;
+    return this.castToViewModel(questionModel);
+  }
+
+  async getSetOfRandomQuestionModels(count: number) {
+    const ids = await this.getSetRandomIdsOfQuestions(count);
+    return await this.getQuestionModelsByIds(ids);
+  }
+
+  async getQuestionModelsByIds(ids: number[]) {
+    const setOfQuestionEntities = await this.quizQuestionRepository.findBy({
+      id: In(ids),
+    });
+    return setOfQuestionEntities.map((qe) => this.castToQuestionModel(qe));
   }
 
   async getQuestions(
@@ -122,16 +137,16 @@ export class QuizQuestionsQueryTypeOrmRepository {
     };
   }
 
-  async getRandomSetOfQuestionsForPair(count: number) {
+  async getSetRandomIdsOfQuestions(count: number) {
     const result = await this.quizQuestionRepository.find({
       select: { id: true },
       where: { published: true },
     });
-    const allIds = result.map((q) => q.id);
+    const allIds = result.map((q) => +q.id);
     const questionSet = [];
-    for (let i = 0; i < count; i++) {
+    while (questionSet.length < count) {
       const n = Math.floor(Math.random() * allIds.length);
-      questionSet.push(allIds[n]);
+      if (!questionSet.includes(allIds[n])) questionSet.push(allIds[n]);
     }
     return questionSet;
   }
