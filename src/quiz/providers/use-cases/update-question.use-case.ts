@@ -26,7 +26,7 @@ export class UpdateQuestionUseCase
       correctAnswers: inputUpdateData.correctAnswers,
     };
     const questionModel =
-      await this.quizQuestionsQueryTypeOrmRepository.getQuestionModel(
+      await this.quizQuestionsQueryTypeOrmRepository.getQuestionModelById(
         questionId,
       );
     questionModel.update(updateData);
