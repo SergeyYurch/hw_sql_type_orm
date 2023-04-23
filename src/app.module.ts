@@ -110,6 +110,8 @@ import { PairsQueryTypeOrmRepository } from './game/providers/pairs.query.type-o
 import { PairEntity } from './game/entities/pair.entity';
 import { PlayerEntity } from './game/entities/player.entity';
 import { AnswerEntity } from './game/entities/ansver.entity';
+import { PairGameQuizPairsController } from './game/pair-game-quiz.pairs.controller';
+import { ConnectionUseCase } from './game/providers/use-cases/connection.use-case';
 
 const configModule = ConfigModule.forRoot();
 const userEntities = [
@@ -178,6 +180,7 @@ const quizUseCases = [
   UpdateQuestionUseCase,
   PublishQuestionUseCase,
   DeleteQuestionUseCase,
+  ConnectionUseCase,
 ];
 export const options: TypeOrmModuleOptions =
   process.env.DB_LOCATION === 'LOCAL'
@@ -272,6 +275,7 @@ export const options: TypeOrmModuleOptions =
     SecurityController,
     TestingController,
     SaQuizQuestionsController,
+    PairGameQuizPairsController,
   ],
 
   providers: [
