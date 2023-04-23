@@ -267,6 +267,7 @@ export class UsersQueryTypeormRepository {
   }
 
   castToUserModel(userEntity: UserEntity): User {
+    console.log('castToUserModel');
     const user = new User();
     user.id = String(userEntity.id);
     user.accountData = {
