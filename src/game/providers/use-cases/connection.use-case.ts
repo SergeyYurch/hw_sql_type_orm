@@ -30,15 +30,11 @@ export class ConnectionUseCase implements ICommandHandler<ConnectionCommand> {
     if (!pairModel) {
       pairModel = new Pair();
       pairModel.createNewPair(playerModel);
-      const pairId = await this.pairsTypeOrmRepository.savePair(pairModel);
-      return this.pairsQueryTypeOrmRepository.getPairModelById(pairId);
+      return await this.pairsTypeOrmRepository.savePair(pairModel);
     }
-    const questions =
-      await this.quizQuestionsQueryTypeOrmRepository.getRandomSetOfQuestionsForPair(
-        5,
-      );
-    pairModel.connectSecondPlayer(playerModel, questions);
-    const pairId = await this.pairsTypeOrmRepository.savePair(pairModel);
-    return this.pairsQueryTypeOrmRepository.getPairModelByUserId(pairId);
+
+    pairModel.connectSecondPlayer(playerModel);
+    await this.pairsTypeOrmRepository.addNewSetOfQuestions(pairModel);
+    return await this.pairsTypeOrmRepository.savePair(pairModel);
   }
 }
