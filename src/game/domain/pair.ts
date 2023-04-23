@@ -1,11 +1,12 @@
 import { GameStatusType } from '../types/game-status.type';
 import { Player } from './player';
+import { Question } from '../../quiz/domain/question';
 
 export class Pair {
   id: string;
   firstPlayer: Player;
   secondPlayer: Player;
-  questions: number[];
+  questions: Question[];
   status: GameStatusType;
   pairCreatedDate: number;
   startGameDate: number;
@@ -17,9 +18,8 @@ export class Pair {
     this.questions = [];
   }
 
-  connectSecondPlayer(player: Player, questions: number[]) {
+  connectSecondPlayer(player: Player) {
     this.secondPlayer = player;
-    this.questions = questions;
     this.status = 'Active';
     this.startGameDate = Date.now();
   }
