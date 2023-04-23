@@ -7,9 +7,11 @@ import { PlayerEntity } from '../entities/player.entity';
 import { Answer } from '../domain/answer';
 import { AnswerEntity } from '../entities/ansver.entity';
 import { Player } from '../domain/player';
+import { QuizQuestionsQueryTypeOrmRepository } from '../../quiz/providers/quiz-questions.query-type-orm.repository';
 
 export class PairsTypeOrmRepository {
   constructor(
+    private readonly quizQuestionsQueryTypeOrmRepository: QuizQuestionsQueryTypeOrmRepository,
     private readonly pairsQueryTypeOrmRepository: PairsQueryTypeOrmRepository,
     @InjectRepository(PairEntity)
     private readonly pairsRepository: Repository<PairEntity>,
@@ -19,16 +21,20 @@ export class PairsTypeOrmRepository {
     private readonly playersRepository: Repository<PlayerEntity>,
   ) {}
   async savePair(pair: Pair) {
+    console.log('!!!!save pair!!!!');
     let pairEntity = new PairEntity();
-    pairEntity.firstPlayer = await this.savePlayer(pair.firstPlayer);
-    if (pair.secondPlayer)
-      pairEntity.secondPlayer = await this.savePlayer(pair.secondPlayer);
+    if (!pair.id) {
+      pairEntity.firstPlayer = await this.savePlayer(pair.firstPlayer);
+    }
     if (pair.id) {
       pairEntity = await this.pairsQueryTypeOrmRepository.getPairEntityById(
         +pair.id,
       );
     }
-    pairEntity.questions = pair.questions;
+    // console.log(pair.secondPlayer);
+    if (pair.secondPlayer)
+      pairEntity.secondPlayer = await this.savePlayer(pair.secondPlayer);
+    pairEntity.questions = pair.questions.map((p) => +p.id);
     pairEntity.status = pair.status;
     pairEntity.pairCreatedDate = pair.pairCreatedDate;
     pairEntity.startGameDate = pair.startGameDate;
@@ -59,5 +65,11 @@ export class PairsTypeOrmRepository {
     answerEntity.addedAt = answer.addedAt || Date.now();
     answerEntity.playerId = +playerId;
     return this.answersRepository.save(answerEntity);
+  }
+  async addNewSetOfQuestions(pairModel: Pair) {
+    pairModel.questions =
+      await this.quizQuestionsQueryTypeOrmRepository.getSetOfRandomQuestionModels(
+        5,
+      );
   }
 }
