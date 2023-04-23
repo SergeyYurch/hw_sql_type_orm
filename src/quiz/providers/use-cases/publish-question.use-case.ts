@@ -17,7 +17,7 @@ export class PublishQuestionUseCase
   async execute(command: PublishQuestionCommand) {
     const { questionId, published } = command;
     const questionModel =
-      await this.quizQuestionsQueryTypeOrmRepository.getQuestionModel(
+      await this.quizQuestionsQueryTypeOrmRepository.getQuestionModelById(
         questionId,
       );
     questionModel.publish(published);
