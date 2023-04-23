@@ -10,11 +10,11 @@ export class PairEntity {
   firstPlayerId: number;
   @ManyToOne(() => PlayerEntity)
   firstPlayer: PlayerEntity;
-  @Column()
+  @Column({ nullable: true })
   secondPlayerId: number;
-  @ManyToOne(() => PlayerEntity)
+  @ManyToOne(() => PlayerEntity, { nullable: true })
   secondPlayer: PlayerEntity;
-  @Column('int', { array: true })
+  @Column('int', { array: true, default: [] })
   questions: number[];
   @Column()
   status: GameStatusType;
