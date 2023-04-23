@@ -8,6 +8,10 @@ export class TestingTypeOrmRepository {
     console.log('dataBaseClear');
     await this.dataSource.query(
       `
+      DELETE FROM answers;
+      DELETE FROM pairs;
+      DELETE FROM players;
+      DELETE FROM quiz_questions;
       DELETE FROM likes;
       DELETE FROM comments;
       DELETE FROM posts;
@@ -16,7 +20,7 @@ export class TestingTypeOrmRepository {
       DELETE FROM password_recovery_information;
       DELETE FROM device_sessions;
       DELETE FROM users;
-      DELETE FROM quiz_questions;
+
       
     `,
     );
