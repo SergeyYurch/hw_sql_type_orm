@@ -48,7 +48,9 @@ export class SaQuizQuestionsController {
     const questionId = await this.commandBus.execute(
       new CreateQuestionCommand(question),
     );
-    return this.quizQuestionsQueryTypeOrmRepository.getQuestionById(questionId);
+    return this.quizQuestionsQueryTypeOrmRepository.getQuestionViewById(
+      questionId,
+    );
   }
 
   @UseGuards(CheckQuestionIdGuard)
