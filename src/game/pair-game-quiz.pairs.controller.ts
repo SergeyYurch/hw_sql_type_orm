@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   ForbiddenException,
   Get,
@@ -14,6 +15,8 @@ import { AccessTokenGuard } from '../common/guards/access-token.guard';
 import { CurrentUserId } from '../common/decorators/current-user-id.param.decorator';
 import { PairsQueryTypeOrmRepository } from './providers/pairs.query.type-orm.repository';
 import { CheckPairIdGuard } from './guards/check-pair-id-guard.service';
+import { SetAnswerCommand } from './providers/use-cases/set-answer.use-case';
+import { AnswerInputModel } from './dto/input-models/answer-input.model';
 
 @UseGuards(AccessTokenGuard)
 @Controller('/pair-game-quiz/pairs')
@@ -47,13 +50,19 @@ export class PairGameQuizPairsController {
   @Post('connection')
   @HttpCode(200)
   async connection(@CurrentUserId() userId: string) {
+    const pair =
+      await this.pairsQueryTypeOrmRepository.getActivePairViewByUserId(userId);
+    if (pair) throw new ForbiddenException();
     const pairId = await this.commandBus.execute(new ConnectionCommand(userId));
     if (!pairId) return null;
     return this.pairsQueryTypeOrmRepository.getPairViewById(pairId);
   }
 
   @Post('my-current/answers')
-  async answer() {
-    return true;
+  async answer(
+    @CurrentUserId() userId: string,
+    @Body() body: AnswerInputModel,
+  ) {
+    await this.commandBus.execute(new SetAnswerCommand(userId, body.answer));
   }
 }
