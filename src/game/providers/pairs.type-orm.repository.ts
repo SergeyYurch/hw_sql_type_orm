@@ -23,32 +23,31 @@ export class PairsTypeOrmRepository {
   async savePair(pair: Pair) {
     console.log('!!!!save pair!!!!');
     let pairEntity = new PairEntity();
-    if (!pair.id) {
-      pairEntity.firstPlayer = await this.savePlayer(pair.firstPlayer);
-    }
+    pairEntity.firstPlayer = await this.savePlayer(pair.firstPlayer);
+    if (pair.secondPlayer)
+      pairEntity.secondPlayer = await this.savePlayer(pair.secondPlayer);
     if (pair.id) {
       pairEntity = await this.pairsQueryTypeOrmRepository.getPairEntityById(
         +pair.id,
       );
     }
-    // console.log(pair.secondPlayer);
-    if (pair.secondPlayer)
-      pairEntity.secondPlayer = await this.savePlayer(pair.secondPlayer);
     pairEntity.questions = pair.questions.map((p) => +p.id);
     pairEntity.status = pair.status;
     pairEntity.pairCreatedDate = pair.pairCreatedDate;
     pairEntity.startGameDate = pair.startGameDate;
     pairEntity.finishGameDate = pair.finishGameDate;
     await this.pairsRepository.save(pairEntity);
+    await this.checkFinishGame(pairEntity);
     return pairEntity.id.toString();
   }
 
   async savePlayer(player: Player) {
     const playerEntity = new PlayerEntity();
+    playerEntity.answers = [];
     if (player.id) playerEntity.id = +player.id;
     if (player.answers.length > 0) {
       for (const answer of player.answers) {
-        playerEntity.answers.push(await this.saveAnswer(answer, player.id));
+        playerEntity.answers.push(await this.saveAnswer(answer, +player.id));
       }
     }
     playerEntity.userId = +player.user.id;
@@ -56,20 +55,38 @@ export class PairsTypeOrmRepository {
     return await this.playersRepository.save(playerEntity);
   }
 
-  async saveAnswer(answer: Answer, playerId: string) {
+  async saveAnswer(answer: Answer, playerId: number) {
     const answerEntity = new AnswerEntity();
     if (answer.id) answerEntity.id = +answer.id;
     answerEntity.questionId = +answer.question.id;
     answerEntity.answerStatus = answer.answerStatus;
     answerEntity.body = answer.body;
-    answerEntity.addedAt = answer.addedAt || Date.now();
-    answerEntity.playerId = +playerId;
+    answerEntity.playerId = playerId;
     return this.answersRepository.save(answerEntity);
   }
-  async addNewSetOfQuestions(pairModel: Pair) {
-    pairModel.questions =
-      await this.quizQuestionsQueryTypeOrmRepository.getSetOfRandomQuestionModels(
-        5,
-      );
+
+  private async checkFinishGame(pairEntity: PairEntity) {
+    if (
+      pairEntity.firstPlayer.answers.length === 5 &&
+      pairEntity.secondPlayer.answers.length === 5
+    ) {
+      let firstPlayerAnsweredFirst = 0;
+      let secondPlayerAnsweredFirst = 0;
+      pairEntity.finishGameDate = Date.now();
+      pairEntity.status = 'Finished';
+      for (let i = 0; i < 5; i++) {
+        if (
+          pairEntity.firstPlayer.answers[i].addedAt >
+          pairEntity.secondPlayer.answers[i].addedAt
+        ) {
+          firstPlayerAnsweredFirst++;
+        } else secondPlayerAnsweredFirst++;
+      }
+      if (firstPlayerAnsweredFirst === 5 && pairEntity.firstPlayer.score > 0)
+        pairEntity.firstPlayer.score++;
+      if (secondPlayerAnsweredFirst === 5 && pairEntity.secondPlayer.score > 0)
+        pairEntity.secondPlayer.score++;
+    }
+    await this.pairsRepository.save(pairEntity);
   }
 }
