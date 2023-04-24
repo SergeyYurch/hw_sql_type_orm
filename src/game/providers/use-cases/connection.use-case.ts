@@ -34,7 +34,10 @@ export class ConnectionUseCase implements ICommandHandler<ConnectionCommand> {
     }
 
     pairModel.connectSecondPlayer(playerModel);
-    await this.pairsTypeOrmRepository.addNewSetOfQuestions(pairModel);
+    pairModel.questions =
+      await this.quizQuestionsQueryTypeOrmRepository.getSetOfRandomQuestionModels(
+        5,
+      );
     return await this.pairsTypeOrmRepository.savePair(pairModel);
   }
 }
