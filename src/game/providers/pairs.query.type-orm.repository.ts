@@ -44,8 +44,8 @@ export class PairsQueryTypeOrmRepository {
   async getPairEntityByUserId(userId: number) {
     return this.pairsRepository.findOne({
       relations: {
-        firstPlayer: { user: true },
-        secondPlayer: { user: true },
+        firstPlayer: { user: true, answers: { question: true } },
+        secondPlayer: { user: true, answers: { question: true } },
       },
       where: [
         { firstPlayer: { userId }, status: 'Active' },
@@ -98,6 +98,7 @@ export class PairsQueryTypeOrmRepository {
     playerModel.user = this.usersQueryTypeormRepository.castToUserModel(
       entity.user,
     );
+    playerModel.id = entity.id.toString();
     playerModel.answers =
       entity.answers?.map((e) => this.castToAnswerModel(e)) || [];
     playerModel.score = entity.score;
@@ -106,7 +107,8 @@ export class PairsQueryTypeOrmRepository {
 
   castToAnswerModel(entity: AnswerEntity) {
     console.log('castToAnswerModel');
-    const answerModel = new Answer();
+    const answerModel = new Answer(entity.body);
+    answerModel.id = entity.id.toString();
     answerModel.question =
       this.quizQuestionsQueryTypeOrmRepository.castToQuestionModel(
         entity.question,
@@ -120,8 +122,8 @@ export class PairsQueryTypeOrmRepository {
     console.log('getPairEntityById');
     return this.pairsRepository.findOne({
       relations: {
-        firstPlayer: { user: true },
-        secondPlayer: { user: true },
+        firstPlayer: { user: true, answers: { question: true } },
+        secondPlayer: { user: true, answers: { question: true } },
       },
       where: { id },
     });
