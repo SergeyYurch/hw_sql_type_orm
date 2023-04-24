@@ -14,7 +14,10 @@ export class AnswerEntity {
   answerStatus: string;
   @Column()
   body: string;
-  @Column({ type: 'bigint' })
+  @Column({
+    type: 'timestamp with time zone',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
   addedAt: number;
   @ManyToOne(() => PlayerEntity, (p) => p.answers)
   player: PlayerEntity;
