@@ -14,7 +14,6 @@ export class ValidateUserDeviceSessionUseCase
   async execute(command: ValidateUserDeviceSessionCommand) {
     const { jwtPayload } = command;
     const user = await this.userRepository.getUserModel(jwtPayload.userId);
-    debugger;
     return await user.validateDeviceSession(
       jwtPayload.deviceId,
       jwtPayload.iat * 1000,
