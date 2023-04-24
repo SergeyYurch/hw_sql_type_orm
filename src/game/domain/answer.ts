@@ -6,4 +6,7 @@ export class Answer {
   answerStatus: 'Correct' | 'Incorrect';
   body: string;
   addedAt: number;
+  constructor(body: string) {
+    this.body = body;
+  }
 }
