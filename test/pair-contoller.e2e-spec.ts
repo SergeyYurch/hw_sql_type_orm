@@ -134,6 +134,22 @@ describe('PairController (e2e)', () => {
     });
   });
 
+  //Send answer for next not answered question in active pair
+  it('/pair-game-quiz/pairs/my-current/answers (POST=>200). User1 send answer', async () => {
+    const res = await request(app.getHttpServer())
+      .post('/pair-game-quiz/pairs/my-current/answers')
+      .auth(accessTokens[1], { type: 'bearer' })
+      .send({
+        answer: 'string',
+      })
+      .expect(200);
+    expect(res.body).toEqual({
+      questionId: expect.any(String),
+      answerStatus: expect.any(String),
+      addedAt: expect.any(String),
+    });
+  });
+
   //Returns current unfinished user game
   it('/pair-game-quiz/pairs/my-current (GET=>200). Should return 404', async () => {
     await request(app.getHttpServer())
