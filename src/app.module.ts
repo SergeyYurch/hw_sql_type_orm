@@ -112,6 +112,7 @@ import { PlayerEntity } from './game/entities/player.entity';
 import { AnswerEntity } from './game/entities/ansver.entity';
 import { PairGameQuizPairsController } from './game/pair-game-quiz.pairs.controller';
 import { ConnectionUseCase } from './game/providers/use-cases/connection.use-case';
+import { SetAnswerUseCase } from './game/providers/use-cases/set-answer.use-case';
 
 const configModule = ConfigModule.forRoot();
 const userEntities = [
@@ -181,6 +182,7 @@ const quizUseCases = [
   PublishQuestionUseCase,
   DeleteQuestionUseCase,
   ConnectionUseCase,
+  SetAnswerUseCase,
 ];
 export const options: TypeOrmModuleOptions =
   process.env.DB_LOCATION === 'LOCAL'
