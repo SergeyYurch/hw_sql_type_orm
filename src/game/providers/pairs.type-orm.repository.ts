@@ -22,22 +22,28 @@ export class PairsTypeOrmRepository {
   ) {}
   async savePair(pair: Pair) {
     console.log('!!!!save pair!!!!');
+
     let pairEntity = new PairEntity();
-    pairEntity.firstPlayer = await this.savePlayer(pair.firstPlayer);
-    if (pair.secondPlayer)
-      pairEntity.secondPlayer = await this.savePlayer(pair.secondPlayer);
     if (pair.id) {
       pairEntity = await this.pairsQueryTypeOrmRepository.getPairEntityById(
         +pair.id,
       );
     }
+    pairEntity.firstPlayer = await this.savePlayer(pair.firstPlayer);
+    if (pair.secondPlayer)
+      pairEntity.secondPlayer = await this.savePlayer(pair.secondPlayer);
+    debugger;
+
     pairEntity.questions = pair.questions.map((p) => +p.id);
     pairEntity.status = pair.status;
     pairEntity.pairCreatedDate = pair.pairCreatedDate;
     pairEntity.startGameDate = pair.startGameDate;
     pairEntity.finishGameDate = pair.finishGameDate;
+    debugger;
     await this.pairsRepository.save(pairEntity);
+    debugger;
     await this.checkFinishGame(pairEntity);
+    debugger;
     return pairEntity.id.toString();
   }
 
@@ -52,7 +58,9 @@ export class PairsTypeOrmRepository {
     }
     playerEntity.userId = +player.user.id;
     playerEntity.score = player.score;
-    return await this.playersRepository.save(playerEntity);
+    await this.playersRepository.save(playerEntity);
+    debugger;
+    return playerEntity;
   }
 
   async saveAnswer(answer: Answer, playerId: number) {
@@ -86,7 +94,7 @@ export class PairsTypeOrmRepository {
         pairEntity.firstPlayer.score++;
       if (secondPlayerAnsweredFirst === 5 && pairEntity.secondPlayer.score > 0)
         pairEntity.secondPlayer.score++;
+      await this.pairsRepository.save(pairEntity);
     }
-    await this.pairsRepository.save(pairEntity);
   }
 }
