@@ -58,6 +58,7 @@ export class PairGameQuizPairsController {
     return this.pairsQueryTypeOrmRepository.getPairViewById(pairId);
   }
 
+  @HttpCode(200)
   @Post('my-current/answers')
   async answer(
     @CurrentUserId() userId: string,
