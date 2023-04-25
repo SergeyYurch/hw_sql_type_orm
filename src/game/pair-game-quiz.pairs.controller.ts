@@ -50,11 +50,23 @@ export class PairGameQuizPairsController {
   @Post('connection')
   @HttpCode(200)
   async connection(@CurrentUserId() userId: string) {
+    console.log(`[ PairGameQuizPairsController]: POST=>connection started.`);
+    console.log(
+      `[ PairGameQuizPairsController]: POST=>connection=> userId:${userId}`,
+    );
     const pair =
       await this.pairsQueryTypeOrmRepository.getActivePairViewByUserId(userId);
-    if (pair) throw new ForbiddenException();
+    if (pair) {
+      console.log(
+        `[ PairGameQuizPairsController]: POST=>connection=> Forbidden User:${userId} is already connected`,
+      );
+      throw new ForbiddenException();
+    }
     const pairId = await this.commandBus.execute(new ConnectionCommand(userId));
     if (!pairId) return null;
+    console.log(
+      `[ PairGameQuizPairsController]: POST=>connection=> user connected to pair:${pairId}`,
+    );
     return this.pairsQueryTypeOrmRepository.getPairViewById(pairId);
   }
 
@@ -64,6 +76,9 @@ export class PairGameQuizPairsController {
     @CurrentUserId() userId: string,
     @Body() body: AnswerInputModel,
   ) {
+    console.log(
+      `[ PairGameQuizPairsController]: POST=>my-current/answers started.`,
+    );
     await this.commandBus.execute(new SetAnswerCommand(userId, body.answer));
   }
 }

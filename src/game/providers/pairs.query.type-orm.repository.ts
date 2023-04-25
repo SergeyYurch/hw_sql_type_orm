@@ -72,6 +72,53 @@ export class PairsQueryTypeOrmRepository {
     return this.castToPairModel(openPair);
   }
 
+  async getPairEntityById(id: number) {
+    console.log('getPairEntityById');
+    return this.pairsRepository.findOne({
+      relations: {
+        firstPlayer: { user: true, answers: { question: true } },
+        secondPlayer: { user: true, answers: { question: true } },
+      },
+      where: { id },
+    });
+  }
+
+  async getPairModelById(pairId: number) {
+    const pairEntity = await this.getPairEntityById(pairId);
+    if (!pairEntity) return null;
+    return this.castToPairModel(pairEntity);
+  }
+
+  async getPairViewById(id: string) {
+    const pairModel = await this.getPairModelById(+id);
+    return this.castToPairViewModel(pairModel);
+  }
+
+  castToPairViewModel(pairModel: Pair): GamePairViewModel {
+    return {
+      id: pairModel.id,
+      firstPlayerProgress: this.castToPlayerViewModel(pairModel.firstPlayer),
+      secondPlayerProgress: pairModel.secondPlayer
+        ? this.castToPlayerViewModel(pairModel.secondPlayer)
+        : null,
+      status: pairModel.status,
+      questions:
+        pairModel.questions?.length > 0
+          ? pairModel.questions.map((q) => ({
+              id: q.id,
+              body: q.body,
+            }))
+          : [],
+      pairCreatedDate: new Date(pairModel.pairCreatedDate).toISOString(),
+      startGameDate: pairModel.startGameDate
+        ? new Date(pairModel.startGameDate).toISOString()
+        : null,
+      finishGameDate: pairModel.finishGameDate
+        ? new Date(pairModel.finishGameDate).toISOString()
+        : null,
+    };
+  }
+
   async castToPairModel(entity: PairEntity) {
     console.log('castToPairModel');
     const pairModel = new Pair();
@@ -90,6 +137,17 @@ export class PairsQueryTypeOrmRepository {
         );
     }
     return pairModel;
+  }
+
+  castToPlayerViewModel(playerModel: Player): PlayerProgressViewModel {
+    return {
+      player: {
+        id: playerModel.user.id,
+        login: playerModel.user.accountData.login,
+      },
+      score: playerModel.score,
+      answers: playerModel.answers.map((a) => this.castToAnswerViewModel(a)),
+    };
   }
 
   castToPlayerModel(entity: PlayerEntity) {
@@ -117,69 +175,11 @@ export class PairsQueryTypeOrmRepository {
     answerModel.addedAt = +entity.addedAt;
     return answerModel;
   }
-
-  getPairEntityById(id: number) {
-    console.log('getPairEntityById');
-    return this.pairsRepository.findOne({
-      relations: {
-        firstPlayer: { user: true, answers: { question: true } },
-        secondPlayer: { user: true, answers: { question: true } },
-      },
-      where: { id },
-    });
-  }
-
-  async getPairModelById(pairId: number) {
-    const pairEntity = await this.getPairEntityById(pairId);
-    if (!pairEntity) return null;
-    return this.castToPairModel(pairEntity);
-  }
-
-  castToPairViewModel(pairModel: Pair): GamePairViewModel {
-    return {
-      id: pairModel.id,
-      firstPlayerProgress: this.castToPlayerViewModel(pairModel.firstPlayer),
-      secondPlayerProgress: pairModel.secondPlayer
-        ? this.castToPlayerViewModel(pairModel.secondPlayer)
-        : null,
-      status: pairModel.status,
-      questions:
-        pairModel.questions?.length > 0
-          ? pairModel.questions.map((q) => ({
-              id: q.id,
-              body: q.body,
-            }))
-          : [],
-      pairCreatedDate: new Date(pairModel.pairCreatedDate).toISOString(),
-      startGameDate: pairModel.startGameDate
-        ? new Date(pairModel.startGameDate).toISOString()
-        : null,
-      finishGameDate: pairModel.finishGameDate
-        ? new Date(pairModel.finishGameDate).toISOString()
-        : null,
-    };
-  }
-  castToPlayerViewModel(playerModel: Player): PlayerProgressViewModel {
-    return {
-      player: {
-        id: playerModel.user.id,
-        login: playerModel.user.accountData.login,
-      },
-      score: playerModel.score,
-      answers: playerModel.answers.map((a) => this.castToAnswerViewModel(a)),
-    };
-  }
-
   private castToAnswerViewModel(answerModel: Answer): AnswerViewModel {
     return {
       questionId: answerModel.question.id,
       addedAt: new Date(answerModel.addedAt).toISOString(),
       answerStatus: answerModel.answerStatus,
     };
-  }
-
-  async getPairViewById(id: string) {
-    const pairModel = await this.getPairModelById(+id);
-    return this.castToPairViewModel(pairModel);
   }
 }

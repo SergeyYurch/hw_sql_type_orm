@@ -103,7 +103,6 @@ describe('PairController (e2e)', () => {
   });
 
   //Connect user2 current user to existing random pending pair
-
   it('/pair-game-quiz/pairs/connection (POST=>200). User2 connected to pending pair', async () => {
     const res = await request(app.getHttpServer())
       .post('/pair-game-quiz/pairs/connection')
@@ -135,10 +134,16 @@ describe('PairController (e2e)', () => {
       finishGameDate: null,
     });
   });
-  it('/pair-game-quiz/pairs/connection (POST=>403). User2 tru to connect again. Should return 403', async () => {
+  it('/pair-game-quiz/pairs/connection (POST=>403). User2 try to connect again. Should return 403', async () => {
     await request(app.getHttpServer())
       .post('/pair-game-quiz/pairs/connection')
       .auth(accessTokens[1], { type: 'bearer' })
+      .expect(403);
+  });
+  it('/pair-game-quiz/pairs/connection (POST=>403). User1 try to connect again. Should return 403', async () => {
+    await request(app.getHttpServer())
+      .post('/pair-game-quiz/pairs/connection')
+      .auth(accessTokens[0], { type: 'bearer' })
       .expect(403);
   });
   //Send answer for next not answered question in active pair
