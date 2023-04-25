@@ -1,5 +1,5 @@
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, Not, Repository } from 'typeorm';
 import { PairEntity } from '../entities/pair.entity';
 import { Pair } from '../domain/pair';
 import { PlayerEntity } from '../entities/player.entity';
@@ -48,8 +48,8 @@ export class PairsQueryTypeOrmRepository {
         secondPlayer: { user: true, answers: { question: true } },
       },
       where: [
-        { firstPlayer: { userId }, status: 'Active' },
-        { secondPlayer: { userId }, status: 'Active' },
+        { firstPlayer: { userId }, status: Not('Finished') },
+        { secondPlayer: { userId }, status: Not('Finished') },
       ],
     });
   }
