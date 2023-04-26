@@ -125,7 +125,7 @@ export class PairsQueryTypeOrmRepository {
               id: q.id,
               body: q.body,
             }))
-          : [],
+          : null,
       pairCreatedDate: new Date(pairModel.pairCreatedDate).toISOString(),
       startGameDate: pairModel.startGameDate
         ? new Date(pairModel.startGameDate).toISOString()

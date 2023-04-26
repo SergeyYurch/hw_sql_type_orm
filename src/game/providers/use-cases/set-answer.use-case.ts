@@ -24,13 +24,16 @@ export class SetAnswerUseCase implements ICommandHandler<SetAnswerCommand> {
     const { userId, answerBody } = command;
     const pairModel =
       await this.pairsQueryTypeOrmRepository.getPairModelByUserId(+userId);
+    if (!pairModel) return null;
+    if (pairModel.status !== 'Active') return null;
     const answer = new Answer(answerBody);
     let currentPlayer: Player = pairModel.secondPlayer;
     if (pairModel.firstPlayer.user.id === userId) {
       currentPlayer = pairModel.firstPlayer;
     }
-    const questionNumber = currentPlayer.answers.length;
-    answer.question = pairModel.questions[questionNumber];
+    if (currentPlayer.answers.length === 5) return null;
+    const numberOfQuestion = currentPlayer.answers.length;
+    answer.question = pairModel.questions[numberOfQuestion];
     if (answer.question.correctAnswers.includes(answer.body)) {
       answer.answerStatus = 'Correct';
     } else {

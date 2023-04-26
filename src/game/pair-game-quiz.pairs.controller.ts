@@ -77,11 +77,12 @@ export class PairGameQuizPairsController {
     @Body() body: AnswerInputModel,
   ) {
     console.log(
-      `[ PairGameQuizPairsController]: POST=>my-current/answers started.`,
+      `[PairGameQuizPairsController]: POST=>my-current/answers started`,
     );
     const pairId = await this.commandBus.execute(
       new SetAnswerCommand(userId, body.answer),
     );
+    if (!pairId) throw new ForbiddenException();
     return this.pairsQueryTypeOrmRepository.getLastAnswerView(pairId, userId);
   }
 }
