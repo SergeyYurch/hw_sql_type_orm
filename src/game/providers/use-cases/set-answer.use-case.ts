@@ -41,6 +41,6 @@ export class SetAnswerUseCase implements ICommandHandler<SetAnswerCommand> {
       (a) => a.answerStatus === 'Correct',
     ).length;
 
-    await this.pairsTypeOrmRepository.savePair(pairModel);
+    return await this.pairsTypeOrmRepository.savePair(pairModel);
   }
 }

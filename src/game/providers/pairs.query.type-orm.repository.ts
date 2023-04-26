@@ -17,6 +17,8 @@ export class PairsQueryTypeOrmRepository {
   constructor(
     @InjectRepository(PairEntity)
     private readonly pairsRepository: Repository<PairEntity>,
+    @InjectRepository(AnswerEntity)
+    private readonly answerRepository: Repository<AnswerEntity>,
     @InjectRepository(PlayerEntity)
     private readonly playersRepository: Repository<PlayerEntity>,
     private readonly usersQueryTypeormRepository: UsersQueryTypeormRepository,
@@ -39,6 +41,21 @@ export class PairsQueryTypeOrmRepository {
     const pairModel = await this.getPairModelByUserId(+userId);
     if (!pairModel) return null;
     return this.castToPairViewModel(pairModel);
+  }
+  async getLastAnswerView(
+    pairId: string,
+    userId: string,
+  ): Promise<AnswerViewModel> {
+    const pair = await this.getPairModelById(+pairId);
+    let lastAnswer: Answer = pair.secondPlayer.answers.at(-1);
+    if (pair.firstPlayer.user.id === userId) {
+      lastAnswer = pair.firstPlayer.answers.at(-1);
+    }
+    return {
+      answerStatus: lastAnswer.answerStatus,
+      addedAt: new Date(lastAnswer.addedAt).toISOString(),
+      questionId: lastAnswer.question.id,
+    };
   }
 
   async getPairEntityByUserId(userId: number) {

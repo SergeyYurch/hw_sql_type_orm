@@ -79,6 +79,9 @@ export class PairGameQuizPairsController {
     console.log(
       `[ PairGameQuizPairsController]: POST=>my-current/answers started.`,
     );
-    await this.commandBus.execute(new SetAnswerCommand(userId, body.answer));
+    const pairId = await this.commandBus.execute(
+      new SetAnswerCommand(userId, body.answer),
+    );
+    return this.pairsQueryTypeOrmRepository.getLastAnswerView(pairId, userId);
   }
 }

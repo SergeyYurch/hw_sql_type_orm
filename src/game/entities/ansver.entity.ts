@@ -1,4 +1,10 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { QuizQuestionEntity } from '../../quiz/entities/quiz-question.entity';
 import { PlayerEntity } from './player.entity';
 
@@ -14,11 +20,8 @@ export class AnswerEntity {
   answerStatus: string;
   @Column()
   body: string;
-  @Column({
-    type: 'timestamp with time zone',
-    default: () => 'CURRENT_TIMESTAMP',
-  })
-  addedAt: number;
+  @CreateDateColumn()
+  addedAt: Date;
   @ManyToOne(() => PlayerEntity, (p) => p.answers)
   player: PlayerEntity;
   @Column()
