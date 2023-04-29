@@ -27,10 +27,11 @@ export class PairsQueryTypeOrmRepository {
   ) {}
 
   async doesPairIdExist(pairId: string) {
+    console.log(`doesPairIdExist: ${pairId}`);
     const queryString = `
               SELECT EXISTS (SELECT * 
               FROM pairs 
-              WHERE id=${+pairId});
+              WHERE id='${pairId}');
              `;
     console.log(queryString);
     const queryResult = await this.dataSource.query(queryString);
@@ -46,7 +47,7 @@ export class PairsQueryTypeOrmRepository {
     pairId: string,
     userId: string,
   ): Promise<AnswerViewModel> {
-    const pair = await this.getPairModelById(+pairId);
+    const pair = await this.getPairModelById(pairId);
     let lastAnswer: Answer = pair.secondPlayer.answers.at(-1);
     if (pair.firstPlayer.user.id === userId) {
       lastAnswer = pair.firstPlayer.answers.at(-1);
@@ -89,25 +90,28 @@ export class PairsQueryTypeOrmRepository {
     return this.castToPairModel(openPair);
   }
 
-  async getPairEntityById(id: number) {
+  async getPairEntityById(id: string) {
     console.log('getPairEntityById');
-    return this.pairsRepository.findOne({
+    const pairEntity = await this.pairsRepository.findOne({
       relations: {
         firstPlayer: { user: true, answers: { question: true } },
         secondPlayer: { user: true, answers: { question: true } },
       },
       where: { id },
     });
+    console.log('a20 - pairEntity.firstPlayer.answers');
+    console.log(pairEntity.firstPlayer.answers);
+    return pairEntity;
   }
 
-  async getPairModelById(pairId: number) {
+  async getPairModelById(pairId: string) {
     const pairEntity = await this.getPairEntityById(pairId);
     if (!pairEntity) return null;
     return this.castToPairModel(pairEntity);
   }
 
   async getPairViewById(id: string) {
-    const pairModel = await this.getPairModelById(+id);
+    const pairModel = await this.getPairModelById(id);
     return this.castToPairViewModel(pairModel);
   }
 
@@ -189,7 +193,7 @@ export class PairsQueryTypeOrmRepository {
         entity.question,
       );
     answerModel.answerStatus = entity.answerStatus as AnswerStatusType;
-    answerModel.addedAt = +entity.addedAt;
+    answerModel.addedAt = entity.addedAt;
     return answerModel;
   }
   private castToAnswerViewModel(answerModel: Answer): AnswerViewModel {

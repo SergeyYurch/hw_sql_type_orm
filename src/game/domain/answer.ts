@@ -5,7 +5,7 @@ export class Answer {
   question: Question;
   answerStatus: 'Correct' | 'Incorrect';
   body: string;
-  addedAt: number;
+  addedAt: Date;
   constructor(body: string) {
     this.body = body;
   }

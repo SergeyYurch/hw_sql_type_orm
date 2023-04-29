@@ -3,6 +3,7 @@ import {
   CanActivate,
   ExecutionContext,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { PairsQueryTypeOrmRepository } from '../providers/pairs.query.type-orm.repository';
 
@@ -13,11 +14,19 @@ export class CheckPairIdGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    console.log('CheckQuestionIdGuard');
+    console.log('CheckPairIdGuard');
     const request = context.switchToHttp().getRequest();
     const id = request.params.id;
-    if (!Number.isInteger(+id)) throw new NotFoundException();
-    if (+id < 0) throw new NotFoundException();
+    const regexExp =
+      /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/gi;
+
+    if (!regexExp.test(id)) {
+      console.log(`!!!!BadRequestException: id ${id}`);
+      throw new BadRequestException({
+        statusCode: 400,
+        message: { message: 'Wrong Id', field: 'id' },
+      });
+    }
     if (!(await this.pairsQueryTypeOrmRepository.doesPairIdExist(id))) {
       throw new NotFoundException();
     }

@@ -36,14 +36,11 @@ export class SetAnswerUseCase implements ICommandHandler<SetAnswerCommand> {
     answer.question = pairModel.questions[numberOfQuestion];
     if (answer.question.correctAnswers.includes(answer.body)) {
       answer.answerStatus = 'Correct';
+      currentPlayer.score++;
     } else {
       answer.answerStatus = 'Incorrect';
     }
     currentPlayer.answers.push(answer);
-    currentPlayer.score = currentPlayer.answers.filter(
-      (a) => a.answerStatus === 'Correct',
-    ).length;
-
     return await this.pairsTypeOrmRepository.savePair(pairModel);
   }
 }

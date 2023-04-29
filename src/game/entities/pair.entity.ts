@@ -4,8 +4,8 @@ import { PlayerEntity } from './player.entity';
 
 @Entity('pairs')
 export class PairEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
   @Column()
   firstPlayerId: number;
   @ManyToOne(() => PlayerEntity)

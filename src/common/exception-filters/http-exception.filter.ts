@@ -19,14 +19,16 @@ export class HttpExceptionFilter implements ExceptionFilter {
         errorsMessages: [],
       };
       const bodyResponse: any = exception.getResponse();
+      console.log('!!!!!!!!!!!!!!!!!!Body response');
+      console.log(bodyResponse);
       if (Array.isArray(bodyResponse.message)) {
         bodyResponse.message.forEach((m) =>
           errorResponse.errorsMessages.push(m),
         );
       } else {
         errorResponse.errorsMessages.push({
-          message: bodyResponse.message,
-          field: 'unknown',
+          message: bodyResponse?.message?.message || 'error',
+          field: bodyResponse?.message?.field || 'unknown',
         });
       }
       return response.status(status).json(errorResponse);

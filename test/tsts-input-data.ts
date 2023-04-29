@@ -100,4 +100,4 @@ export const question2: QuestionInputModel = {
   correctAnswers: ['answer1 for q2', 'answer2 for q2'],
 };
 
-export const isoPattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
+export const isoDatePattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
