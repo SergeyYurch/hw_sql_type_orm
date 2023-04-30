@@ -25,6 +25,7 @@ export class PairGameQuizPairsController {
     private commandBus: CommandBus,
     private readonly pairsQueryTypeOrmRepository: PairsQueryTypeOrmRepository,
   ) {}
+
   @Get('my-current')
   async getCurrentGame(@CurrentUserId() userId: string) {
     const pair =
@@ -40,7 +41,7 @@ export class PairGameQuizPairsController {
     if (
       !(
         pair.firstPlayerProgress.player.id === userId ||
-        pair.firstPlayerProgress.player.id === userId
+        pair.secondPlayerProgress.player.id === userId
       )
     )
       throw new ForbiddenException();

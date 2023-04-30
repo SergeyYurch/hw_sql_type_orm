@@ -47,9 +47,9 @@ export class PairsTypeOrmRepository {
     console.log(pairEntity.firstPlayer);
     await this.pairsRepository.save(pairEntity);
     console.log('A21- pairEntity');
-    console.log(pairEntity.firstPlayer);
+    console.log(pairEntity);
     await this.checkFinishGame(pairEntity);
-    return pairEntity.id.toString();
+    return pairEntity.id;
   }
 
   async savePlayer(player: Player, playerEntity: PlayerEntity) {
