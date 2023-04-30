@@ -70,7 +70,10 @@ export class PairsQueryTypeOrmRepository {
         { firstPlayer: { userId }, status: Not('Finished') },
         { secondPlayer: { userId }, status: Not('Finished') },
       ],
-      order: { firstPlayer: { answers: { addedAt: 'ASC' } } },
+      order: {
+        firstPlayer: { answers: { addedAt: 'ASC' } },
+        secondPlayer: { answers: { addedAt: 'ASC' } },
+      },
     });
   }
   async getPairModelByUserId(userId: number) {
@@ -100,7 +103,10 @@ export class PairsQueryTypeOrmRepository {
         secondPlayer: { user: true, answers: { question: true } },
       },
       where: { id },
-      order: { firstPlayer: { answers: { addedAt: 'ASC' } } },
+      order: {
+        firstPlayer: { answers: { addedAt: 'ASC' } },
+        secondPlayer: { answers: { addedAt: 'ASC' } },
+      },
     });
     console.log('a20 - pairEntity.firstPlayer.answers');
     console.log(pairEntity.firstPlayer.answers);

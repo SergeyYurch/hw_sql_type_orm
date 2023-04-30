@@ -17,6 +17,8 @@ import { PairsQueryTypeOrmRepository } from './providers/pairs.query.type-orm.re
 import { CheckPairIdGuard } from './guards/check-pair-id-guard.service';
 import { SetAnswerCommand } from './providers/use-cases/set-answer.use-case';
 import { AnswerInputModel } from './dto/input-models/answer-input.model';
+import { PaginatorParam } from '../common/decorators/paginator-param.decorator';
+import { PaginatorInputType } from '../common/dto/input-models/paginator.input.type';
 
 @UseGuards(AccessTokenGuard)
 @Controller('/pair-game-quiz/pairs')
@@ -35,7 +37,10 @@ export class PairGameQuizPairsController {
   }
 
   @Get('my')
-  async getUsersGames(@CurrentUserId() userId: string) {
+  async getUsersGames(
+    @CurrentUserId() userId: string,
+    @PaginatorParam() paginatorParams: PaginatorInputType,
+  ) {
     const pairs = await this.pairsQueryTypeOrmRepository.getAllPairViewByUserId(
       userId,
     );
@@ -49,7 +54,7 @@ export class PairGameQuizPairsController {
     if (
       !(
         pair.firstPlayerProgress.player.id === userId ||
-        pair.secondPlayerProgress.player.id === userId
+        pair.secondPlayerProgress?.player?.id === userId
       )
     )
       throw new ForbiddenException();

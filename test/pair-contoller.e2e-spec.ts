@@ -84,6 +84,7 @@ describe('PairController (e2e)', () => {
       .auth(accessTokens[0], { type: 'bearer' })
       .expect(200);
     console.log(res.body);
+    game1Id = res.body.id;
     expect(res.body).toEqual({
       id: expect.any(String),
       firstPlayerProgress: {
@@ -106,6 +107,64 @@ describe('PairController (e2e)', () => {
     await request(app.getHttpServer())
       .post('/pair-game-quiz/pairs/connection')
       .auth(accessTokens[0], { type: 'bearer' })
+      .expect(403);
+  });
+  it('/pair-game-quiz/pairs/my-current (GET=>200). User1 req game. Should return game for user 1', async () => {
+    const res = await request(app.getHttpServer())
+      .get('/pair-game-quiz/pairs/my-current')
+      .auth(accessTokens[0], { type: 'bearer' })
+      .expect(200);
+    expect(res.body).toEqual({
+      id: game1Id,
+      firstPlayerProgress: {
+        answers: expect.any(Array),
+        player: {
+          id: expect.any(String),
+          login: 'user1',
+        },
+        score: 0,
+      },
+      secondPlayerProgress: null,
+      questions: null,
+      status: 'PendingSecondPlayer',
+      pairCreatedDate: expect.stringMatching(isoDatePattern),
+      startGameDate: null,
+      finishGameDate: null,
+    });
+  });
+  it('/pair-game-quiz/pairs/my-current (GET=>404). User2 req game. Should return 404', async () => {
+    await request(app.getHttpServer())
+      .get('/pair-game-quiz/pairs/my-current')
+      .auth(accessTokens[1], { type: 'bearer' })
+      .expect(404);
+  });
+  it('/pair-game-quiz/pairs/{id} (GET=>200). Should return pair 1 by ID', async () => {
+    const res = await request(app.getHttpServer())
+      .get(`/pair-game-quiz/pairs/${game1Id}`)
+      .auth(accessTokens[0], { type: 'bearer' })
+      .expect(200);
+    expect(res.body).toEqual({
+      id: game1Id,
+      firstPlayerProgress: {
+        answers: expect.any(Array),
+        player: {
+          id: expect.any(String),
+          login: 'user1',
+        },
+        score: 0,
+      },
+      secondPlayerProgress: null,
+      questions: null,
+      status: 'PendingSecondPlayer',
+      pairCreatedDate: expect.stringMatching(isoDatePattern),
+      startGameDate: null,
+      finishGameDate: null,
+    });
+  });
+  it('/pair-game-quiz/pairs/{id} (GET=>403). User2 req game by id. Should return 403', async () => {
+    await request(app.getHttpServer())
+      .get(`/pair-game-quiz/pairs/${game1Id}`)
+      .auth(accessTokens[1], { type: 'bearer' })
       .expect(403);
   });
 
@@ -147,6 +206,38 @@ describe('PairController (e2e)', () => {
       .auth(accessTokens[1], { type: 'bearer' })
       .expect(403);
   });
+  it('/pair-game-quiz/pairs/my-current (GET=>200). User2 req game. Should return game for user 1', async () => {
+    const res = await request(app.getHttpServer())
+      .get('/pair-game-quiz/pairs/my-current')
+      .auth(accessTokens[1], { type: 'bearer' })
+      .expect(200);
+    game1Id = res.body.id;
+    expect(res.body).toEqual({
+      id: expect.any(String),
+      firstPlayerProgress: {
+        answers: expect.any(Array),
+        player: {
+          id: expect.any(String),
+          login: 'user1',
+        },
+        score: expect.any(Number),
+      },
+      secondPlayerProgress: {
+        answers: expect.any(Array),
+        player: {
+          id: expect.any(String),
+          login: 'user2',
+        },
+        score: expect.any(Number),
+      },
+      questions: expect.any(Array),
+      status: 'Active',
+      pairCreatedDate: expect.stringMatching(isoDatePattern),
+      startGameDate: expect.stringMatching(isoDatePattern),
+      finishGameDate: null,
+    });
+  });
+
   //Send answer for next not answered question in active pair
   it('/pair-game-quiz/pairs/my-current/answers (POST=>401). Unauthorized user', async () => {
     await request(app.getHttpServer())
