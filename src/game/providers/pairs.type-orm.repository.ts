@@ -21,8 +21,6 @@ export class PairsTypeOrmRepository {
     private readonly playersRepository: Repository<PlayerEntity>,
   ) {}
   async savePair(pair: Pair) {
-    console.log('!!!!save pair!!!!');
-
     let pairEntity = new PairEntity();
     if (pair.id) {
       pairEntity = await this.pairsQueryTypeOrmRepository.getPairEntityById(
@@ -74,12 +72,10 @@ export class PairsTypeOrmRepository {
   private async checkFinishGame(pairEntity: PairEntity) {
     console.log('!!!!Start finishing game!!!!!');
     console.log(
-      'pairEntity.firstPlayer?.answers?.length: ' +
-        pairEntity.firstPlayer?.answers?.length,
+      'firstPlayer всего ответов: ' + pairEntity.firstPlayer?.answers?.length,
     );
     console.log(
-      'pairEntity.secondPlayer?.answers?.length: ' +
-        pairEntity.secondPlayer?.answers?.length,
+      'secondPlayer всего ответов: ' + pairEntity.secondPlayer?.answers?.length,
     );
     if (
       pairEntity.firstPlayer?.answers?.length === 5 &&
@@ -91,12 +87,16 @@ export class PairsTypeOrmRepository {
       pairEntity.status = 'Finished';
       for (let i = 0; i < 5; i++) {
         console.log(
-          '+pairEntity.firstPlayer.answers[i].addedAt ' +
-            +pairEntity.firstPlayer.answers[i].addedAt,
+          'Ответ firstPlayer ID: ' +
+            +pairEntity.firstPlayer.answers[i].id +
+            'зафиксирован: ' +
+            pairEntity.firstPlayer.answers[i].addedAt,
         );
 
         console.log(
-          '+pairEntity.secondPlayer.answers[i].addedAt' +
+          'Ответ secondPlayer ID:' +
+            +pairEntity.secondPlayer.answers[i].id +
+            'завиксирован' +
             +pairEntity.secondPlayer.answers[i].addedAt,
         );
         if (

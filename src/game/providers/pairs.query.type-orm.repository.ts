@@ -2,6 +2,7 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import {
   DataSource,
   FindOptionsOrder,
+  FindOptionsRelations,
   FindOptionsWhere,
   Not,
   Repository,
@@ -19,9 +20,12 @@ import { GamePairViewModel } from '../dto/view-models/game-pair.view.model';
 import { PlayerProgressViewModel } from '../dto/view-models/player-progress.view.model';
 import { AnswerViewModel } from '../dto/view-models/answer.view.model';
 import { PaginatorInputType } from '../../common/dto/input-models/paginator.input.type';
+import { PaginatorViewModel } from '../../common/dto/view-models/paginator.view.model';
+import { PostViewModel } from '../../posts/dto/view-models/post.view.model';
+import { pagesCount } from '../../common/helpers/helpers';
 
 export class PairsQueryTypeOrmRepository {
-  private relation: 'dccc';
+  private findOptionsRelations: FindOptionsRelations<PairEntity>;
   constructor(
     @InjectRepository(PairEntity)
     private readonly pairsRepository: Repository<PairEntity>,
@@ -32,16 +36,19 @@ export class PairsQueryTypeOrmRepository {
     private readonly usersQueryTypeormRepository: UsersQueryTypeormRepository,
     private readonly quizQuestionsQueryTypeOrmRepository: QuizQuestionsQueryTypeOrmRepository,
     @InjectDataSource() protected dataSource: DataSource,
-  ) {}
+  ) {
+    this.findOptionsRelations = {
+      firstPlayer: { user: true, answers: { question: true } },
+      secondPlayer: { user: true, answers: { question: true } },
+    };
+  }
 
   async doesPairIdExist(pairId: string) {
-    console.log(`doesPairIdExist: ${pairId}`);
     const queryString = `
               SELECT EXISTS (SELECT * 
               FROM pairs 
               WHERE id='${pairId}');
              `;
-    console.log(queryString);
     const queryResult = await this.dataSource.query(queryString);
     return queryResult[0].exists;
   }
@@ -69,10 +76,7 @@ export class PairsQueryTypeOrmRepository {
 
   async getPairEntityByUserId(userId: number) {
     return this.pairsRepository.findOne({
-      relations: {
-        firstPlayer: { user: true, answers: { question: true } },
-        secondPlayer: { user: true, answers: { question: true } },
-      },
+      relations: this.findOptionsRelations,
       where: [
         { firstPlayer: { userId }, status: Not('Finished') },
         { secondPlayer: { userId }, status: Not('Finished') },
@@ -90,7 +94,6 @@ export class PairsQueryTypeOrmRepository {
   }
 
   async getOpenPair() {
-    console.log('getOpenPair');
     const openPair = await this.pairsRepository.findOne({
       relations: {
         firstPlayer: { user: true },
@@ -102,12 +105,8 @@ export class PairsQueryTypeOrmRepository {
   }
 
   async getPairEntityById(id: string) {
-    console.log('getPairEntityById');
     const pairEntity = await this.pairsRepository.findOne({
-      relations: {
-        firstPlayer: { user: true, answers: { question: true } },
-        secondPlayer: { user: true, answers: { question: true } },
-      },
+      relations: this.findOptionsRelations,
       where: { id },
       order: {
         firstPlayer: { answers: { addedAt: 'ASC' } },
@@ -154,7 +153,6 @@ export class PairsQueryTypeOrmRepository {
   }
 
   async castToPairModel(entity: PairEntity) {
-    console.log('castToPairModel');
     const pairModel = new Pair();
     pairModel.id = entity.id.toString();
     pairModel.firstPlayer = this.castToPlayerModel(entity.firstPlayer);
@@ -185,7 +183,6 @@ export class PairsQueryTypeOrmRepository {
   }
 
   castToPlayerModel(entity: PlayerEntity) {
-    console.log('castToPlayerModel');
     const playerModel = new Player();
     playerModel.user = this.usersQueryTypeormRepository.castToUserModel(
       entity.user,
@@ -198,7 +195,6 @@ export class PairsQueryTypeOrmRepository {
   }
 
   castToAnswerModel(entity: AnswerEntity) {
-    console.log('castToAnswerModel');
     const answerModel = new Answer(entity.body);
     answerModel.id = entity.id.toString();
     answerModel.question =
@@ -220,7 +216,7 @@ export class PairsQueryTypeOrmRepository {
   async getAllPairViewByUserId(
     userId: string,
     paginatorParams?: PaginatorInputType,
-  ) {
+  ): Promise<PaginatorViewModel<GamePairViewModel>> {
     const { sortBy, sortDirection, pageSize, pageNumber } = paginatorParams;
     const findOptionsOrder: FindOptionsOrder<PairEntity> = {
       firstPlayer: { answers: { addedAt: 'ASC' } },
@@ -232,17 +228,32 @@ export class PairsQueryTypeOrmRepository {
       { secondPlayer: { userId: +userId } },
     ];
 
-    const pairEntities = this.pairsRepository.find({
-      relations: {
-        firstPlayer: { user: true, answers: { question: true } },
-        secondPlayer: { user: true, answers: { question: true } },
-      },
+    const [pairEntities, totalCount] = await this.pairsRepository.findAndCount({
+      relations: this.findOptionsRelations,
       where: findOptionsWhere,
       order: findOptionsOrder,
       skip: pageSize * (pageNumber - 1),
       take: pageSize,
     });
-
-    return null;
+    if (!totalCount)
+      return {
+        pagesCount: 0,
+        page: pageNumber,
+        pageSize,
+        totalCount: 0,
+        items: [],
+      };
+    const items = [];
+    for (const pairEntity of pairEntities) {
+      const pairModel = await this.castToPairModel(pairEntity);
+      items.push(this.castToPairViewModel(pairModel));
+    }
+    return {
+      pagesCount: pagesCount(totalCount, pageSize),
+      page: pageNumber,
+      pageSize,
+      totalCount,
+      items,
+    };
   }
 }
