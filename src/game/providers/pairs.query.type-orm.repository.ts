@@ -1,5 +1,11 @@
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Not, Repository } from 'typeorm';
+import {
+  DataSource,
+  FindOptionsOrder,
+  FindOptionsWhere,
+  Not,
+  Repository,
+} from 'typeorm';
 import { PairEntity } from '../entities/pair.entity';
 import { Pair } from '../domain/pair';
 import { PlayerEntity } from '../entities/player.entity';
@@ -15,6 +21,7 @@ import { AnswerViewModel } from '../dto/view-models/answer.view.model';
 import { PaginatorInputType } from '../../common/dto/input-models/paginator.input.type';
 
 export class PairsQueryTypeOrmRepository {
+  private relation: 'dccc';
   constructor(
     @InjectRepository(PairEntity)
     private readonly pairsRepository: Repository<PairEntity>,
@@ -90,7 +97,6 @@ export class PairsQueryTypeOrmRepository {
       },
       where: { status: 'PendingSecondPlayer' },
     });
-    console.log(openPair);
     if (!openPair) return null;
     return this.castToPairModel(openPair);
   }
@@ -108,8 +114,6 @@ export class PairsQueryTypeOrmRepository {
         secondPlayer: { answers: { addedAt: 'ASC' } },
       },
     });
-    console.log('a20 - pairEntity.firstPlayer.answers');
-    console.log(pairEntity.firstPlayer.answers);
     return pairEntity;
   }
 
@@ -213,21 +217,32 @@ export class PairsQueryTypeOrmRepository {
     };
   }
 
-  async getAllPairViewByUserId(userId: string, paginator?: PaginatorInputType) {
+  async getAllPairViewByUserId(
+    userId: string,
+    paginatorParams?: PaginatorInputType,
+  ) {
+    const { sortBy, sortDirection, pageSize, pageNumber } = paginatorParams;
+    const findOptionsOrder: FindOptionsOrder<PairEntity> = {
+      firstPlayer: { answers: { addedAt: 'ASC' } },
+      secondPlayer: { answers: { addedAt: 'ASC' } },
+      [sortBy]: sortDirection,
+    };
+    const findOptionsWhere: FindOptionsWhere<PairEntity>[] = [
+      { firstPlayer: { userId: +userId } },
+      { secondPlayer: { userId: +userId } },
+    ];
+
     const pairEntities = this.pairsRepository.find({
       relations: {
         firstPlayer: { user: true, answers: { question: true } },
         secondPlayer: { user: true, answers: { question: true } },
       },
-      where: [
-        { firstPlayer: { userId: +userId } },
-        { secondPlayer: { userId: +userId } },
-      ],
-      order: {
-        firstPlayer: { answers: { addedAt: 'ASC' } },
-        secondPlayer: { answers: { addedAt: 'ASC' } },
-      },
+      where: findOptionsWhere,
+      order: findOptionsOrder,
+      skip: pageSize * (pageNumber - 1),
+      take: pageSize,
     });
+
     return null;
   }
 }
