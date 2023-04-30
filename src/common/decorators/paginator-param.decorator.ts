@@ -5,22 +5,27 @@ import {
 } from '@nestjs/common';
 import { PaginatorInputType } from '../dto/input-models/paginator.input.type';
 import { validate } from 'class-validator';
+import { PaginatorType } from '../types/paginator.type';
 
 export const PaginatorParam = createParamDecorator(
-  async (data: unknown, context: ExecutionContext) => {
+  async (
+    defaultValues: PaginatorType | undefined,
+    context: ExecutionContext,
+  ) => {
     const req = context.switchToHttp().getRequest();
     const paginatorParams = new PaginatorInputType();
-
     paginatorParams.pageNumber = req.query.pageNumber
       ? +req.query.pageNumber
-      : 1;
-    paginatorParams.pageSize = req.query.pageSize ? +req.query.pageSize : 10;
+      : defaultValues?.pageNumber || 1;
+    paginatorParams.pageSize = req.query.pageSize
+      ? +req.query.pageSize
+      : defaultValues?.pageSize || 10;
     paginatorParams.sortBy = req.query.sortBy
       ? String(req.query.sortBy)
-      : 'createdAt';
+      : defaultValues?.sortBy || 'createdAt';
     paginatorParams.sortDirection = req.query.sortDirection
       ? (req.query.sortDirection as 'desc' | 'asc')
-      : 'desc';
+      : (defaultValues?.sortDirection as 'desc' | 'asc') || 'desc';
     const errors = await validate(paginatorParams, { stopAtFirstError: true });
     // errors is an array of validation errors
     console.log(errors);

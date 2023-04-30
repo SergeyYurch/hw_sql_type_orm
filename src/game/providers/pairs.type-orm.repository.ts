@@ -103,7 +103,7 @@ export class PairsTypeOrmRepository {
       pairEntity.firstPlayer?.answers?.length === 5 &&
       pairEntity.secondPlayer?.answers?.length === 5
     ) {
-      console.log('!Start finishing game!');
+      console.log('!!!!Start finishing game!!!!!');
       let firstPlayerAnsweredFirst = 0;
       let secondPlayerAnsweredFirst = 0;
       pairEntity.finishGameDate = Date.now();
@@ -125,7 +125,14 @@ export class PairsTypeOrmRepository {
           firstPlayerAnsweredFirst++;
         } else secondPlayerAnsweredFirst++;
       }
-      console.log('firstPlayerAnsweredFirst' + firstPlayerAnsweredFirst);
+      console.log(
+        'Результат количетсво первых ответов: firstPlayerAnsweredFirst: ' +
+          firstPlayerAnsweredFirst,
+      );
+      console.log(
+        'Результат количетсво первых ответов: secondPlayerAnsweredFirst: ' +
+          secondPlayerAnsweredFirst,
+      );
       if (firstPlayerAnsweredFirst === 5 && pairEntity.firstPlayer.score > 0)
         pairEntity.firstPlayer.score++;
       if (secondPlayerAnsweredFirst === 5 && pairEntity.secondPlayer.score > 0)

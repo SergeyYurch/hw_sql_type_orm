@@ -214,6 +214,20 @@ export class PairsQueryTypeOrmRepository {
   }
 
   async getAllPairViewByUserId(userId: string, paginator?: PaginatorInputType) {
+    const pairEntities = this.pairsRepository.find({
+      relations: {
+        firstPlayer: { user: true, answers: { question: true } },
+        secondPlayer: { user: true, answers: { question: true } },
+      },
+      where: [
+        { firstPlayer: { userId: +userId } },
+        { secondPlayer: { userId: +userId } },
+      ],
+      order: {
+        firstPlayer: { answers: { addedAt: 'ASC' } },
+        secondPlayer: { answers: { addedAt: 'ASC' } },
+      },
+    });
     return null;
   }
 }

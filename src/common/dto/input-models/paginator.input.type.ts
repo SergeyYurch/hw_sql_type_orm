@@ -3,20 +3,20 @@ import { IsIn, IsInt, IsOptional, IsString, Min } from 'class-validator';
 export class PaginatorInputType {
   @IsOptional()
   @IsString()
-  sortBy = 'createdAt';
+  sortBy: string;
 
   @IsOptional()
   @IsString()
   @IsIn(['desc', 'asc'])
-  sortDirection: 'desc' | 'asc' = 'desc';
+  sortDirection: 'desc' | 'asc';
 
   @IsOptional()
   @IsInt()
   @Min(1)
-  pageNumber = 1;
+  pageNumber: number;
 
   @IsOptional()
   @IsInt()
   @Min(1)
-  pageSize = 10;
+  pageSize: number;
 }

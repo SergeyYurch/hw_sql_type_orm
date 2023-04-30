@@ -789,4 +789,11 @@ describe('PairController (e2e)', () => {
       finishGameDate: expect.stringMatching(isoDatePattern),
     });
   });
+
+  it('/pair-game-quiz/pairs/my (GET=>200). User 4 req all games.', async () => {
+    const res = await request(app.getHttpServer())
+      .get(`/pair-game-quiz/pairs/my`)
+      .auth(accessTokens[3], { type: 'bearer' })
+      .expect(200);
+  });
 });

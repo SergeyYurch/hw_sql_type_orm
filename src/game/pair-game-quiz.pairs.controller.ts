@@ -39,7 +39,8 @@ export class PairGameQuizPairsController {
   @Get('my')
   async getUsersGames(
     @CurrentUserId() userId: string,
-    @PaginatorParam() paginatorParams: PaginatorInputType,
+    @PaginatorParam({ sortBy: 'pairCreatedDate' })
+    paginatorParams: PaginatorInputType,
   ) {
     const pairs = await this.pairsQueryTypeOrmRepository.getAllPairViewByUserId(
       userId,
