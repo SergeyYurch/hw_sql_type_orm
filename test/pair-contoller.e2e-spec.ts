@@ -534,4 +534,168 @@ describe('PairController (e2e)', () => {
       finishGameDate: null,
     });
   });
+
+  it('/pair-game-quiz/pairs/my-current/answers (POST=>200). User3 send correct answer1', async () => {
+    const res = await request(app.getHttpServer())
+      .post('/pair-game-quiz/pairs/my-current/answers')
+      .auth(accessTokens[2], { type: 'bearer' })
+      .send({
+        answer: 'answer1',
+      })
+      .expect(200);
+    console.log('test1');
+    console.log(res.body);
+    expect(res.body).toEqual({
+      questionId: expect.any(String),
+      answerStatus: 'Correct',
+      addedAt: expect.any(String),
+    });
+  });
+  it('/pair-game-quiz/pairs/my-current/answers (POST=>200). User3 send correct answer2', async () => {
+    await request(app.getHttpServer())
+      .post('/pair-game-quiz/pairs/my-current/answers')
+      .auth(accessTokens[2], { type: 'bearer' })
+      .send({
+        answer: 'answer1',
+      })
+      .expect(200);
+  });
+  it('/pair-game-quiz/pairs/my-current/answers (POST=>200). User4 send correct answer1', async () => {
+    await request(app.getHttpServer())
+      .post('/pair-game-quiz/pairs/my-current/answers')
+      .auth(accessTokens[3], { type: 'bearer' })
+      .send({
+        answer: 'answer1',
+      })
+      .expect(200);
+  });
+  it('/pair-game-quiz/pairs/my-current/answers (POST=>200). User4 send correct answer2', async () => {
+    await request(app.getHttpServer())
+      .post('/pair-game-quiz/pairs/my-current/answers')
+      .auth(accessTokens[3], { type: 'bearer' })
+      .send({
+        answer: 'answer1',
+      })
+      .expect(200);
+  });
+  it('/pair-game-quiz/pairs/my-current/answers (POST=>200). User3 send incorrect answer3', async () => {
+    await request(app.getHttpServer())
+      .post('/pair-game-quiz/pairs/my-current/answers')
+      .auth(accessTokens[2], { type: 'bearer' })
+      .send({
+        answer: 'wrong',
+      })
+      .expect(200);
+  });
+  it('/pair-game-quiz/pairs/my-current/answers (POST=>200). User3 send correct answer4', async () => {
+    await request(app.getHttpServer())
+      .post('/pair-game-quiz/pairs/my-current/answers')
+      .auth(accessTokens[2], { type: 'bearer' })
+      .send({
+        answer: 'answer1',
+      })
+      .expect(200);
+  });
+  it('/pair-game-quiz/pairs/my-current/answers (POST=>200). User4 send correct answer3', async () => {
+    await request(app.getHttpServer())
+      .post('/pair-game-quiz/pairs/my-current/answers')
+      .auth(accessTokens[3], { type: 'bearer' })
+      .send({
+        answer: 'answer1',
+      })
+      .expect(200);
+  });
+  it('/pair-game-quiz/pairs/my-current/answers (POST=>200). User4 send incorrect answer4', async () => {
+    await request(app.getHttpServer())
+      .post('/pair-game-quiz/pairs/my-current/answers')
+      .auth(accessTokens[3], { type: 'bearer' })
+      .send({
+        answer: 'wrong',
+      })
+      .expect(200);
+  });
+  it('/pair-game-quiz/pairs/my-current/answers (POST=>200). User3 send incorrect answer5', async () => {
+    await request(app.getHttpServer())
+      .post('/pair-game-quiz/pairs/my-current/answers')
+      .auth(accessTokens[2], { type: 'bearer' })
+      .send({
+        answer: 'last',
+      })
+      .expect(200);
+  });
+
+  //
+  it('/pair-game-quiz/pairs/{id} (GET=>200). User 4 req game with 5 answers. Should return pair by ID', async () => {
+    const res = await request(app.getHttpServer())
+      .get(`/pair-game-quiz/pairs/${game2Id}`)
+      .auth(accessTokens[3], { type: 'bearer' })
+      .expect(200);
+    console.log('test2');
+    console.log(res.body);
+    console.log(res.body.firstPlayerProgress.answers);
+    expect(res.body).toEqual({
+      id: expect.any(String),
+      firstPlayerProgress: {
+        answers: expect.any(Array),
+        player: {
+          id: expect.any(String),
+          login: 'user3',
+        },
+        score: 3,
+      },
+      secondPlayerProgress: {
+        answers: expect.any(Array),
+        player: {
+          id: expect.any(String),
+          login: 'user4',
+        },
+        score: 3,
+      },
+      questions: expect.any(Array),
+      status: 'Active',
+      pairCreatedDate: expect.stringMatching(isoDatePattern),
+      startGameDate: expect.stringMatching(isoDatePattern),
+      finishGameDate: null,
+    });
+  });
+
+  it('/pair-game-quiz/pairs/my-current/answers (POST=>200). User4 send incorrect answer5', async () => {
+    await request(app.getHttpServer())
+      .post('/pair-game-quiz/pairs/my-current/answers')
+      .auth(accessTokens[3], { type: 'bearer' })
+      .send({
+        answer: 'wrong',
+      })
+      .expect(200);
+  });
+  it('/pair-game-quiz/pairs/{id} (GET=>200). User 4 req game. User 3 should be win with score 4', async () => {
+    const res = await request(app.getHttpServer())
+      .get(`/pair-game-quiz/pairs/${game2Id}`)
+      .auth(accessTokens[3], { type: 'bearer' })
+      .expect(200);
+    expect(res.body).toEqual({
+      id: expect.any(String),
+      firstPlayerProgress: {
+        answers: expect.any(Array),
+        player: {
+          id: expect.any(String),
+          login: 'user3',
+        },
+        score: 4,
+      },
+      secondPlayerProgress: {
+        answers: expect.any(Array),
+        player: {
+          id: expect.any(String),
+          login: 'user4',
+        },
+        score: 3,
+      },
+      questions: expect.any(Array),
+      status: 'Finished',
+      pairCreatedDate: expect.stringMatching(isoDatePattern),
+      startGameDate: expect.stringMatching(isoDatePattern),
+      finishGameDate: expect.stringMatching(isoDatePattern),
+    });
+  });
 });

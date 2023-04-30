@@ -34,6 +34,14 @@ export class PairGameQuizPairsController {
     return pair;
   }
 
+  @Get('my')
+  async getUsersGames(@CurrentUserId() userId: string) {
+    const pairs = await this.pairsQueryTypeOrmRepository.getAllPairViewByUserId(
+      userId,
+    );
+    return pairs;
+  }
+
   @UseGuards(CheckPairIdGuard)
   @Get(':id')
   async getGame(@Param('id') id: string, @CurrentUserId() userId: string) {
