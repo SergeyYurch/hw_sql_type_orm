@@ -43,18 +43,12 @@ export class PairsTypeOrmRepository {
     pairEntity.pairCreatedDate = pair.pairCreatedDate;
     pairEntity.startGameDate = pair.startGameDate;
     pairEntity.finishGameDate = pair.finishGameDate;
-    console.log('A22- pairEntity');
-    console.log(pairEntity.firstPlayer);
     await this.pairsRepository.save(pairEntity);
-    console.log('A21- pairEntity');
-    console.log(pairEntity);
     await this.checkFinishGame(pairEntity);
     return pairEntity.id;
   }
 
   async savePlayer(player: Player, playerEntity: PlayerEntity) {
-    console.log('a45 - player');
-    console.log(player);
     if (!playerEntity) {
       playerEntity = new PlayerEntity();
       playerEntity.answers = [];
@@ -73,37 +67,24 @@ export class PairsTypeOrmRepository {
     }
     playerEntity.userId = +player.user.id;
     playerEntity.score = player.score;
-    console.log('a333 - playerEntity');
-    console.log(playerEntity);
-    console.log(player);
     await this.playersRepository.save(playerEntity);
-    console.log('a16- playerEntity');
-    console.log(playerEntity.answers);
     return playerEntity;
   }
 
-  async saveAnswer(answer: Answer, playerId: number) {
-    const answerEntity = new AnswerEntity();
-    if (answer.id) answerEntity.id = +answer.id;
-    answerEntity.questionId = +answer.question.id;
-    answerEntity.answerStatus = answer.answerStatus;
-    answerEntity.body = answer.body;
-    answerEntity.playerId = playerId;
-    await this.answersRepository.save(answerEntity);
-    console.log('a15 - answerEntity');
-    console.log(answerEntity);
-    return answerEntity;
-  }
-
   private async checkFinishGame(pairEntity: PairEntity) {
-    console.log('a17');
-    console.log(pairEntity.firstPlayer?.answers?.length);
-    console.log(pairEntity.secondPlayer?.answers?.length);
+    console.log('!!!!Start finishing game!!!!!');
+    console.log(
+      'pairEntity.firstPlayer?.answers?.length: ' +
+        pairEntity.firstPlayer?.answers?.length,
+    );
+    console.log(
+      'pairEntity.secondPlayer?.answers?.length: ' +
+        pairEntity.secondPlayer?.answers?.length,
+    );
     if (
       pairEntity.firstPlayer?.answers?.length === 5 &&
       pairEntity.secondPlayer?.answers?.length === 5
     ) {
-      console.log('!!!!Start finishing game!!!!!');
       let firstPlayerAnsweredFirst = 0;
       let secondPlayerAnsweredFirst = 0;
       pairEntity.finishGameDate = Date.now();
@@ -137,7 +118,6 @@ export class PairsTypeOrmRepository {
         pairEntity.firstPlayer.score++;
       if (secondPlayerAnsweredFirst === 5 && pairEntity.secondPlayer.score > 0)
         pairEntity.secondPlayer.score++;
-      console.log(pairEntity.firstPlayer.score);
       await Promise.all([
         await this.playersRepository.save(pairEntity.firstPlayer),
         await this.playersRepository.save(pairEntity.secondPlayer),
