@@ -21,6 +21,7 @@ export class PairsTypeOrmRepository {
     private readonly playersRepository: Repository<PlayerEntity>,
   ) {}
   async savePair(pair: Pair) {
+    console.log('start save pair');
     let pairEntity = new PairEntity();
     if (pair.id) {
       pairEntity = await this.pairsQueryTypeOrmRepository.getPairEntityById(
@@ -47,6 +48,7 @@ export class PairsTypeOrmRepository {
   }
 
   async savePlayer(player: Player, playerEntity: PlayerEntity) {
+    console.log('start save player, id:' + player.id);
     if (!playerEntity) {
       playerEntity = new PlayerEntity();
       playerEntity.answers = [];
@@ -66,17 +68,12 @@ export class PairsTypeOrmRepository {
     playerEntity.userId = +player.user.id;
     playerEntity.score = player.score;
     await this.playersRepository.save(playerEntity);
+    console.log('player have been saved, id:' + player.id);
     return playerEntity;
   }
 
   private async checkFinishGame(pairEntity: PairEntity) {
     console.log('!!!!Start finishing game!!!!!');
-    console.log(
-      'firstPlayer всего ответов: ' + pairEntity.firstPlayer?.answers?.length,
-    );
-    console.log(
-      'secondPlayer всего ответов: ' + pairEntity.secondPlayer?.answers?.length,
-    );
     if (
       pairEntity.firstPlayer?.answers?.length === 5 &&
       pairEntity.secondPlayer?.answers?.length === 5

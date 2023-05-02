@@ -87,6 +87,7 @@ export class PairsQueryTypeOrmRepository {
       },
     });
   }
+
   async getPairModelByUserId(userId: number) {
     const pairEntity = await this.getPairEntityByUserId(userId);
     if (!pairEntity) return null;
@@ -205,6 +206,7 @@ export class PairsQueryTypeOrmRepository {
     answerModel.addedAt = entity.addedAt;
     return answerModel;
   }
+
   private castToAnswerViewModel(answerModel: Answer): AnswerViewModel {
     return {
       questionId: answerModel.question.id,
@@ -215,7 +217,7 @@ export class PairsQueryTypeOrmRepository {
 
   async getAllPairViewByUserId(
     userId: string,
-    paginatorParams?: PaginatorInputType,
+    paginatorParams: PaginatorInputType,
   ): Promise<PaginatorViewModel<GamePairViewModel>> {
     const { sortBy, sortDirection, pageSize, pageNumber } = paginatorParams;
     const findOptionsOrder: FindOptionsOrder<PairEntity> = {

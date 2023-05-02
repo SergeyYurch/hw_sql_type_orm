@@ -12,6 +12,7 @@ describe('PairController (e2e)', () => {
   const accessTokens = [];
   let game1Id;
   let game2Id;
+  let game3Id;
 
   beforeAll(async () => {
     app = await getApp();
@@ -795,5 +796,43 @@ describe('PairController (e2e)', () => {
       .get(`/pair-game-quiz/pairs/my`)
       .auth(accessTokens[3], { type: 'bearer' })
       .expect(200);
+    expect(res.body).toEqual({
+      pagesCount: 1,
+      page: 1,
+      pageSize: 10,
+      totalCount: 1,
+      items: expect.any(Array),
+    });
+    expect(res.body.totalCount).toBe(1);
+  });
+
+  it('/pair-game-quiz/pairs/connection (POST=>200). User3 create new pair', async () => {
+    const res = await request(app.getHttpServer())
+      .post('/pair-game-quiz/pairs/connection')
+      .auth(accessTokens[2], { type: 'bearer' })
+      .expect(200);
+    game3Id = res.body.id;
+  });
+  it('/pair-game-quiz/pairs/{id} (GET=>200). User 3 req game 2. Should return pair by ID', async () => {
+    const res = await request(app.getHttpServer())
+      .get(`/pair-game-quiz/pairs/${game3Id}`)
+      .auth(accessTokens[2], { type: 'bearer' })
+      .expect(200);
+    expect(res.body.id).toBe(game3Id);
+  });
+  it('/pair-game-quiz/pairs/my (GET=>200). User 3 req all games.', async () => {
+    const res = await request(app.getHttpServer())
+      .get(`/pair-game-quiz/pairs/my`)
+      .auth(accessTokens[3], { type: 'bearer' })
+      .expect(200);
+    console.log('test 3');
+    console.log(res.body);
+    expect(res.body).toEqual({
+      pagesCount: 1,
+      page: 1,
+      pageSize: 10,
+      totalCount: 2,
+      items: expect.any(Array),
+    });
   });
 });

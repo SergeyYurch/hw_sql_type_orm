@@ -44,6 +44,7 @@ export class PairGameQuizPairsController {
   ) {
     const pairs = await this.pairsQueryTypeOrmRepository.getAllPairViewByUserId(
       userId,
+      paginatorParams,
     );
     return pairs;
   }
