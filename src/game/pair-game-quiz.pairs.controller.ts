@@ -97,7 +97,13 @@ export class PairGameQuizPairsController {
     const pairId = await this.commandBus.execute(
       new SetAnswerCommand(userId, body.answer),
     );
+    console.log();
     if (!pairId) throw new ForbiddenException();
-    return this.pairsQueryTypeOrmRepository.getLastAnswerView(pairId, userId);
+    const answer = await this.pairsQueryTypeOrmRepository.getLastAnswerView(
+      pairId,
+      userId,
+    );
+    `[PairGameQuizPairsController]:${Date.now()}: pair have been saved answer: ${answer} `;
+    return answer;
   }
 }
