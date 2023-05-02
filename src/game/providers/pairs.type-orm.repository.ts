@@ -47,7 +47,7 @@ export class PairsTypeOrmRepository {
   }
 
   async savePlayer(player: Player, playerEntity: PlayerEntity) {
-    console.log('start save player, id:' + player.id);
+    console.log('start save player, id:' + player.id + ' ' + Date.now());
     if (!playerEntity) {
       playerEntity = new PlayerEntity();
       playerEntity.answers = [];
@@ -67,7 +67,7 @@ export class PairsTypeOrmRepository {
     playerEntity.userId = +player.user.id;
     playerEntity.score = player.score;
     await this.playersRepository.save(playerEntity);
-    console.log('player have been saved, id:' + player.id);
+    console.log('player have been saved, id:' + player.id + ' ' + Date.now());
     return playerEntity;
   }
 
@@ -76,7 +76,9 @@ export class PairsTypeOrmRepository {
       pairEntity.firstPlayer?.answers?.length === 5 &&
       pairEntity.secondPlayer?.answers?.length === 5
     ) {
-      console.log('!!!!Start finishing game!!!!!');
+      console.log(
+        `!!!!Start finishing game!!!!!1 player answers: ${pairEntity.firstPlayer?.answers?.length} 1 player answers: ${pairEntity.secondPlayer?.answers?.length} :`,
+      );
       let firstPlayerAnsweredFirst = 0;
       let secondPlayerAnsweredFirst = 0;
       pairEntity.finishGameDate = Date.now();
