@@ -42,11 +42,10 @@ export class PairGameQuizPairsController {
     @PaginatorParam({ sortBy: 'pairCreatedDate' })
     paginatorParams: PaginatorInputType,
   ) {
-    const pairs = await this.pairsQueryTypeOrmRepository.getAllPairViewByUserId(
+    return await this.pairsQueryTypeOrmRepository.getAllPairViewByUserId(
       userId,
       paginatorParams,
     );
-    return pairs;
   }
 
   @UseGuards(CheckPairIdGuard)
@@ -93,7 +92,7 @@ export class PairGameQuizPairsController {
     @Body() body: AnswerInputModel,
   ) {
     console.log(
-      `[PairGameQuizPairsController]: POST=>my-current/answers started`,
+      `[PairGameQuizPairsController]: POST=>my-current/answers started userId: ${userId}`,
     );
     const pairId = await this.commandBus.execute(
       new SetAnswerCommand(userId, body.answer),

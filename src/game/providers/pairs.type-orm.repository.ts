@@ -4,7 +4,6 @@ import { PairEntity } from '../entities/pair.entity';
 import { Pair } from '../domain/pair';
 import { PairsQueryTypeOrmRepository } from './pairs.query.type-orm.repository';
 import { PlayerEntity } from '../entities/player.entity';
-import { Answer } from '../domain/answer';
 import { AnswerEntity } from '../entities/ansver.entity';
 import { Player } from '../domain/player';
 import { QuizQuestionsQueryTypeOrmRepository } from '../../quiz/providers/quiz-questions.query-type-orm.repository';
@@ -73,29 +72,29 @@ export class PairsTypeOrmRepository {
   }
 
   private async checkFinishGame(pairEntity: PairEntity) {
-    console.log('!!!!Start finishing game!!!!!');
     if (
       pairEntity.firstPlayer?.answers?.length === 5 &&
       pairEntity.secondPlayer?.answers?.length === 5
     ) {
+      console.log('!!!!Start finishing game!!!!!');
       let firstPlayerAnsweredFirst = 0;
       let secondPlayerAnsweredFirst = 0;
       pairEntity.finishGameDate = Date.now();
       pairEntity.status = 'Finished';
       for (let i = 0; i < 5; i++) {
-        console.log(
-          'Ответ firstPlayer ID: ' +
-            +pairEntity.firstPlayer.answers[i].id +
-            'зафиксирован: ' +
-            pairEntity.firstPlayer.answers[i].addedAt,
-        );
-
-        console.log(
-          'Ответ secondPlayer ID:' +
-            +pairEntity.secondPlayer.answers[i].id +
-            'завиксирован' +
-            +pairEntity.secondPlayer.answers[i].addedAt,
-        );
+        // console.log(
+        //   'Ответ firstPlayer ID: ' +
+        //     +pairEntity.firstPlayer.answers[i].id +
+        //     'зафиксирован: ' +
+        //     pairEntity.firstPlayer.answers[i].addedAt,
+        // );
+        //
+        // console.log(
+        //   'Ответ secondPlayer ID:' +
+        //     +pairEntity.secondPlayer.answers[i].id +
+        //     'завиксирован' +
+        //     +pairEntity.secondPlayer.answers[i].addedAt,
+        // );
         if (
           +pairEntity.firstPlayer.answers[i].addedAt <
           +pairEntity.secondPlayer.answers[i].addedAt

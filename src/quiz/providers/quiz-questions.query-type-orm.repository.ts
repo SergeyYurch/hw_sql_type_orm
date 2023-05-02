@@ -27,7 +27,6 @@ export class QuizQuestionsQueryTypeOrmRepository {
               FROM quiz_questions 
               WHERE id=${+id});
              `;
-    console.log(queryString);
     const queryResult = await this.dataSource.query(queryString);
     return queryResult[0].exists;
   }
@@ -51,7 +50,6 @@ export class QuizQuestionsQueryTypeOrmRepository {
     if (bodySearchTerm) {
       findOptionsWhere['body'] = ILike(`%${bodySearchTerm}%`);
     }
-    console.log(findOptionsWhere);
     const findOptions: FindManyOptions<QuizQuestionEntity> = {
       order: { [sortBy]: sortDirection },
       where: findOptionsWhere,
@@ -62,7 +60,6 @@ export class QuizQuestionsQueryTypeOrmRepository {
   }
 
   castToQuestionModel(entity: QuizQuestionEntity): Question {
-    console.log('castToQuestionModel');
     const questionModel = new Question({
       body: entity.body,
       correctAnswers: entity.correctAnswers,
