@@ -1,5 +1,5 @@
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { PairEntity } from '../entities/pair.entity';
 import { Pair } from '../domain/pair';
 import { PairsQueryTypeOrmRepository } from './pairs.query.type-orm.repository';
@@ -12,6 +12,7 @@ export class PairsTypeOrmRepository {
   constructor(
     private readonly quizQuestionsQueryTypeOrmRepository: QuizQuestionsQueryTypeOrmRepository,
     private readonly pairsQueryTypeOrmRepository: PairsQueryTypeOrmRepository,
+    private dataSource: DataSource,
     @InjectRepository(PairEntity)
     private readonly pairsRepository: Repository<PairEntity>,
     @InjectRepository(AnswerEntity)
@@ -21,32 +22,51 @@ export class PairsTypeOrmRepository {
   ) {}
   async savePair(pair: Pair) {
     console.log('start save pair');
-    let pairEntity = new PairEntity();
-    if (pair.id) {
-      pairEntity = await this.pairsQueryTypeOrmRepository.getPairEntityById(
-        pair.id,
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      let pairEntity = new PairEntity();
+      if (pair.id) {
+        pairEntity = await this.pairsQueryTypeOrmRepository.getPairEntityById(
+          pair.id,
+        );
+      }
+      pairEntity.firstPlayer = await this.savePlayer(
+        queryRunner,
+        pair.firstPlayer,
+        pairEntity.firstPlayer,
       );
+      if (pair.secondPlayer)
+        pairEntity.secondPlayer = await this.savePlayer(
+          queryRunner,
+          pair.secondPlayer,
+          pairEntity.secondPlayer,
+        );
+      pairEntity.questions = pair.questions.map((p) => +p.id);
+      pairEntity.status = pair.status;
+      pairEntity.pairCreatedDate = pair.pairCreatedDate;
+      pairEntity.startGameDate = pair.startGameDate;
+      pairEntity.finishGameDate = pair.finishGameDate;
+      await queryRunner.manager.save(pairEntity);
+      await this.checkFinishGame(queryRunner, pairEntity);
+      await queryRunner.commitTransaction();
+      return pairEntity.id;
+    } catch (err) {
+      // since we have errors lets rollback the changes we made
+      await queryRunner.rollbackTransaction();
+    } finally {
+      // you need to release a queryRunner which was manually instantiated
+      await queryRunner.release();
     }
-    pairEntity.firstPlayer = await this.savePlayer(
-      pair.firstPlayer,
-      pairEntity.firstPlayer,
-    );
-    if (pair.secondPlayer)
-      pairEntity.secondPlayer = await this.savePlayer(
-        pair.secondPlayer,
-        pairEntity.secondPlayer,
-      );
-    pairEntity.questions = pair.questions.map((p) => +p.id);
-    pairEntity.status = pair.status;
-    pairEntity.pairCreatedDate = pair.pairCreatedDate;
-    pairEntity.startGameDate = pair.startGameDate;
-    pairEntity.finishGameDate = pair.finishGameDate;
-    await this.pairsRepository.save(pairEntity);
-    await this.checkFinishGame(pairEntity);
-    return pairEntity.id;
   }
 
-  async savePlayer(player: Player, playerEntity: PlayerEntity) {
+  async savePlayer(
+    queryRunner: QueryRunner,
+    player: Player,
+    playerEntity: PlayerEntity,
+  ) {
     console.log('start save player, id:' + player.id + ' ' + Date.now());
     if (!playerEntity) {
       playerEntity = new PlayerEntity();
@@ -60,18 +80,21 @@ export class PairsTypeOrmRepository {
         answerEntity.answerStatus = player.answers[i].answerStatus;
         answerEntity.body = player.answers[i].body;
         answerEntity.playerId = +player.id;
-        await this.answersRepository.save(answerEntity);
+        await queryRunner.manager.save(answerEntity);
         playerEntity.answers[i] = answerEntity;
       }
     }
     playerEntity.userId = +player.user.id;
     playerEntity.score = player.score;
-    await this.playersRepository.save(playerEntity);
+    await queryRunner.manager.save(playerEntity);
     console.log('player have been saved, id:' + player.id + ' ' + Date.now());
     return playerEntity;
   }
 
-  private async checkFinishGame(pairEntity: PairEntity) {
+  private async checkFinishGame(
+    queryRunner: QueryRunner,
+    pairEntity: PairEntity,
+  ) {
     if (
       pairEntity.firstPlayer?.answers?.length === 5 &&
       pairEntity.secondPlayer?.answers?.length === 5
@@ -117,9 +140,9 @@ export class PairsTypeOrmRepository {
       if (secondPlayerAnsweredFirst === 5 && pairEntity.secondPlayer.score > 0)
         pairEntity.secondPlayer.score++;
       await Promise.all([
-        await this.playersRepository.save(pairEntity.firstPlayer),
-        await this.playersRepository.save(pairEntity.secondPlayer),
-        await this.pairsRepository.save(pairEntity),
+        await queryRunner.manager.save(pairEntity.firstPlayer),
+        await queryRunner.manager.save(pairEntity.secondPlayer),
+        await queryRunner.manager.save(pairEntity),
       ]);
     }
   }
