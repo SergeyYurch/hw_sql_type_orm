@@ -102,42 +102,19 @@ export class PairsTypeOrmRepository {
       console.log(
         `!!!!Start finishing game!!!!!1 player answers: ${pairEntity.firstPlayer?.answers?.length} 1 player answers: ${pairEntity.secondPlayer?.answers?.length} :`,
       );
-      let firstPlayerAnsweredFirst = 0;
-      let secondPlayerAnsweredFirst = 0;
       pairEntity.finishGameDate = Date.now();
       pairEntity.status = 'Finished';
-      for (let i = 0; i < 5; i++) {
-        // console.log(
-        //   'Ответ firstPlayer ID: ' +
-        //     +pairEntity.firstPlayer.answers[i].id +
-        //     'зафиксирован: ' +
-        //     pairEntity.firstPlayer.answers[i].addedAt,
-        // );
-        //
-        // console.log(
-        //   'Ответ secondPlayer ID:' +
-        //     +pairEntity.secondPlayer.answers[i].id +
-        //     'завиксирован' +
-        //     +pairEntity.secondPlayer.answers[i].addedAt,
-        // );
-        if (
-          +pairEntity.firstPlayer.answers[i].addedAt <
-          +pairEntity.secondPlayer.answers[i].addedAt
-        ) {
-          firstPlayerAnsweredFirst++;
-        } else secondPlayerAnsweredFirst++;
-      }
-      console.log(
-        'Результат количетсво первых ответов: firstPlayerAnsweredFirst: ' +
-          firstPlayerAnsweredFirst,
-      );
-      console.log(
-        'Результат количетсво первых ответов: secondPlayerAnsweredFirst: ' +
-          secondPlayerAnsweredFirst,
-      );
-      if (firstPlayerAnsweredFirst === 5 && pairEntity.firstPlayer.score > 0)
+      if (
+        +pairEntity.firstPlayer.answers[5].addedAt <
+          +pairEntity.secondPlayer.answers[5].addedAt &&
+        pairEntity.firstPlayer.score > 0
+      )
         pairEntity.firstPlayer.score++;
-      if (secondPlayerAnsweredFirst === 5 && pairEntity.secondPlayer.score > 0)
+      if (
+        +pairEntity.firstPlayer.answers[5].addedAt >
+          +pairEntity.secondPlayer.answers[5].addedAt &&
+        pairEntity.secondPlayer.score > 0
+      )
         pairEntity.secondPlayer.score++;
       await Promise.all([
         await queryRunner.manager.save(pairEntity.firstPlayer),
