@@ -54,6 +54,8 @@ export class PairsTypeOrmRepository {
       await queryRunner.commitTransaction();
       return pairEntity.id;
     } catch (err) {
+      console.log('pair save transaction error');
+      console.log(err);
       // since we have errors lets rollback the changes we made
       await queryRunner.rollbackTransaction();
     } finally {
@@ -105,14 +107,14 @@ export class PairsTypeOrmRepository {
       pairEntity.finishGameDate = Date.now();
       pairEntity.status = 'Finished';
       if (
-        +pairEntity.firstPlayer.answers[5].addedAt <
-          +pairEntity.secondPlayer.answers[5].addedAt &&
+        +pairEntity.firstPlayer.answers[4].addedAt <
+          +pairEntity.secondPlayer.answers[4].addedAt &&
         pairEntity.firstPlayer.score > 0
       )
         pairEntity.firstPlayer.score++;
       if (
-        +pairEntity.firstPlayer.answers[5].addedAt >
-          +pairEntity.secondPlayer.answers[5].addedAt &&
+        +pairEntity.firstPlayer.answers[4].addedAt >
+          +pairEntity.secondPlayer.answers[4].addedAt &&
         pairEntity.secondPlayer.score > 0
       )
         pairEntity.secondPlayer.score++;
