@@ -3,7 +3,7 @@ import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { PairEntity } from '../entities/pair.entity';
 import { Pair } from '../domain/pair';
 import { PairsQueryTypeOrmRepository } from './pairs.query.type-orm.repository';
-import { PlayerEntity } from '../entities/player.entity';
+import { GameResult, PlayerEntity } from '../entities/player.entity';
 import { AnswerEntity } from '../entities/ansver.entity';
 import { Player } from '../domain/player';
 import { QuizQuestionsQueryTypeOrmRepository } from '../../quiz/providers/quiz-questions.query-type-orm.repository';
@@ -110,6 +110,18 @@ export class PairsTypeOrmRepository {
         pairEntity.secondPlayer.score > 0
       )
         pairEntity.secondPlayer.score++;
+      if (pairEntity.firstPlayer.score === pairEntity.secondPlayer.score) {
+        pairEntity.firstPlayer.result = GameResult.draw;
+        pairEntity.secondPlayer.result = GameResult.draw;
+      }
+      if (pairEntity.firstPlayer.score > pairEntity.secondPlayer.score) {
+        pairEntity.firstPlayer.result = GameResult.won;
+        pairEntity.secondPlayer.result = GameResult.lost;
+      }
+      if (pairEntity.firstPlayer.score < pairEntity.secondPlayer.score) {
+        pairEntity.firstPlayer.result = GameResult.lost;
+        pairEntity.secondPlayer.result = GameResult.won;
+      }
       await Promise.all([
         await this.queryRunner.manager.save(pairEntity.firstPlayer),
         await this.queryRunner.manager.save(pairEntity.secondPlayer),

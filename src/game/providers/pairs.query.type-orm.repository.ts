@@ -5,12 +5,13 @@ import {
   FindOptionsOrder,
   FindOptionsRelations,
   FindOptionsWhere,
+  IsNull,
   Not,
   Repository,
 } from 'typeorm';
 import { PairEntity } from '../entities/pair.entity';
 import { Pair } from '../domain/pair';
-import { PlayerEntity } from '../entities/player.entity';
+import { GameResult, PlayerEntity } from '../entities/player.entity';
 import { Player } from '../domain/player';
 import { UsersQueryTypeormRepository } from '../../users/providers/users.query-typeorm.repository';
 import { AnswerEntity } from '../entities/ansver.entity';
@@ -23,6 +24,7 @@ import { AnswerViewModel } from '../dto/view-models/answer.view.model';
 import { PaginatorInputType } from '../../common/dto/input-models/paginator.input.type';
 import { PaginatorViewModel } from '../../common/dto/view-models/paginator.view.model';
 import { pagesCount } from '../../common/helpers/helpers';
+import { MyStatisticViewModel } from '../dto/view-models/my-statistic.view.model';
 
 export class PairsQueryTypeOrmRepository {
   private findOptionsRelations: FindOptionsRelations<PairEntity>;
@@ -260,6 +262,36 @@ export class PairsQueryTypeOrmRepository {
       pageSize,
       totalCount,
       items,
+    };
+  }
+
+  async getUserGamesStatistic(userId: string): Promise<MyStatisticViewModel> {
+    const findOptionsWhere: FindOptionsWhere<PlayerEntity> = {
+      userId: +userId,
+      result: Not(IsNull()),
+    };
+    const playerEntities = await this.playersRepository.find({
+      where: findOptionsWhere,
+    });
+    const gamesCount = playerEntities.length;
+    let sumScore = 0;
+    let winsCount = 0;
+    let lossesCount = 0;
+    let drawsCount = 0;
+    for (const p of playerEntities) {
+      sumScore += p.score;
+      if (p.result === GameResult.won) winsCount++;
+      if (p.result === GameResult.lost) lossesCount++;
+      if (p.result === GameResult.draw) drawsCount++;
+    }
+    const avgScores = Math.round((100 * sumScore) / gamesCount) / 100;
+    return {
+      sumScore,
+      avgScores,
+      gamesCount,
+      drawsCount,
+      lossesCount,
+      winsCount,
     };
   }
 }

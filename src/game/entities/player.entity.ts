@@ -22,4 +22,12 @@ export class PlayerEntity {
   answers: AnswerEntity[];
   @Column()
   score: number;
+  @Column({ nullable: true })
+  result: GameResult;
+}
+
+export enum GameResult {
+  lost = 'lost',
+  won = 'won',
+  draw = 'draw',
 }

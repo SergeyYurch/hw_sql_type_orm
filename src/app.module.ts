@@ -110,7 +110,7 @@ import { PairsQueryTypeOrmRepository } from './game/providers/pairs.query.type-o
 import { PairEntity } from './game/entities/pair.entity';
 import { PlayerEntity } from './game/entities/player.entity';
 import { AnswerEntity } from './game/entities/ansver.entity';
-import { PairGameQuizPairsController } from './game/pair-game-quiz.pairs.controller';
+import { PairGameQuizController } from './game/pair-game-quiz.controller';
 import { ConnectionUseCase } from './game/providers/use-cases/connection.use-case';
 import { SetAnswerUseCase } from './game/providers/use-cases/set-answer.use-case';
 
@@ -277,7 +277,7 @@ export const options: TypeOrmModuleOptions =
     SecurityController,
     TestingController,
     SaQuizQuestionsController,
-    PairGameQuizPairsController,
+    PairGameQuizController,
   ],
 
   providers: [

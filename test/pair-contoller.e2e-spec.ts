@@ -976,4 +976,23 @@ describe('PairController (e2e)', () => {
     expect(res.body.items).toHaveLength(1);
     expect(res.body.items[0].id).toBe(gameIds[1]);
   });
+
+  ///hometask_26/api/pair-game-quiz/users/my-statistic Get current user statistic
+
+  it('/pair-game-quiz/users/my-statistic (GET=>200). User 3 req statistic', async () => {
+    const res = await request(app.getHttpServer())
+      .get(`/pair-game-quiz/users/my-statistic`)
+      .auth(accessTokens[2], { type: 'bearer' })
+      .expect(200);
+    expect(res.body).toEqual({
+      sumScore: 4,
+      avgScores: 1.33,
+      gamesCount: 3,
+      drawsCount: 2,
+      lossesCount: 0,
+      winsCount: 1,
+    });
+    expect(res.body.items).toHaveLength(1);
+    expect(res.body.items[0].id).toBe(gameIds[1]);
+  });
 });

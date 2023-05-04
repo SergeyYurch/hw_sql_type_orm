@@ -21,14 +21,14 @@ import { PaginatorParam } from '../common/decorators/paginator-param.decorator';
 import { PaginatorInputType } from '../common/dto/input-models/paginator.input.type';
 
 @UseGuards(AccessTokenGuard)
-@Controller('/pair-game-quiz/pairs')
-export class PairGameQuizPairsController {
+@Controller('/pair-game-quiz')
+export class PairGameQuizController {
   constructor(
     private commandBus: CommandBus,
     private readonly pairsQueryTypeOrmRepository: PairsQueryTypeOrmRepository,
   ) {}
 
-  @Get('my-current')
+  @Get('pairs/my-current')
   async getCurrentGame(@CurrentUserId() userId: string) {
     const pair =
       await this.pairsQueryTypeOrmRepository.getActivePairViewByUserId(userId);
@@ -36,7 +36,12 @@ export class PairGameQuizPairsController {
     return pair;
   }
 
-  @Get('my')
+  @Get('users/my-statistic')
+  async getUserGamesStatistic(@CurrentUserId() userId: string) {
+    return await this.pairsQueryTypeOrmRepository.getUserGamesStatistic(userId);
+  }
+
+  @Get('pairs/my')
   async getUsersGames(
     @CurrentUserId() userId: string,
     @PaginatorParam({ sortBy: 'pairCreatedDate' })
@@ -49,7 +54,7 @@ export class PairGameQuizPairsController {
   }
 
   @UseGuards(CheckPairIdGuard)
-  @Get(':id')
+  @Get('pairs/:id')
   async getGame(@Param('id') id: string, @CurrentUserId() userId: string) {
     const pair = await this.pairsQueryTypeOrmRepository.getPairViewById(id);
     if (
@@ -62,7 +67,7 @@ export class PairGameQuizPairsController {
     return pair;
   }
 
-  @Post('connection')
+  @Post('pairs/connection')
   @HttpCode(200)
   async connection(@CurrentUserId() userId: string) {
     console.log(`[ PairGameQuizPairsController]: POST=>connection started.`);
@@ -86,7 +91,7 @@ export class PairGameQuizPairsController {
   }
 
   @HttpCode(200)
-  @Post('my-current/answers')
+  @Post('pairs/my-current/answers')
   async answer(
     @CurrentUserId() userId: string,
     @Body() body: AnswerInputModel,
