@@ -1,6 +1,7 @@
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import {
   DataSource,
+  FindManyOptions,
   FindOptionsOrder,
   FindOptionsRelations,
   FindOptionsWhere,
@@ -21,7 +22,6 @@ import { PlayerProgressViewModel } from '../dto/view-models/player-progress.view
 import { AnswerViewModel } from '../dto/view-models/answer.view.model';
 import { PaginatorInputType } from '../../common/dto/input-models/paginator.input.type';
 import { PaginatorViewModel } from '../../common/dto/view-models/paginator.view.model';
-import { PostViewModel } from '../../posts/dto/view-models/post.view.model';
 import { pagesCount } from '../../common/helpers/helpers';
 
 export class PairsQueryTypeOrmRepository {
@@ -106,7 +106,7 @@ export class PairsQueryTypeOrmRepository {
   }
 
   async getPairEntityById(id: string) {
-    const pairEntity = await this.pairsRepository.findOne({
+    return await this.pairsRepository.findOne({
       relations: this.findOptionsRelations,
       where: { id },
       order: {
@@ -114,7 +114,6 @@ export class PairsQueryTypeOrmRepository {
         secondPlayer: { answers: { addedAt: 'ASC' } },
       },
     });
-    return pairEntity;
   }
 
   async getPairModelById(pairId: string) {
@@ -173,6 +172,9 @@ export class PairsQueryTypeOrmRepository {
   }
 
   castToPlayerViewModel(playerModel: Player): PlayerProgressViewModel {
+    playerModel.answers.sort((a, b) => +a.addedAt - +b.addedAt);
+    console.log('l3');
+    console.log(playerModel.answers);
     return {
       player: {
         id: playerModel.user.id,
@@ -221,22 +223,24 @@ export class PairsQueryTypeOrmRepository {
   ): Promise<PaginatorViewModel<GamePairViewModel>> {
     const { sortBy, sortDirection, pageSize, pageNumber } = paginatorParams;
     const findOptionsOrder: FindOptionsOrder<PairEntity> = {
-      firstPlayer: { answers: { addedAt: 'ASC' } },
-      secondPlayer: { answers: { addedAt: 'ASC' } },
       [sortBy]: sortDirection,
     };
+    if (sortBy != 'pairCreatedDate')
+      findOptionsOrder['pairCreatedDate'] = 'desc';
     const findOptionsWhere: FindOptionsWhere<PairEntity>[] = [
       { firstPlayer: { userId: +userId } },
       { secondPlayer: { userId: +userId } },
     ];
-
-    const [pairEntities, totalCount] = await this.pairsRepository.findAndCount({
+    const findManyOptions: FindManyOptions<PairEntity> = {
       relations: this.findOptionsRelations,
       where: findOptionsWhere,
       order: findOptionsOrder,
       skip: pageSize * (pageNumber - 1),
       take: pageSize,
-    });
+    };
+    const [pairEntities, totalCount] = await this.pairsRepository.findAndCount(
+      findManyOptions,
+    );
     if (!totalCount)
       return {
         pagesCount: 0,

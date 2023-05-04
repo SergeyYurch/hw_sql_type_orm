@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { HttpExceptionFilter } from '../src/common/exception-filters/http-exception.filter';
 import cookieParser from 'cookie-parser';
+import { disconnect } from 'mongoose';
 
 export const getApp = async () => {
   const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -37,4 +38,9 @@ export const getApp = async () => {
   app.useGlobalFilters(new HttpExceptionFilter());
   await app.init();
   return app;
+};
+
+export const appClose = async (app: INestApplication) => {
+  await disconnect();
+  await app.close();
 };

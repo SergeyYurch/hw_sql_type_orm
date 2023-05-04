@@ -9,6 +9,7 @@ import { Player } from '../domain/player';
 import { QuizQuestionsQueryTypeOrmRepository } from '../../quiz/providers/quiz-questions.query-type-orm.repository';
 
 export class PairsTypeOrmRepository {
+  private queryRunner: QueryRunner;
   constructor(
     private readonly quizQuestionsQueryTypeOrmRepository: QuizQuestionsQueryTypeOrmRepository,
     private readonly pairsQueryTypeOrmRepository: PairsQueryTypeOrmRepository,
@@ -22,9 +23,9 @@ export class PairsTypeOrmRepository {
   ) {}
   async savePair(pair: Pair) {
     console.log('start save pair');
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+    this.queryRunner = this.dataSource.createQueryRunner();
+    await this.queryRunner.connect();
+    await this.queryRunner.startTransaction();
 
     try {
       let pairEntity = new PairEntity();
@@ -34,13 +35,11 @@ export class PairsTypeOrmRepository {
         );
       }
       pairEntity.firstPlayer = await this.savePlayer(
-        queryRunner,
         pair.firstPlayer,
         pairEntity.firstPlayer,
       );
       if (pair.secondPlayer)
         pairEntity.secondPlayer = await this.savePlayer(
-          queryRunner,
           pair.secondPlayer,
           pairEntity.secondPlayer,
         );
@@ -49,26 +48,22 @@ export class PairsTypeOrmRepository {
       pairEntity.pairCreatedDate = pair.pairCreatedDate;
       pairEntity.startGameDate = pair.startGameDate;
       pairEntity.finishGameDate = pair.finishGameDate;
-      await queryRunner.manager.save(pairEntity);
-      await this.checkFinishGame(queryRunner, pairEntity);
-      await queryRunner.commitTransaction();
+      await this.queryRunner.manager.save(pairEntity);
+      await this.checkFinishGame(pairEntity);
+      await this.queryRunner.commitTransaction();
       return pairEntity.id;
     } catch (err) {
       console.log('pair save transaction error');
       console.log(err);
       // since we have errors lets rollback the changes we made
-      await queryRunner.rollbackTransaction();
+      await this.queryRunner.rollbackTransaction();
     } finally {
       // you need to release a queryRunner which was manually instantiated
-      await queryRunner.release();
+      await this.queryRunner.release();
     }
   }
 
-  async savePlayer(
-    queryRunner: QueryRunner,
-    player: Player,
-    playerEntity: PlayerEntity,
-  ) {
+  async savePlayer(player: Player, playerEntity: PlayerEntity) {
     console.log('start save player, id:' + player.id + ' ' + Date.now());
     if (!playerEntity) {
       playerEntity = new PlayerEntity();
@@ -82,21 +77,18 @@ export class PairsTypeOrmRepository {
         answerEntity.answerStatus = player.answers[i].answerStatus;
         answerEntity.body = player.answers[i].body;
         answerEntity.playerId = +player.id;
-        await queryRunner.manager.save(answerEntity);
+        await this.queryRunner.manager.save(answerEntity);
         playerEntity.answers[i] = answerEntity;
       }
     }
     playerEntity.userId = +player.user.id;
     playerEntity.score = player.score;
-    await queryRunner.manager.save(playerEntity);
+    await this.queryRunner.manager.save(playerEntity);
     console.log('player have been saved, id:' + player.id + ' ' + Date.now());
     return playerEntity;
   }
 
-  private async checkFinishGame(
-    queryRunner: QueryRunner,
-    pairEntity: PairEntity,
-  ) {
+  private async checkFinishGame(pairEntity: PairEntity) {
     if (
       pairEntity.firstPlayer?.answers?.length === 5 &&
       pairEntity.secondPlayer?.answers?.length === 5
@@ -119,9 +111,9 @@ export class PairsTypeOrmRepository {
       )
         pairEntity.secondPlayer.score++;
       await Promise.all([
-        await queryRunner.manager.save(pairEntity.firstPlayer),
-        await queryRunner.manager.save(pairEntity.secondPlayer),
-        await queryRunner.manager.save(pairEntity),
+        await this.queryRunner.manager.save(pairEntity.firstPlayer),
+        await this.queryRunner.manager.save(pairEntity.secondPlayer),
+        await this.queryRunner.manager.save(pairEntity),
       ]);
     }
   }
