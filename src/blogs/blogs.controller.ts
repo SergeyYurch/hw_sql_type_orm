@@ -21,12 +21,10 @@ export class BlogsController {
     @PaginatorParam() paginatorParams: PaginatorInputType,
   ) {
     console.log(`[BlogsController ]/getBlogs - run...`);
-    const result = await this.blogsQueryRepository.findBlogs(
+    return await this.blogsQueryRepository.findBlogs(
       paginatorParams,
       searchNameTerm,
     );
-    console.log(result);
-    return result;
   }
 
   @UseGuards(CheckBlogIdGuard)

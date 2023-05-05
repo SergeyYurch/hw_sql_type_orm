@@ -76,8 +76,6 @@ export class UsersTypeOrmRepository {
         passwordRecoveryInformation.expirationDate =
           user.passwordRecoveryInformation.expirationDate;
         passwordRecoveryInformation.userId = userEntity.id;
-        console.log('save passwordRecoveryInformation');
-        console.log(passwordRecoveryInformation);
         await this.passwordRecoveryInformationRepository.save(
           passwordRecoveryInformation,
         );

@@ -1,9 +1,10 @@
 import { IsIn, IsInt, IsOptional, IsString, Min } from 'class-validator';
+import { SortParamType } from '../../types/sort-param.type';
 
 export class PaginatorInputType {
   @IsOptional()
   @IsString()
-  sortBy: string;
+  sortBy: string; //| string[];
 
   @IsOptional()
   @IsString()
@@ -19,4 +20,7 @@ export class PaginatorInputType {
   @IsInt()
   @Min(1)
   pageSize: number;
+
+  @IsOptional()
+  sort: SortParamType[];
 }

@@ -40,6 +40,13 @@ export class PairGameQuizController {
   async getUserGamesStatistic(@CurrentUserId() userId: string) {
     return await this.pairsQueryTypeOrmRepository.getUserGamesStatistic(userId);
   }
+  @Get('users/top')
+  async getTopUsers(
+    @PaginatorParam()
+    paginatorParams: PaginatorInputType,
+  ) {
+    return await this.pairsQueryTypeOrmRepository.getTopUsersViewModel();
+  }
 
   @Get('pairs/my')
   async getUsersGames(
@@ -102,7 +109,6 @@ export class PairGameQuizController {
     const pairId = await this.commandBus.execute(
       new SetAnswerCommand(userId, body.answer),
     );
-    console.log();
     if (!pairId) throw new ForbiddenException();
     const answer = await this.pairsQueryTypeOrmRepository.getLastAnswerView(
       pairId,

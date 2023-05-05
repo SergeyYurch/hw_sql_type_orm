@@ -95,13 +95,11 @@ export class BloggerBlogsController {
     @CurrentUserId() userId: string,
   ) {
     console.log(`[BloggerBlogsController]/getBlogs - run...`);
-    const result = await this.blogsQueryRepository.findBlogs(
+    return await this.blogsQueryRepository.findBlogs(
       paginatorParams,
       searchNameTerm,
       { blogOwnerId: userId },
     );
-    console.log(result);
-    return result;
   }
 
   @UseGuards(BlogOwnerGuard)

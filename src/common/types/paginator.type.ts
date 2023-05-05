@@ -3,4 +3,5 @@ export type PaginatorType = {
   sortDirection?: string;
   pageNumber?: number;
   pageSize?: number;
+  sort?: string[];
 };

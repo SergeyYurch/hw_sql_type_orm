@@ -16,7 +16,6 @@ export class CheckUserIdGuard implements CanActivate {
     const userId = request.params.userId;
     if (!Number.isInteger(+userId)) throw new NotFoundException();
     if (+userId < 0) throw new NotFoundException();
-    console.log(`userId=${userId}`);
     if (!(await this.usersQueryRepository.doesUserIdExist(userId))) {
       throw new NotFoundException();
     }

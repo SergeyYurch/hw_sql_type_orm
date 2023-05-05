@@ -175,8 +175,6 @@ export class PairsQueryTypeOrmRepository {
 
   castToPlayerViewModel(playerModel: Player): PlayerProgressViewModel {
     playerModel.answers.sort((a, b) => +a.addedAt - +b.addedAt);
-    console.log('l3');
-    console.log(playerModel.answers);
     return {
       player: {
         id: playerModel.user.id,
@@ -293,5 +291,9 @@ export class PairsQueryTypeOrmRepository {
       lossesCount,
       winsCount,
     };
+  }
+
+  async getTopUsersViewModel() {
+    return Promise.resolve(undefined);
   }
 }

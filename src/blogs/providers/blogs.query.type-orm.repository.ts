@@ -143,7 +143,6 @@ export class BlogsQueryTypeOrmRepository {
     if (searchLoginTerm) {
       conditions.user = { ['login']: ILike(`%${searchLoginTerm}%`) };
     }
-    console.log(conditions);
     const findOptions: FindManyOptions<BlogsBannedUserEntity> = {
       relations: {
         user: true,
@@ -155,7 +154,6 @@ export class BlogsQueryTypeOrmRepository {
     };
     const [bannedUsers, totalCount] =
       await this.blogsBannedUsersRepository.findAndCount(findOptions);
-    console.log(bannedUsers);
     let items: BloggerUserViewModel[] = [];
     if (bannedUsers.length > 0)
       items = bannedUsers.map((u) => ({
@@ -187,16 +185,10 @@ export class BlogsQueryTypeOrmRepository {
   }
 
   async findBlogEntityById(id: number, options?: BlogsQueryOptionsType) {
-    console.log('findBlogEntityById  - options');
-    console.log(options);
     const findOptionsWhere: FindOptionsWhere<BlogEntity> = {
       id,
     };
     if (options?.bannedBlogInclude) delete findOptionsWhere.isBanned;
-
-    console.log('findOptionsWhere');
-    console.log(options?.bannedBlogInclude);
-    console.log(findOptionsWhere);
     return await this.blogsRepository.findOne({
       relations: {
         blogOwner: true,
@@ -217,8 +209,6 @@ export class BlogsQueryTypeOrmRepository {
     options?: BlogsQueryOptionsType,
   ): Promise<Blog | null> {
     try {
-      console.log('getBlogModelById - options');
-      console.log(options);
       const blogEntity = await this.findBlogEntityById(+blogId, options);
       if (!blogEntity) return null;
       return this.castToBlogModel(blogEntity);
