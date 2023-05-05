@@ -34,12 +34,9 @@ export const PaginatorParam = createParamDecorator(
     };
     const paginatorParams = new PaginatorInputType();
     const req = context.switchToHttp().getRequest();
-    console.log('111111111111111111111');
-    console.log(req.query.sort);
     const sortParam = req.query.sort || ['avgScores desc', 'sumScore desc'];
     if (Array.isArray(sortParam)) {
-      const params = req.query.sort;
-      params.forEach((p) => {
+      sortParam.forEach((p) => {
         if (castSortParam(p)) {
           paginatorParams.sort ??= [];
           paginatorParams.sort = [...paginatorParams.sort, castSortParam(p)];
