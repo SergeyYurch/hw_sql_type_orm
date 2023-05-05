@@ -344,11 +344,11 @@ export class PairsQueryTypeOrmRepository {
 
   private castRawPlayerStatistic(rp) {
     const player = { id: rp.u_id, login: rp.u_login };
-    const sumScore = rp.sum_score || 0;
-    const gamesCount = rp.games_count || 0;
-    const winsCount = rp.wins_count || 0;
-    const lossesCount = rp.lost_count || 0;
-    const drawsCount = rp.draw_count || 0;
+    const sumScore = +rp.sum_score || 0;
+    const gamesCount = +rp.games_count || 0;
+    const winsCount = +rp.wins_count || 0;
+    const lossesCount = +rp.lost_count || 0;
+    const drawsCount = +rp.draw_count || 0;
     const avgScores = rp.avg_scores ? Math.round(rp.avg_scores * 100) / 100 : 0;
     return {
       sumScore,
