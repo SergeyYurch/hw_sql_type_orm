@@ -5,13 +5,12 @@ import {
   FindOptionsOrder,
   FindOptionsRelations,
   FindOptionsWhere,
-  IsNull,
   Not,
   Repository,
 } from 'typeorm';
 import { PairEntity } from '../entities/pair.entity';
 import { Pair } from '../domain/pair';
-import { GameResult, PlayerEntity } from '../entities/player.entity';
+import { PlayerEntity } from '../entities/player.entity';
 import { Player } from '../domain/player';
 import { UsersQueryTypeormRepository } from '../../users/providers/users.query-typeorm.repository';
 import { AnswerEntity } from '../entities/ansver.entity';
@@ -264,25 +263,17 @@ export class PairsQueryTypeOrmRepository {
   }
 
   async getUserGamesStatistic(userId: string): Promise<MyStatisticViewModel> {
-    const findOptionsWhere: FindOptionsWhere<PlayerEntity> = {
-      userId: +userId,
-      result: Not(IsNull()),
-    };
-    const playerEntities = await this.playersRepository.find({
-      where: findOptionsWhere,
-    });
-    const gamesCount = playerEntities.length;
-    let sumScore = 0;
-    let winsCount = 0;
-    let lossesCount = 0;
-    let drawsCount = 0;
-    for (const p of playerEntities) {
-      sumScore += p.score;
-      if (p.result === GameResult.won) winsCount++;
-      if (p.result === GameResult.lost) lossesCount++;
-      if (p.result === GameResult.draw) drawsCount++;
-    }
-    const avgScores = Math.round((100 * sumScore) / gamesCount) / 100;
+    const rawPlayer = await this.getBasePlayerStatQueryBuilder()
+      .where('u.id=:userId', { userId: +userId })
+      .getRawOne();
+    const {
+      gamesCount,
+      drawsCount,
+      lossesCount,
+      winsCount,
+      sumScore,
+      avgScores,
+    } = this.castRawPlayerStatistic(rawPlayer);
     return {
       sumScore,
       avgScores,
@@ -291,9 +282,130 @@ export class PairsQueryTypeOrmRepository {
       lossesCount,
       winsCount,
     };
+    // ////////////////////////////////////////
+    // const findOptionsWhere: FindOptionsWhere<PlayerEntity> = {
+    //   userId: +userId,
+    //   result: Not(IsNull()),
+    // };
+    // const playerEntities = await this.playersRepository.find({
+    //   where: findOptionsWhere,
+    // });
+    // const gamesCount = playerEntities.length;
+    // let sumScore = 0;
+    // let winsCount = 0;
+    // let lossesCount = 0;
+    // let drawsCount = 0;
+    // for (const p of playerEntities) {
+    //   sumScore += p.score;
+    //   if (p.result === GameResult.won) winsCount++;
+    //   if (p.result === GameResult.lost) lossesCount++;
+    //   if (p.result === GameResult.draw) drawsCount++;
+    // }
+    // const avgScores = Math.round((100 * sumScore) / gamesCount) / 100;
+    // return {
+    //   sumScore,
+    //   avgScores,
+    //   gamesCount,
+    //   drawsCount,
+    //   lossesCount,
+    //   winsCount,
+    // };
   }
 
-  async getTopUsersViewModel() {
-    return Promise.resolve(undefined);
+  async getTopUsersViewModel(paginatorParams: PaginatorInputType) {
+    const { sort, pageSize, pageNumber } = paginatorParams;
+    const orderOption = {};
+    for (const sortItem of sort) {
+      const field = Object.keys(sortItem)[0];
+      const fieldAlias = this.getAlias(field);
+      orderOption[fieldAlias] = sortItem[field];
+    }
+    const countRes = await this.dataSource.query(`
+      SELECT COUNT(DISTINCT p."userId") 
+      FROM players p 
+      WHERE p.result IS NOT NULL
+`);
+    const totalCount = +countRes[0].count;
+
+    const rawPlayers = await this.getBasePlayerStatQueryBuilder()
+      .offset(pageSize * (pageNumber - 1))
+      .limit(pageSize)
+      .orderBy(orderOption)
+      .getRawMany();
+    const items = rawPlayers.map((rp) => this.castRawPlayerStatistic(rp));
+    return {
+      pagesCount: pagesCount(totalCount, pageSize),
+      page: pageNumber,
+      pageSize,
+      totalCount,
+      items,
+    };
+  }
+
+  private castRawPlayerStatistic(rp) {
+    const player = { id: rp.u_id, login: rp.u_login };
+    const sumScore = rp.sum_score || 0;
+    const gamesCount = rp.games_count || 0;
+    const winsCount = rp.wins_count || 0;
+    const lossesCount = rp.lost_count || 0;
+    const drawsCount = rp.draw_count || 0;
+    const avgScores = rp.avg_scores ? Math.round(rp.avg_scores * 100) / 100 : 0;
+    return {
+      sumScore,
+      avgScores,
+      gamesCount,
+      winsCount,
+      lossesCount,
+      drawsCount,
+      player,
+    };
+  }
+
+  private getBasePlayerStatQueryBuilder() {
+    return this.playersRepository
+      .createQueryBuilder('p')
+      .select('SUM(p.score) as sum_score')
+      .addSelect('COUNT(*) as games_count')
+      .addSelect('1.0*SUM(p.score)/COUNT(*) as avg_scores')
+      .addSelect((subQuery) => {
+        return subQuery
+          .select('COUNT(*)')
+          .from(PlayerEntity, 'pl')
+          .where(`pl.userId=u.id AND pl.result='won'`);
+      }, 'wins_count')
+      .addSelect((subQuery) => {
+        return subQuery
+          .select('COUNT(*)')
+          .from(PlayerEntity, 'pl')
+          .where(`pl.userId=u.id AND pl.result='lost'`);
+      }, 'lost_count')
+      .addSelect((subQuery) => {
+        return subQuery
+          .select('COUNT(*)')
+          .from(PlayerEntity, 'pl')
+          .where(`pl.userId=u.id AND pl.result='draw'`);
+      }, 'draw_count')
+      .leftJoinAndSelect('p.user', 'u')
+      .where('p.result IS NOT NULL')
+      .groupBy('u.id');
+  }
+
+  private getAlias(field: string) {
+    switch (field) {
+      case 'sumScore':
+        return 'sum_score';
+      case 'avgScores':
+        return 'avg_scores';
+      case 'gamesCount':
+        return 'games_count';
+      case 'winsCount':
+        return 'wins_count';
+      case 'lossesCount':
+        return 'losses_count';
+      case 'drawsCount':
+        return 'draws_count';
+      default:
+        return 'u.id';
+    }
   }
 }

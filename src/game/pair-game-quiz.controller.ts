@@ -45,7 +45,9 @@ export class PairGameQuizController {
     @PaginatorParam()
     paginatorParams: PaginatorInputType,
   ) {
-    return await this.pairsQueryTypeOrmRepository.getTopUsersViewModel();
+    return await this.pairsQueryTypeOrmRepository.getTopUsersViewModel(
+      paginatorParams,
+    );
   }
 
   @Get('pairs/my')
