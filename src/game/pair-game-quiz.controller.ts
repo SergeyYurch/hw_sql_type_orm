@@ -20,7 +20,6 @@ import { AnswerInputModel } from './dto/input-models/answer-input.model';
 import { PaginatorParam } from '../common/decorators/paginator-param.decorator';
 import { PaginatorInputType } from '../common/dto/input-models/paginator.input.type';
 
-@UseGuards(AccessTokenGuard)
 @Controller('/pair-game-quiz')
 export class PairGameQuizController {
   constructor(
@@ -28,6 +27,7 @@ export class PairGameQuizController {
     private readonly pairsQueryTypeOrmRepository: PairsQueryTypeOrmRepository,
   ) {}
 
+  @UseGuards(AccessTokenGuard)
   @Get('pairs/my-current')
   async getCurrentGame(@CurrentUserId() userId: string) {
     const pair =
@@ -36,10 +36,12 @@ export class PairGameQuizController {
     return pair;
   }
 
+  @UseGuards(AccessTokenGuard)
   @Get('users/my-statistic')
   async getUserGamesStatistic(@CurrentUserId() userId: string) {
     return await this.pairsQueryTypeOrmRepository.getUserGamesStatistic(userId);
   }
+
   @Get('users/top')
   async getTopUsers(
     @PaginatorParam()
@@ -50,6 +52,7 @@ export class PairGameQuizController {
     );
   }
 
+  @UseGuards(AccessTokenGuard)
   @Get('pairs/my')
   async getUsersGames(
     @CurrentUserId() userId: string,
@@ -62,6 +65,7 @@ export class PairGameQuizController {
     );
   }
 
+  @UseGuards(AccessTokenGuard)
   @UseGuards(CheckPairIdGuard)
   @Get('pairs/:id')
   async getGame(@Param('id') id: string, @CurrentUserId() userId: string) {
@@ -76,6 +80,7 @@ export class PairGameQuizController {
     return pair;
   }
 
+  @UseGuards(AccessTokenGuard)
   @Post('pairs/connection')
   @HttpCode(200)
   async connection(@CurrentUserId() userId: string) {
@@ -99,6 +104,7 @@ export class PairGameQuizController {
     return this.pairsQueryTypeOrmRepository.getPairViewById(pairId);
   }
 
+  @UseGuards(AccessTokenGuard)
   @HttpCode(200)
   @Post('pairs/my-current/answers')
   async answer(
