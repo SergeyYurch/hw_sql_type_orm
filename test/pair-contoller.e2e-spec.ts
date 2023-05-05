@@ -995,4 +995,20 @@ describe('PairController (e2e)', () => {
     expect(res.body.items).toHaveLength(1);
     expect(res.body.items[0].id).toBe(gameIds[1]);
   });
+  it('/pair-game-quiz/users/top (GET=>200). Get top users', async () => {
+    const res = await request(app.getHttpServer())
+      .get(`/pair-game-quiz/users/top`)
+      .auth(accessTokens[2], { type: 'bearer' })
+      .expect(200);
+    expect(res.body).toEqual({
+      sumScore: 4,
+      avgScores: 1.33,
+      gamesCount: 3,
+      drawsCount: 2,
+      lossesCount: 0,
+      winsCount: 1,
+    });
+    expect(res.body.items).toHaveLength(1);
+    expect(res.body.items[0].id).toBe(gameIds[1]);
+  });
 });
