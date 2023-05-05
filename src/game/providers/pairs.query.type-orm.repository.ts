@@ -343,7 +343,7 @@ export class PairsQueryTypeOrmRepository {
   }
 
   private castRawPlayerStatistic(rp) {
-    const player = { id: rp.u_id, login: rp.u_login };
+    const player = { id: String(rp.u_id), login: rp.u_login };
     const sumScore = +rp.sum_score || 0;
     const gamesCount = +rp.games_count || 0;
     const winsCount = +rp.wins_count || 0;
