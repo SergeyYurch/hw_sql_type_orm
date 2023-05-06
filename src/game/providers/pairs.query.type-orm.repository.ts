@@ -282,34 +282,6 @@ export class PairsQueryTypeOrmRepository {
       lossesCount,
       winsCount,
     };
-    // ////////////////////////////////////////
-    // const findOptionsWhere: FindOptionsWhere<PlayerEntity> = {
-    //   userId: +userId,
-    //   result: Not(IsNull()),
-    // };
-    // const playerEntities = await this.playersRepository.find({
-    //   where: findOptionsWhere,
-    // });
-    // const gamesCount = playerEntities.length;
-    // let sumScore = 0;
-    // let winsCount = 0;
-    // let lossesCount = 0;
-    // let drawsCount = 0;
-    // for (const p of playerEntities) {
-    //   sumScore += p.score;
-    //   if (p.result === GameResult.won) winsCount++;
-    //   if (p.result === GameResult.lost) lossesCount++;
-    //   if (p.result === GameResult.draw) drawsCount++;
-    // }
-    // const avgScores = Math.round((100 * sumScore) / gamesCount) / 100;
-    // return {
-    //   sumScore,
-    //   avgScores,
-    //   gamesCount,
-    //   drawsCount,
-    //   lossesCount,
-    //   winsCount,
-    // };
   }
 
   async getTopUsersViewModel(paginatorParams: PaginatorInputType) {
@@ -347,8 +319,8 @@ export class PairsQueryTypeOrmRepository {
     const sumScore = +rp.sum_score || 0;
     const gamesCount = +rp.games_count || 0;
     const winsCount = +rp.wins_count || 0;
-    const lossesCount = +rp.lost_count || 0;
-    const drawsCount = +rp.draw_count || 0;
+    const lossesCount = +rp.losses_count || 0;
+    const drawsCount = +rp.draws_count || 0;
     const avgScores = rp.avg_scores ? Math.round(rp.avg_scores * 100) / 100 : 0;
     return {
       sumScore,
@@ -378,13 +350,13 @@ export class PairsQueryTypeOrmRepository {
           .select('COUNT(*)')
           .from(PlayerEntity, 'pl')
           .where(`pl.userId=u.id AND pl.result='lost'`);
-      }, 'lost_count')
+      }, 'losses_count')
       .addSelect((subQuery) => {
         return subQuery
           .select('COUNT(*)')
           .from(PlayerEntity, 'pl')
           .where(`pl.userId=u.id AND pl.result='draw'`);
-      }, 'draw_count')
+      }, 'draws_count')
       .leftJoinAndSelect('p.user', 'u')
       .where('p.result IS NOT NULL')
       .groupBy('u.id');
