@@ -4,6 +4,7 @@ import {
   Controller,
   Get,
   HttpCode,
+  HttpStatus,
   InternalServerErrorException,
   Param,
   Post,
@@ -63,7 +64,7 @@ export class SaBlogsController {
   @UseGuards(CheckUserIdGuard)
   @UseGuards(CheckBlogIdGuardForSa)
   @Put(':blogId/bind-with-user/:userId')
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   async editBlog(
     @Param('blogId') blogId: string,
     @Param('userId') userId: string,
@@ -79,7 +80,7 @@ export class SaBlogsController {
 
   @UseGuards(CheckBlogIdGuardForSa)
   @Put(':blogId/ban')
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   async banBlog(
     @Param('blogId') blogId: string,
     @Body() banStatus: BanBlogInputModel,

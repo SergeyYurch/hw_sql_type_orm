@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   Get,
   HttpCode,
+  HttpStatus,
   NotFoundException,
   Param,
   Post,
@@ -84,7 +85,7 @@ export class PairGameQuizController {
 
   @UseGuards(AccessTokenGuard)
   @Post('pairs/connection')
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   async connection(@CurrentUserId() userId: string) {
     console.log(`[ PairGameQuizPairsController]: POST=>connection started.`);
     console.log(
@@ -107,7 +108,7 @@ export class PairGameQuizController {
   }
 
   @UseGuards(AccessTokenGuard)
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @Post('pairs/my-current/answers')
   async answer(
     @CurrentUserId() userId: string,

@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   HttpCode,
+  HttpStatus,
   Param,
   Put,
   UseGuards,
@@ -41,7 +42,7 @@ export class CommentsController {
   @UseGuards(CommentOwnerGuard)
   @UseGuards(CheckCommentIdGuard)
   @UseGuards(AccessTokenGuard)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':commentId')
   async delete(@Param('commentId') commentId: string) {
     await this.commandBus.execute(new DeleteCommentCommand(commentId));
@@ -50,7 +51,7 @@ export class CommentsController {
   @UseGuards(CommentOwnerGuard)
   @UseGuards(CheckCommentIdGuard)
   @UseGuards(AccessTokenGuard)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Put(':commentId')
   async update(
     @Param('commentId') commentId: string,
@@ -63,7 +64,7 @@ export class CommentsController {
 
   @UseGuards(CheckCommentIdGuard)
   @UseGuards(AccessTokenGuard)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Put(':commentId/like-status')
   async updateLikeStatus(
     @Param('commentId') commentId: string,

@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   HttpCode,
+  HttpStatus,
   Param,
   Post,
   Put,
@@ -40,7 +41,7 @@ export class SaUsersController {
   ) {}
 
   @UseGuards(CheckUserIdBannedIncludeGuard)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Put(':userId/ban')
   async banUser(
     @Body() banUserInputModel: BanUserInputModel,
@@ -77,7 +78,7 @@ export class SaUsersController {
 
   @UseGuards(CheckUserIdBannedIncludeGuard)
   @Delete(':userId')
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   async deleteBlog(@Param('userId') userId: string) {
     await this.commandBus.execute(new DeleteUserCommand(userId));
   }

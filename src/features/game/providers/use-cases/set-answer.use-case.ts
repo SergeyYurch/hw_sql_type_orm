@@ -41,6 +41,9 @@ export class SetAnswerUseCase implements ICommandHandler<SetAnswerCommand> {
       answer.answerStatus = 'Incorrect';
     }
     currentPlayer.answers.push(answer);
-    return await this.pairsTypeOrmRepository.savePair(pairModel);
+    const pairId = await this.pairsTypeOrmRepository.savePair(pairModel);
+    //check final answer
+    //if (){}
+    return pairId;
   }
 }

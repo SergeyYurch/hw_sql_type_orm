@@ -6,6 +6,7 @@ import {
   UseGuards,
   Req,
   HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { SecurityService } from './providers/security.service';
 import { RefreshTokenGuard } from '../../common/guards/refresh-token.guard';
@@ -37,7 +38,7 @@ export class SecurityController {
     );
   }
 
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Delete('devices')
   async deleteOtherDeviceSessions(@Req() req: Request) {
     const { deviceId, userId } = req.user;
@@ -46,7 +47,7 @@ export class SecurityController {
     );
   }
   @UseGuards(CheckDeviceIdGuard)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Delete('devices/:deviceId')
   async deleteDeviceSession(
     @Param('deviceId') deviceId: string,

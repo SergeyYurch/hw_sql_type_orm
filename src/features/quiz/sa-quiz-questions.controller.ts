@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   HttpCode,
+  HttpStatus,
   Param,
   Post,
   Put,
@@ -57,14 +58,14 @@ export class SaQuizQuestionsController {
 
   @UseGuards(CheckQuestionIdGuard)
   @Delete(':id')
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   async deleteQuestion(@Param('id') id: string) {
     return this.commandBus.execute(new DeleteQuestionCommand(id));
   }
 
   @UseGuards(CheckQuestionIdGuard)
   @Put(':id')
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   async updateQuestion(
     @Body() updateData: QuestionInputModel,
     @Param('id') id: string,
@@ -73,7 +74,7 @@ export class SaQuizQuestionsController {
   }
   @UseGuards(CheckQuestionIdGuard)
   @Put(':id/publish')
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   async publishQuestion(
     @Body() data: PublishInputModel,
     @Param('id') id: string,

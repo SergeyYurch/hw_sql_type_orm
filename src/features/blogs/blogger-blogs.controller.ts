@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   HttpCode,
+  HttpStatus,
   Param,
   Post,
   Put,
@@ -59,7 +60,7 @@ export class BloggerBlogsController {
   @UseGuards(CheckBlogIdGuard)
   @UseGuards(LoggerGuard)
   @Put(':blogId')
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   async editBlog(
     @Param('blogId') blogId: string,
     @Body() changes: BlogInputModel,
@@ -71,7 +72,7 @@ export class BloggerBlogsController {
   @UseGuards(CheckBlogIdGuard)
   @UseGuards(LoggerGuard)
   @Delete(':blogId')
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   async deleteBlog(@Param('blogId') blogId: string) {
     await this.commandBus.execute(new DeleteBlogCommand(blogId));
   }
@@ -124,7 +125,7 @@ export class BloggerBlogsController {
   @UseGuards(CheckBlogIdGuard)
   @UseGuards(LoggerGuard)
   @Put(':blogId/posts/:postId')
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   async editPost(
     @Param('postId') postId: string,
     @Body() postChanges: BlogPostInputModel,
@@ -138,7 +139,7 @@ export class BloggerBlogsController {
   @UseGuards(CheckPostIdGuard)
   @UseGuards(LoggerGuard)
   @Delete(':blogId/posts/:postId')
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   async deletePost(@Param('postId') postId: string) {
     await this.commandBus.execute(new DeletePostCommand(postId));
   }

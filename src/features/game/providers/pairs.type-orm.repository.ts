@@ -7,6 +7,7 @@ import { GameResult, PlayerEntity } from '../entities/player.entity';
 import { AnswerEntity } from '../entities/ansver.entity';
 import { Player } from '../domain/player';
 import { QuizQuestionsQueryTypeOrmRepository } from '../../quiz/providers/quiz-questions.query-type-orm.repository';
+import { delay } from '../../../common/helpers/helpers';
 
 export class PairsTypeOrmRepository {
   private queryRunner: QueryRunner;
