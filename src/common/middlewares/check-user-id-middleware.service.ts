@@ -1,7 +1,7 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import { JwtService } from '@nestjs/jwt';
-import { JwtPayloadType } from '../../blogs/types/jwt-payload.type';
+import { JwtPayloadType } from '../../features/blogs/types/jwt-payload.type';
 
 @Injectable()
 export class CheckUserIdMiddleware implements NestMiddleware {

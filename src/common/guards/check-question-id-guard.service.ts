@@ -4,7 +4,7 @@ import {
   ExecutionContext,
   NotFoundException,
 } from '@nestjs/common';
-import { QuizQuestionsQueryTypeOrmRepository } from '../../quiz/providers/quiz-questions.query-type-orm.repository';
+import { QuizQuestionsQueryTypeOrmRepository } from '../../features/quiz/providers/quiz-questions.query-type-orm.repository';
 
 @Injectable()
 export class CheckQuestionIdGuard implements CanActivate {

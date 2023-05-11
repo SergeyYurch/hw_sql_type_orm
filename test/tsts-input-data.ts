@@ -1,4 +1,4 @@
-import { QuestionInputModel } from '../src/quiz/dto/inputModels/question.input.model';
+import { QuestionInputModel } from '../src/features/quiz/dto/inputModels/question.input.model';
 
 export const user1 = {
   login: 'user1',

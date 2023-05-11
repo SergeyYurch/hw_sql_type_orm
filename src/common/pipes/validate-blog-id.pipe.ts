@@ -1,5 +1,5 @@
 import { PipeTransform, Injectable, NotFoundException } from '@nestjs/common';
-import { BlogsQueryTypeOrmRepository } from '../../blogs/providers/blogs.query.type-orm.repository';
+import { BlogsQueryTypeOrmRepository } from '../../features/blogs/providers/blogs.query.type-orm.repository';
 
 @Injectable()
 export class ValidateBlogIdPipe implements PipeTransform {

@@ -4,7 +4,7 @@ import {
   ExecutionContext,
   ForbiddenException,
 } from '@nestjs/common';
-import { CommentsQueryTypeOrmRepository } from '../../comments/providers/comments.query.type-orm.repository';
+import { CommentsQueryTypeOrmRepository } from '../../features/comments/providers/comments.query.type-orm.repository';
 
 @Injectable()
 export class CommentOwnerGuard implements CanActivate {

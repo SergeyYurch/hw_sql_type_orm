@@ -7,11 +7,11 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { tokenService } from '../../auth/providers/token.service';
+import { tokenService } from '../../features/auth/providers/token.service';
 import { CommandBus } from '@nestjs/cqrs';
-import { ValidateUserDeviceSessionCommand } from '../../auth/providers/use-cases/validate-user-device-session.use-case';
-import { JwtPayloadType } from '../../blogs/types/jwt-payload.type';
-import { UsersQueryTypeormRepository } from '../../users/providers/users.query-typeorm.repository';
+import { ValidateUserDeviceSessionCommand } from '../../features/auth/providers/use-cases/validate-user-device-session.use-case';
+import { JwtPayloadType } from '../../features/blogs/types/jwt-payload.type';
+import { UsersQueryTypeormRepository } from '../../features/users/providers/users.query-typeorm.repository';
 
 @Injectable()
 export class RefreshTokenStrategy extends PassportStrategy(

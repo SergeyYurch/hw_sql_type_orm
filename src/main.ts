@@ -5,6 +5,7 @@ import { HttpExceptionFilter } from './common/exception-filters/http-exception.f
 import cookieParser from 'cookie-parser';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { useContainer } from 'class-validator';
+import { swaggerSetup } from './config/swagger-setup';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -31,7 +32,9 @@ async function bootstrap() {
     }),
   );
   app.useGlobalFilters(new HttpExceptionFilter());
+  swaggerSetup(app);
   const port = process.env.PORT;
+  console.log(port);
   await app.listen(port);
 }
 bootstrap();

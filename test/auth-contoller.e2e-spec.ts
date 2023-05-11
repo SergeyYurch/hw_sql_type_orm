@@ -4,8 +4,8 @@ import { disconnect } from 'mongoose';
 import { delay } from '../src/common/helpers/helpers';
 import { user1 } from './tsts-input-data';
 import { getApp } from './test-utils';
-import { UsersQueryTypeormRepository } from '../src/users/providers/users.query-typeorm.repository';
-import { UsersTypeOrmRepository } from '../src/users/providers/users.typeorm.repository';
+import { UsersQueryTypeormRepository } from '../src/features/users/providers/users.query-typeorm.repository';
+import { UsersTypeOrmRepository } from '../src/features/users/providers/users.typeorm.repository';
 
 describe('CommentsController (e2e)', () => {
   let app: INestApplication;

@@ -1,5 +1,5 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
-import { UsersQueryTypeormRepository } from '../../users/providers/users.query-typeorm.repository';
+import { UsersQueryTypeormRepository } from '../../features/users/providers/users.query-typeorm.repository';
 
 @Injectable()
 export class UserBanGuard implements CanActivate {

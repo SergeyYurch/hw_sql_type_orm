@@ -4,7 +4,7 @@ import {
   ExecutionContext,
   NotFoundException,
 } from '@nestjs/common';
-import { PostsQueryTypeOrmRepository } from '../../posts/providers/posts.query.type-orm.repository';
+import { PostsQueryTypeOrmRepository } from '../../features/posts/providers/posts.query.type-orm.repository';
 
 @Injectable()
 export class CheckPostIdBannedIncludeGuard implements CanActivate {

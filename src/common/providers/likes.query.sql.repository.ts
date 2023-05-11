@@ -3,7 +3,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { LikeTargetIdType } from '../types/like-target-id.type';
 import { LikesCountsType } from '../types/likes-counts.type';
-import { LikeSqlDataType } from '../../posts/types/likeSqlData.type';
+import { LikeSqlDataType } from '../../features/posts/types/likeSqlData.type';
 import { LikeWithAddedAtType } from '../types/like-with-added-at.type';
 
 @Injectable()

@@ -1,8 +1,8 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { tokenService } from '../../auth/providers/token.service';
-import { UsersQueryTypeormRepository } from '../../users/providers/users.query-typeorm.repository';
+import { tokenService } from '../../features/auth/providers/token.service';
+import { UsersQueryTypeormRepository } from '../../features/users/providers/users.query-typeorm.repository';
 
 @Injectable()
 export class AccessTokenStrategy extends PassportStrategy(Strategy) {

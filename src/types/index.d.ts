@@ -1,4 +1,4 @@
-import { JwtPayloadType } from '../blogs/types/jwt-payload.type';
+import { JwtPayloadType } from '../features/blogs/types/jwt-payload.type';
 import { PaginatorInputType } from '../common/dto/input-models/paginator.input.type';
 
 declare global {

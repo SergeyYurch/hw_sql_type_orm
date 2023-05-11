@@ -1,5 +1,5 @@
 import { PipeTransform, Injectable, NotFoundException } from '@nestjs/common';
-import { UsersQueryTypeormRepository } from '../../users/providers/users.query-typeorm.repository';
+import { UsersQueryTypeormRepository } from '../../features/users/providers/users.query-typeorm.repository';
 
 @Injectable()
 export class ValidateUserIdPipe implements PipeTransform {

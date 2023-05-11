@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { disconnect } from 'mongoose';
-import { BlogViewModel } from '../src/blogs/dto/view-models/blog.view.model';
+import { BlogViewModel } from '../src/features/blogs/dto/view-models/blog.view.model';
 import { getApp } from './test-utils';
 import {
   bannedUser,
