@@ -34,8 +34,6 @@ export const PaginatorParam = createParamDecorator(
     };
     const paginatorParams = new PaginatorInputType();
     const req = context.switchToHttp().getRequest();
-    console.log(' req.query');
-    console.log(req.query);
     const sortParam = req.query.sort || ['avgScores desc', 'sumScore desc'];
     if (Array.isArray(sortParam)) {
       sortParam.forEach((p) => {
@@ -63,6 +61,9 @@ export const PaginatorParam = createParamDecorator(
       paginatorParams.sortBy = req.query.sortBy
         ? String(req.query.sortBy)
         : defaultValues?.sortBy || 'createdAt';
+    }
+    if (!paginatorParams?.sortBy) {
+      paginatorParams.sortBy = 'createdAt';
     }
     paginatorParams.sortDirection = req.query.sortDirection
       ? (req.query.sortDirection as 'desc' | 'asc')

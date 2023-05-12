@@ -185,7 +185,8 @@ export class UsersQueryTypeormRepository {
         skip: pageSize * (pageNumber - 1),
         take: pageSize,
       };
-      // findOptions.order[sortBy] = sortDirection;
+      findOptions.order[sortBy] = sortDirection;
+      console.log(paginatorParams);
       const [users, totalCount] = await this.usersRepository.findAndCount(
         findOptions,
       );

@@ -2,9 +2,11 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { appClose, getApp } from './test-utils';
 import { isoDatePattern } from './tsts-input-data';
+import { TestingTestHelpers } from './testing-test.helpers';
 
 describe('PairController (e2e)', () => {
   let app: INestApplication;
+  let gameTestService: TestingTestHelpers;
   const countOfUsers = 6;
   const countOfQuestions = 10;
   const questions = [];
@@ -13,6 +15,7 @@ describe('PairController (e2e)', () => {
 
   beforeAll(async () => {
     app = await getApp();
+    gameTestService = new TestingTestHelpers(app);
   });
 
   afterAll(async () => {
@@ -21,10 +24,12 @@ describe('PairController (e2e)', () => {
   // ********[HOST]/sa/blogs**********
 
   //preparation
-  it('/testing/all-data (DELETE) clear DB', async () => {
-    return request(app.getHttpServer()).delete('/testing/all-data').expect(204);
-  });
+  // it('/testing/all-data (DELETE) clear DB', async () => {
+  //   return service.clearDb();
+  //   //return request(app.getHttpServer()).delete('/testing/all-data').expect(204);
+  // });
   it('/sa/users (POST) add new user to the system', async () => {
+    await gameTestService.clearDb();
     for (let i = 1; i <= countOfUsers; i++) {
       await request(app.getHttpServer())
         .post('/sa/users')

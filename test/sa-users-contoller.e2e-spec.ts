@@ -2,28 +2,20 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { disconnect } from 'mongoose';
 import { getApp } from './test-utils';
-import {
-  user1,
-  user10,
-  user11,
-  user12,
-  user2,
-  user3,
-  user4,
-  user5,
-  user6,
-  user7,
-  user8,
-  user9,
-} from './tsts-input-data';
 
-describe('UsersController (e2e)', () => {
+import { SaUsersTestService } from './sa-users-test.service';
+import { TestingTestHelpers } from './testing-test.helpers';
+
+describe('SaUsersController (e2e)', () => {
   let app: INestApplication;
-  let user1Id: string;
-  let user2Id: string;
+  let testingTestHelpers: TestingTestHelpers;
+  let usersTestService: SaUsersTestService;
+  const users = [];
 
   beforeAll(async () => {
     app = await getApp();
+    usersTestService = new SaUsersTestService(app);
+    testingTestHelpers = new TestingTestHelpers(app);
   });
 
   afterAll(async () => {
@@ -32,26 +24,27 @@ describe('UsersController (e2e)', () => {
   });
 
   //preparation
-  it('/testing/all-data (DELETE) clear DB', async () => {
-    return request(app.getHttpServer()).delete('/testing/all-data').expect(204);
+  it('Preparation1', async () => {
+    await testingTestHelpers.clearDb();
   });
 
   //***********[HOST]/sa/users**************
   //post
   it('POST: [HOST]/sa/users should return code 401 "Unauthorized" for unauthorized request', async () => {
+    const user1 = usersTestService.getUserInputModel(1);
     await request(app.getHttpServer())
       .post('/sa/users')
       .send(user1)
       .expect(401);
   });
   it('POST: [HOST]/sa/users (POST) Add new user to the system. Should return 201 and add new user to db', async () => {
-    const newUser1 = await request(app.getHttpServer())
-      .post('/sa/users')
-      .auth('admin', 'qwerty', { type: 'basic' })
-      .send(user1)
-      .expect(201);
-    user1Id = newUser1.body.id;
-    expect(newUser1.body).toEqual({
+    const userInput1 = usersTestService.getUserInputModel(1);
+    const { body: newUser1 } = await usersTestService.createUser(
+      userInput1,
+      201,
+    );
+    users[0] = newUser1;
+    expect(newUser1).toEqual({
       id: expect.any(String),
       login: 'user1',
       email: 'email1@gmail.com',
@@ -62,88 +55,44 @@ describe('UsersController (e2e)', () => {
         banReason: null,
       },
     });
-
-    //create new user2
-    const newUser2 = await request(app.getHttpServer())
-      .post('/sa/users')
-      .auth('admin', 'qwerty', { type: 'basic' })
-      .send(user2)
-      .expect(201);
-    user2Id = newUser2.body.id;
-
-    //create other users
-    await request(app.getHttpServer())
-      .post('/sa/users')
-      .auth('admin', 'qwerty', { type: 'basic' })
-      .send(user3)
-      .expect(201);
-    await request(app.getHttpServer())
-      .post('/sa/users')
-      .auth('admin', 'qwerty', { type: 'basic' })
-      .send(user4)
-      .expect(201);
-
-    await request(app.getHttpServer())
-      .post('/sa/users')
-      .auth('admin', 'qwerty', { type: 'basic' })
-      .send(user5)
-      .expect(201);
-
-    await request(app.getHttpServer())
-      .post('/sa/users')
-      .auth('admin', 'qwerty', { type: 'basic' })
-      .send(user6)
-      .expect(201);
-    await request(app.getHttpServer())
-      .post('/sa/users')
-      .auth('admin', 'qwerty', { type: 'basic' })
-      .send(user7)
-      .expect(201);
-    await request(app.getHttpServer())
-      .post('/sa/users')
-      .auth('admin', 'qwerty', { type: 'basic' })
-      .send(user8)
-      .expect(201);
-    await request(app.getHttpServer())
-      .post('/sa/users')
-      .auth('admin', 'qwerty', { type: 'basic' })
-      .send(user9)
-      .expect(201);
-    await request(app.getHttpServer())
-      .post('/sa/users')
-      .auth('admin', 'qwerty', { type: 'basic' })
-      .send(user10)
-      .expect(201);
-    await request(app.getHttpServer())
-      .post('/sa/users')
-      .auth('admin', 'qwerty', { type: 'basic' })
-      .send(user11)
-      .expect(201);
-    await request(app.getHttpServer())
-      .post('/sa/users')
-      .auth('admin', 'qwerty', { type: 'basic' })
-      .send(user12)
-      .expect(201);
+    console.log(users[0].id);
+    await usersTestService.createSetOfUsers(2, 12);
   });
   it('POST: [HOST]/sa/users should return code 400 and error message for field login', async () => {
-    return request(app.getHttpServer())
-      .post('/sa/users')
-      .auth('admin', 'qwerty', { type: 'basic' })
-      .send({
+    const { body } = await usersTestService.createUser(
+      {
         password: 'password1',
         email: 'email221@gmail.com',
-      })
-      .expect(400)
-      .then(({ body }: request.Response) => {
-        expect(body).toEqual({
-          errorsMessages: [
-            {
-              message: expect.any(String),
-              field: 'login',
-            },
-          ],
-        });
-      });
+      },
+      400,
+    );
+    expect(body).toEqual({
+      errorsMessages: [
+        {
+          message: expect.any(String),
+          field: 'login',
+        },
+      ],
+    });
+
+    // return request(app.getHttpServer())
+    //   .post('/sa/users')
+    //   .auth('admin', 'qwerty', { type: 'basic' })
+    //   .send({
+    //     password: 'password1',
+    //     email: 'email221@gmail.com',
+    //   })
+    //   .expect(400)
+    //   .then(({ body }: request.Response) => {
+    //     expect(body).toEqual({
+    //       errorsMessages: [
+    //         {
+    //           message: expect.any(String),
+    //           field: 'login',
+    //         },
+    //       ],
+    //     });
+    //   });
   });
 
   //get
@@ -224,7 +173,7 @@ describe('UsersController (e2e)', () => {
   //put (ban/unban)
   it('PUT: [HOST]/users: should return code 401 for unauthorized user', async () => {
     await request(app.getHttpServer())
-      .put(`/sa/users/${user1Id}/ban`)
+      .put(`/sa/users/${users[0].id}/ban`)
       .send({
         isBanned: true,
         banReason: 'banReason is stringstringstringst',
@@ -233,7 +182,7 @@ describe('UsersController (e2e)', () => {
   });
   it('PUT: [HOST]/users: should return code 400 If the inputModel has incorrect values', async () => {
     await request(app.getHttpServer())
-      .put(`/sa/users/${user1Id}/ban`)
+      .put(`/sa/users/${users[0].id}/ban`)
       .auth('admin', 'qwerty', { type: 'basic' })
       .send({
         isBanned: true,
@@ -241,13 +190,13 @@ describe('UsersController (e2e)', () => {
       .expect(400);
   });
   it('PUT: [HOST]/users: should return code 204 for correct userId and user should be baned', async () => {
-    let users = await request(app.getHttpServer())
+    const { body: usersSet } = await request(app.getHttpServer())
       .get('/sa/users')
       .auth('admin', 'qwerty', { type: 'basic' });
-    expect(users.body.totalCount).toBe(12);
+    expect(usersSet.totalCount).toBe(12);
 
     await request(app.getHttpServer())
-      .put(`/sa/users/${user1Id}/ban`)
+      .put(`/sa/users/${users[0].id}/ban`)
       .auth('admin', 'qwerty', { type: 'basic' })
       .send({
         isBanned: true,
@@ -255,22 +204,22 @@ describe('UsersController (e2e)', () => {
       })
       .expect(204);
 
-    users = await request(app.getHttpServer())
+    const { body: bannedUsers } = await request(app.getHttpServer())
       .get('/sa/users?banStatus=banned')
       .auth('admin', 'qwerty', { type: 'basic' });
-    expect(users.body.totalCount).toBe(1);
-    expect(users.body.items[0].id).toBe(user1Id);
+    expect(bannedUsers.totalCount).toBe(1);
+    expect(bannedUsers.items[0].id).toBe(users[0].id);
 
-    users = await request(app.getHttpServer())
+    const { body: notBannedUsers } = await request(app.getHttpServer())
       .get('/sa/users?banStatus=notBanned')
       .auth('admin', 'qwerty', { type: 'basic' });
-    expect(users.body.totalCount).toBe(11);
+    expect(notBannedUsers.totalCount).toBe(11);
   });
 
   //delete
   it('DELETE: [HOST]/users: should return code 401 for unauthorized user', async () => {
     await request(app.getHttpServer())
-      .delete(`/sa/users/${user1Id}`)
+      .delete(`/sa/users/${users[0].id}`)
       .expect(401);
   });
   it('DELETE: [HOST]/users: should return code 404 for incorrect ID', async () => {
@@ -280,22 +229,22 @@ describe('UsersController (e2e)', () => {
       .expect(404);
   });
   it('DELETE: [HOST]/users: should return code 204 for correct userId and user should be deleted', async () => {
-    let users = await request(app.getHttpServer())
+    const { body: allUsers } = await request(app.getHttpServer())
       .get('/sa/users')
       .auth('admin', 'qwerty', { type: 'basic' });
 
-    expect(users.body.totalCount).toBe(12);
+    expect(allUsers.totalCount).toBe(12);
 
     await request(app.getHttpServer())
-      .delete(`/sa/users/${user2Id}`)
+      .delete(`/sa/users/${users[0].id}`)
       .auth('admin', 'qwerty', { type: 'basic' })
       .expect(204);
 
-    users = await request(app.getHttpServer())
+    const { body: allUsersAfterDelete } = await request(app.getHttpServer())
       .get('/sa/users')
       .auth('admin', 'qwerty', { type: 'basic' });
 
-    expect(users.body.totalCount).toBe(11);
+    expect(allUsersAfterDelete.totalCount).toBe(11);
   });
 });
 

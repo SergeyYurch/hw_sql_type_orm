@@ -20,16 +20,20 @@ export class SetAnswerUseCase implements ICommandHandler<SetAnswerCommand> {
     private readonly pairsQueryTypeOrmRepository: PairsQueryTypeOrmRepository,
     private readonly pairsTypeOrmRepository: PairsTypeOrmRepository,
   ) {}
+
   async execute(command: SetAnswerCommand) {
     const { userId, answerBody } = command;
-    const pairModel =
-      await this.pairsQueryTypeOrmRepository.getPairModelByUserId(+userId);
+    let pairModel = await this.pairsQueryTypeOrmRepository.getPairModelByUserId(
+      +userId,
+    );
     if (!pairModel) return null;
     if (pairModel.status !== 'Active') return null;
     const answer = new Answer(answerBody);
     let currentPlayer: Player = pairModel.secondPlayer;
+    let otherPlayer: Player = pairModel.firstPlayer;
     if (pairModel.firstPlayer.user.id === userId) {
       currentPlayer = pairModel.firstPlayer;
+      otherPlayer = pairModel.secondPlayer;
     }
     if (currentPlayer.answers.length === 5) return null;
     const numberOfQuestion = currentPlayer.answers.length;
@@ -42,8 +46,23 @@ export class SetAnswerUseCase implements ICommandHandler<SetAnswerCommand> {
     }
     currentPlayer.answers.push(answer);
     const pairId = await this.pairsTypeOrmRepository.savePair(pairModel);
+
     //check final answer
-    //if (){}
+    if (currentPlayer.answers.length === 5) {
+      pairModel = await this.pairsQueryTypeOrmRepository.getPairModelByUserId(
+        +pairId,
+      );
+      if (pairModel.status !== 'Active') return pairId;
+      setTimeout(() => {
+        for (let i = otherPlayer.answers.length; i < 6; i++) {
+          const answer = new Answer('Empty answer');
+          answer.question = pairModel.questions[numberOfQuestion];
+          answer.answerStatus = 'Incorrect';
+          otherPlayer.answers[i] = answer;
+        }
+        this.pairsTypeOrmRepository.savePair(pairModel);
+      }, 10000);
+    }
     return pairId;
   }
 }
