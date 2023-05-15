@@ -1,21 +1,33 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { appClose, getApp } from './test-utils';
-import { isoDatePattern } from './tsts-input-data';
-import { TestingTestHelpers } from './testing-test.helpers';
+import { appClose, getApp, isoDatePattern } from './test-utils';
+import { TestingTestHelpers } from './helpers/testing-test.helpers';
+import { UsersTestHelpers } from './helpers/users.test.helpers';
+import { AuthTestHelpers } from './helpers/auth.test.helpers';
+import { AccountsTestHelpers } from './helpers/accounts.test.helpers';
+import { GameTestHelpers } from './helpers/game.test.helpers';
+import { PrepareTestHelpers } from './helpers/prepaire.test.helpers';
 
 describe('PairController (e2e)', () => {
   let app: INestApplication;
-  let gameTestService: TestingTestHelpers;
+  let testingTestHelpers: TestingTestHelpers;
+  let usersTestService: UsersTestHelpers;
+  let authTestHelpers: AuthTestHelpers;
+  let commonTestHelpers: AccountsTestHelpers;
+  let gameTestService: GameTestHelpers;
   const countOfUsers = 6;
   const countOfQuestions = 10;
-  const questions = [];
-  const accessTokens = [];
+  let questions = [];
+  let accessTokens: string[];
   const gameIds = [];
 
   beforeAll(async () => {
     app = await getApp();
-    gameTestService = new TestingTestHelpers(app);
+    testingTestHelpers = new TestingTestHelpers(app);
+    usersTestService = new UsersTestHelpers(app);
+    authTestHelpers = new AuthTestHelpers(app);
+    gameTestService = new GameTestHelpers(app);
+    commonTestHelpers = new AccountsTestHelpers(app);
   });
 
   afterAll(async () => {
@@ -23,59 +35,17 @@ describe('PairController (e2e)', () => {
   });
   // ********[HOST]/sa/blogs**********
 
-  //preparation
-  // it('/testing/all-data (DELETE) clear DB', async () => {
-  //   return service.clearDb();
-  //   //return request(app.getHttpServer()).delete('/testing/all-data').expect(204);
-  // });
-  it('/sa/users (POST) add new user to the system', async () => {
-    await gameTestService.clearDb();
-    for (let i = 1; i <= countOfUsers; i++) {
-      await request(app.getHttpServer())
-        .post('/sa/users')
-        .auth('admin', 'qwerty', { type: 'basic' })
-        .send({
-          login: `user${i}`,
-          password: `password${i}`,
-          email: `email${i}@gmail.com`,
-        });
-    }
+  it('Prepare DB', async () => {
+    await testingTestHelpers.clearDb();
+    accessTokens = (await commonTestHelpers.createAndLoginUsers(countOfUsers))
+      .accessTokens;
+    questions = await gameTestService.createQuestions(countOfQuestions);
   });
-  it('POST:[HOST]/auth/login: signIn users', async () => {
-    for (let i = 1; i <= countOfUsers; i++) {
-      const sigInUser = await request(app.getHttpServer())
-        .post('/auth/login')
-        .send({
-          loginOrEmail: `user${i}`,
-          password: `password${i}`,
-        });
-      accessTokens.push(sigInUser.body.accessToken);
-    }
-  });
-  it('/sa/quiz/questions (POST) Add new 5 questions. Should return 201.', async () => {
-    //create new question
-    for (let i = 1; i < countOfQuestions; i++) {
-      const res = await request(app.getHttpServer())
-        .post('/sa/quiz/questions')
-        .auth('admin', 'qwerty', { type: 'basic' })
-        .send({
-          body: `body question${i}`,
-          correctAnswers: [`answer1`, `answer2`],
-        })
-        .expect(201);
-      questions.push(res.body);
-    }
-  });
+
   it('/sa/quiz/questions/:id/publish (PUT) Publish all questions.', async () => {
     //publish new question
     for (const q of questions) {
-      await request(app.getHttpServer())
-        .put(`/sa/quiz/questions/${q.id}/publish`)
-        .auth('admin', 'qwerty', { type: 'basic' })
-        .send({
-          published: true,
-        })
-        .expect(204);
+      -(await gameTestService.publishQuestion(q.id));
     }
   });
 
@@ -257,7 +227,7 @@ describe('PairController (e2e)', () => {
       })
       .expect(403);
   });
-  it('/pair-game-quiz/pairs/my-current/answers (POST=>200). User1 send 5 answers', async () => {
+  it('/pair-game-quiz/pairs/my-current/answers (POST=>200). User1 send 5 correct answers', async () => {
     for (let i = 0; i < 5; i++) {
       const res = await request(app.getHttpServer())
         .post('/pair-game-quiz/pairs/my-current/answers')
@@ -830,7 +800,7 @@ describe('PairController (e2e)', () => {
       .auth(accessTokens[0], { type: 'bearer' })
       .expect(200);
   });
-  it('/pair-game-quiz/pairs/my-current/answers (POST=>200). User1 send 5 answers', async () => {
+  it('/pair-game-quiz/pairs/my-current/answers (POST=>200). User1 send 5 incorrect answers', async () => {
     for (let i = 0; i < 5; i++) {
       const res = await request(app.getHttpServer())
         .post('/pair-game-quiz/pairs/my-current/answers')
@@ -997,23 +967,84 @@ describe('PairController (e2e)', () => {
       lossesCount: 0,
       winsCount: 1,
     });
-    expect(res.body.items).toHaveLength(1);
-    expect(res.body.items[0].id).toBe(gameIds[1]);
   });
   it('/pair-game-quiz/users/top (GET=>200). Get top users', async () => {
     const res = await request(app.getHttpServer())
       .get(`/pair-game-quiz/users/top`)
       .auth(accessTokens[2], { type: 'bearer' })
       .expect(200);
-    expect(res.body).toEqual({
-      sumScore: 4,
-      avgScores: 1.33,
-      gamesCount: 3,
-      drawsCount: 2,
-      lossesCount: 0,
-      winsCount: 1,
+    expect(res.body.items[0]).toEqual({
+      sumScore: 3,
+      avgScores: 3,
+      gamesCount: 1,
+      drawsCount: 0,
+      lossesCount: 1,
+      winsCount: 0,
+      player: { id: expect.any(String), login: 'user4' },
     });
-    expect(res.body.items).toHaveLength(1);
-    expect(res.body.items[0].id).toBe(gameIds[1]);
+    expect(res.body.items).toHaveLength(4);
+  });
+});
+
+describe('PairController (e2e) - logic of finish game test', () => {
+  let app: INestApplication;
+  let prepareTestHelpers: PrepareTestHelpers;
+  let accessTokens = [];
+  let questions = [];
+  const gameIds = [];
+
+  beforeAll(async () => {
+    app = await getApp();
+    prepareTestHelpers = new PrepareTestHelpers(app);
+  });
+
+  afterAll(async () => {
+    await appClose(app);
+  });
+  // ********[HOST]/sa/blogs**********
+
+  it('Prepare DB', async () => {
+    const res = await prepareTestHelpers.prepare({
+      countOfUsers: 10,
+      countOfQuestions: 10,
+    });
+    accessTokens = res.accessTokens;
+    questions = res.questions;
+  });
+  it('/pair-game-quiz/pairs/connection (POST=>200). User1 create to new pair', async () => {
+    const res = await request(app.getHttpServer())
+      .post('/pair-game-quiz/pairs/connection')
+      .auth(accessTokens[0], { type: 'bearer' })
+      .expect(200);
+    gameIds[0] = res.body.id;
+    expect(res.body).toEqual({
+      id: expect.any(String),
+      firstPlayerProgress: {
+        answers: [],
+        player: {
+          id: expect.any(String),
+          login: 'user1',
+        },
+        score: 0,
+      },
+      secondPlayerProgress: null,
+      questions: null,
+      status: 'PendingSecondPlayer',
+      pairCreatedDate: expect.stringMatching(isoDatePattern),
+      startGameDate: null,
+      finishGameDate: null,
+    });
+  });
+
+  it('/pair-game-quiz/pairs/my-current/answers (POST=>200). User1 send 5 answers', async () => {
+    for (let i = 0; i < 5; i++) {
+      await request(app.getHttpServer())
+        .post('/pair-game-quiz/pairs/my-current/answers')
+        .auth(accessTokens[0], { type: 'bearer' })
+        .send({
+          answer: 'answer1',
+        })
+        .expect(200);
+    }
   });
 });
