@@ -23,6 +23,8 @@ export class SetAnswerUseCase implements ICommandHandler<SetAnswerCommand> {
 
   async execute(command: SetAnswerCommand) {
     const { userId, answerBody } = command;
+    console.log('t17');
+    console.log(userId);
     let pairModel = await this.pairsQueryTypeOrmRepository.getPairModelByUserId(
       +userId,
     );
@@ -49,8 +51,8 @@ export class SetAnswerUseCase implements ICommandHandler<SetAnswerCommand> {
 
     //check final answer
     if (currentPlayer.answers.length === 5) {
-      pairModel = await this.pairsQueryTypeOrmRepository.getPairModelByUserId(
-        +pairId,
+      pairModel = await this.pairsQueryTypeOrmRepository.getPairModelById(
+        pairId,
       );
       if (pairModel.status !== 'Active') return pairId;
       setTimeout(() => {
