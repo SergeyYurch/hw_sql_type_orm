@@ -3,18 +3,18 @@ import request from 'supertest';
 import { disconnect } from 'mongoose';
 import { getApp } from './test-utils';
 
-import { SaUsersTestService } from './sa-users-test.service';
-import { TestingTestHelpers } from './testing-test.helpers';
+import { UsersTestHelpers } from './helpers/users.test.helpers';
+import { TestingTestHelpers } from './helpers/testing-test.helpers';
 
 describe('SaUsersController (e2e)', () => {
   let app: INestApplication;
   let testingTestHelpers: TestingTestHelpers;
-  let usersTestService: SaUsersTestService;
+  let usersTestService: UsersTestHelpers;
   const users = [];
 
   beforeAll(async () => {
     app = await getApp();
-    usersTestService = new SaUsersTestService(app);
+    usersTestService = new UsersTestHelpers(app);
     testingTestHelpers = new TestingTestHelpers(app);
   });
 
@@ -56,7 +56,7 @@ describe('SaUsersController (e2e)', () => {
       },
     });
     console.log(users[0].id);
-    await usersTestService.createSetOfUsers(2, 12);
+    await usersTestService.createSetOfUsers(12, 2);
   });
   it('POST: [HOST]/sa/users should return code 400 and error message for field login', async () => {
     const { body } = await usersTestService.createUser(
