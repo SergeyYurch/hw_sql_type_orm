@@ -51,20 +51,19 @@ export const PaginatorParam = createParamDecorator(
       { avgScores: SortDirectionEnum.DESK },
       { sumScore: SortDirectionEnum.DESK },
     ];
-    paginatorParams.pageNumber = req.query.pageNumber
-      ? +req.query.pageNumber
-      : defaultValues?.pageNumber || 1;
-    paginatorParams.pageSize = req.query.pageSize
-      ? +req.query.pageSize
-      : defaultValues?.pageSize || 10;
-    if (typeof paginatorParams.sortBy === 'string') {
-      paginatorParams.sortBy = req.query.sortBy
-        ? String(req.query.sortBy)
-        : defaultValues?.sortBy || 'createdAt';
+    paginatorParams.pageNumber =
+      +req.query.pageNumber || defaultValues?.pageNumber || 1;
+    paginatorParams.pageSize =
+      +req.query.pageSize || defaultValues?.pageSize || 10;
+
+    console.log('t33');
+    console.log(typeof req.query.sortBy);
+    if (typeof req.query.sortBy === 'string') {
+      paginatorParams.sortBy = String(req.query.sortBy);
     }
-    if (!paginatorParams?.sortBy) {
-      paginatorParams.sortBy = 'createdAt';
-    }
+
+    paginatorParams.sortBy ??= defaultValues?.sortBy || 'createdAt';
+
     paginatorParams.sortDirection = req.query.sortDirection
       ? (req.query.sortDirection as 'desc' | 'asc')
       : (defaultValues?.sortDirection as 'desc' | 'asc') || 'desc';
