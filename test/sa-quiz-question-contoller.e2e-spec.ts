@@ -3,13 +3,18 @@ import request from 'supertest';
 import { disconnect } from 'mongoose';
 import { getApp } from './test-utils';
 import { question1 } from './tsts-input-data';
+import { TestingTestHelpers } from './helpers/testing-test.helpers';
+import { GameTestHelpers } from './helpers/game.test.helpers';
 
 describe('QuizQuestionController (e2e)', () => {
   let app: INestApplication;
-  const questions = [];
+  let gameTestHelpers: GameTestHelpers;
+  let questions = [];
 
   beforeAll(async () => {
     app = await getApp();
+    await new TestingTestHelpers(app).clearDb();
+    gameTestHelpers = new GameTestHelpers(app);
   });
 
   afterAll(async () => {
@@ -19,9 +24,7 @@ describe('QuizQuestionController (e2e)', () => {
   // ********[HOST]/sa/blogs**********
 
   //preparation
-  it('/testing/all-data (DELETE) clear DB', async () => {
-    return request(app.getHttpServer()).delete('/testing/all-data').expect(204);
-  });
+
   it('/sa/quiz/questions (POST) Add new question. Not authorization. Should return 401.', async () => {
     //create new question
     await request(app.getHttpServer())
@@ -39,17 +42,7 @@ describe('QuizQuestionController (e2e)', () => {
   });
   it('/sa/quiz/questions (POST) Add new 5 questions. Should return 201.', async () => {
     //create new question
-    for (let i = 1; i < 6; i++) {
-      const res = await request(app.getHttpServer())
-        .post('/sa/quiz/questions')
-        .auth('admin', 'qwerty', { type: 'basic' })
-        .send({
-          body: `body question${i}`,
-          correctAnswers: [`answ1 for q${i}`, `answ2 for q${i}`],
-        })
-        .expect(201);
-      questions.push(res.body);
-    }
+    questions = await gameTestHelpers.createQuestions(5);
   });
 
   //checking GET questions && pagination. Returns all questions with pagination and filtering Parameters
@@ -163,13 +156,14 @@ describe('QuizQuestionController (e2e)', () => {
   });
   it('/sa/quiz/questions/:id/publish (PUT) Publish question2. Should return 204.', async () => {
     //create new question
-    await request(app.getHttpServer())
-      .put(`/sa/quiz/questions/${questions[1].id}/publish`)
-      .auth('admin', 'qwerty', { type: 'basic' })
-      .send({
-        published: true,
-      })
-      .expect(204);
+    await gameTestHelpers.publishQuestion(questions[1].id);
+    // await request(app.getHttpServer())
+    //   .put(`/sa/quiz/questions/${questions[1].id}/publish`)
+    //   .auth('admin', 'qwerty', { type: 'basic' })
+    //   .send({
+    //     published: true,
+    //   })
+    //   .expect(204);
   });
   it('/sa/quiz/questions (GET). Query param: publishedStatus=published. Should return 200.', async () => {
     //create new question
