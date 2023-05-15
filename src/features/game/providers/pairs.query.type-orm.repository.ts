@@ -55,6 +55,8 @@ export class PairsQueryTypeOrmRepository {
   }
 
   async getActivePairViewByUserId(userId: string) {
+    console.log('t15');
+    console.log(userId);
     const pairModel = await this.getPairModelByUserId(+userId);
     if (!pairModel) return null;
     return this.castToPairViewModel(pairModel);
@@ -90,6 +92,8 @@ export class PairsQueryTypeOrmRepository {
   }
 
   async getPairModelByUserId(userId: number) {
+    console.log('t14');
+    console.log(userId);
     const pairEntity = await this.getPairEntityByUserId(userId);
     if (!pairEntity) return null;
     return this.castToPairModel(pairEntity);
@@ -224,6 +228,9 @@ export class PairsQueryTypeOrmRepository {
     const findOptionsOrder: FindOptionsOrder<PairEntity> = {
       [sortBy]: sortDirection,
     };
+    console.log('t20');
+    console.log(sortBy);
+    delete findOptionsOrder['createdAt'];
     if (sortBy != 'pairCreatedDate')
       findOptionsOrder['pairCreatedDate'] = 'desc';
     const findOptionsWhere: FindOptionsWhere<PairEntity>[] = [
@@ -237,6 +244,7 @@ export class PairsQueryTypeOrmRepository {
       skip: pageSize * (pageNumber - 1),
       take: pageSize,
     };
+    console.log(findManyOptions);
     const [pairEntities, totalCount] = await this.pairsRepository.findAndCount(
       findManyOptions,
     );
@@ -264,24 +272,11 @@ export class PairsQueryTypeOrmRepository {
 
   async getUserGamesStatistic(userId: string): Promise<MyStatisticViewModel> {
     const rawPlayer = await this.getBasePlayerStatQueryBuilder()
-      .where('u.id=:userId', { userId: +userId })
+      .andWhere('u.id=:userId', { userId: +userId })
       .getRawOne();
-    const {
-      gamesCount,
-      drawsCount,
-      lossesCount,
-      winsCount,
-      sumScore,
-      avgScores,
-    } = this.castRawPlayerStatistic(rawPlayer);
-    return {
-      sumScore,
-      avgScores,
-      gamesCount,
-      drawsCount,
-      lossesCount,
-      winsCount,
-    };
+    const stat = this.castRawPlayerStatistic(rawPlayer);
+    delete stat.player;
+    return stat;
   }
 
   async getTopUsersViewModel(paginatorParams: PaginatorInputType) {
@@ -323,43 +318,63 @@ export class PairsQueryTypeOrmRepository {
     const drawsCount = +rp.draws_count || 0;
     const avgScores = rp.avg_scores ? Math.round(rp.avg_scores * 100) / 100 : 0;
     return {
-      sumScore,
-      avgScores,
-      gamesCount,
-      winsCount,
-      lossesCount,
-      drawsCount,
-      player,
+      sumScore: +rp.sum_score,
+      avgScores: Math.round(rp.avg_scores * 100) / 100,
+      gamesCount: +rp.games_count,
+      winsCount: +rp.wins_count,
+      lossesCount: +rp.losses_count,
+      drawsCount: +rp.draws_count,
+      player: { id: String(rp.u_id), login: rp.u_login },
     };
   }
 
   private getBasePlayerStatQueryBuilder() {
-    return this.playersRepository
-      .createQueryBuilder('p')
-      .select('SUM(p.score) as sum_score')
-      .addSelect('COUNT(*) as games_count')
-      .addSelect('1.0*SUM(p.score)/COUNT(*) as avg_scores')
-      .addSelect((subQuery) => {
-        return subQuery
-          .select('COUNT(*)')
-          .from(PlayerEntity, 'pl')
-          .where(`pl.userId=u.id AND pl.result='won'`);
-      }, 'wins_count')
-      .addSelect((subQuery) => {
-        return subQuery
-          .select('COUNT(*)')
-          .from(PlayerEntity, 'pl')
-          .where(`pl.userId=u.id AND pl.result='lost'`);
-      }, 'losses_count')
-      .addSelect((subQuery) => {
-        return subQuery
-          .select('COUNT(*)')
-          .from(PlayerEntity, 'pl')
-          .where(`pl.userId=u.id AND pl.result='draw'`);
-      }, 'draws_count')
-      .leftJoinAndSelect('p.user', 'u')
-      .where('p.result IS NOT NULL')
-      .groupBy('u.id');
+    return (
+      this.playersRepository
+        .createQueryBuilder('p')
+        .select('SUM(p.score) as sum_score1')
+        .addSelect('COUNT(*) as games_count')
+        .addSelect('1.0*SUM(p.score)/COUNT(*) as avg_scores')
+        .select((subQuery) => {
+          return subQuery
+            .select('SUM(pl.score)')
+            .from(PlayerEntity, 'pl')
+            .where(`pl.userId=u.id AND pl.result IS NOT NULL`);
+        }, 'sum_score')
+        .addSelect((subQuery) => {
+          return subQuery
+            .select('COUNT(*)')
+            .from(PlayerEntity, 'pl')
+            .where(`pl.userId=u.id AND pl.result='won'`);
+        }, 'wins_count')
+        // .addSelect((subQuery) => {
+        //   return subQuery
+        //     .select('1.0*SUM(p.score)/COUNT(*)')
+        //     .from(PlayerEntity, 'pl')
+        //     .where(`pl.userId=u.id AND pl.result IS NOT NULL`);
+        // }, 'avg_scores')
+        // .addSelect((subQuery) => {
+        //   return subQuery
+        //     .select('COUNT(*)')
+        //     .from(PlayerEntity, 'pl')
+        //     .where(`pl.userId=u.id AND pl.result IS NOT NULL`);
+        // }, 'games_count')
+        .addSelect((subQuery) => {
+          return subQuery
+            .select('COUNT(*)')
+            .from(PlayerEntity, 'pl')
+            .where(`pl.userId=u.id AND pl.result='lost'`);
+        }, 'losses_count')
+        .addSelect((subQuery) => {
+          return subQuery
+            .select('COUNT(*)')
+            .from(PlayerEntity, 'pl')
+            .where(`pl.userId=u.id AND pl.result='draw'`);
+        }, 'draws_count')
+        .leftJoinAndSelect('p.user', 'u')
+        .where('p.result IS NOT NULL')
+        .groupBy('u.id')
+    );
   }
 
   private getAlias(field: string) {
