@@ -1,7 +1,7 @@
-import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { INestApplication } from '@nestjs/common';
 
-export function swaggerSetup(app: NestExpressApplication) {
+export function swaggerSetup(app: INestApplication) {
   const config = new DocumentBuilder()
     .setTitle('Guild docs')
     .setDescription('API description')
