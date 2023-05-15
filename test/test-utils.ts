@@ -44,3 +44,5 @@ export const appClose = async (app: INestApplication) => {
   await disconnect();
   await app.close();
 };
+
+export const isoDatePattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
