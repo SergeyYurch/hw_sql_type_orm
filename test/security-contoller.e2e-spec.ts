@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { disconnect } from 'mongoose';
-import { delay } from '../src/common/helpers/helpers';
+import { myDelay } from '../src/common/helpers/helpers';
 import { getApp } from './test-utils';
 import { user1, user2 } from './tsts-input-data';
 
@@ -186,7 +186,7 @@ describe('CommentsController (e2e)', () => {
     user2Id = newUser2.body.id;
   });
   it('POST:[HOST]/auth/login: users login from different devices again', async () => {
-    await delay(10000);
+    await myDelay(10000);
     //user1 login
     const result1LoginUser1 = await request(app.getHttpServer())
       .post('/auth/login')
@@ -296,7 +296,7 @@ describe('CommentsController (e2e)', () => {
     user2Id = newUser2.body.id;
   });
   it('2)POST:[HOST]/auth/login: users login from different devices', async () => {
-    await delay(10000);
+    await myDelay(10000);
     //user1 login
     const result1LoginUser1 = await request(app.getHttpServer())
       .post('/auth/login')

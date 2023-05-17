@@ -1,4 +1,4 @@
-import { INestApplication } from '@nestjs/common';
+import { HttpStatus, INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { appClose, getApp, isoDatePattern } from './test-utils';
 import { TestingTestHelpers } from './helpers/testing-test.helpers';
@@ -7,6 +7,7 @@ import { AuthTestHelpers } from './helpers/auth.test.helpers';
 import { AccountsTestHelpers } from './helpers/accounts.test.helpers';
 import { GameTestHelpers } from './helpers/game.test.helpers';
 import { PrepareTestHelpers } from './helpers/prepaire.test.helpers';
+import { myDelay } from '../src/common/helpers/helpers';
 
 describe('PairController (e2e)', () => {
   let app: INestApplication;
@@ -818,6 +819,7 @@ describe('PairController (e2e)', () => {
   });
   it('/pair-game-quiz/pairs/my-current/answers (POST=>200). User3 send 5 answers', async () => {
     for (let i = 0; i < 5; i++) {
+      console.log(`test i: ${i}`);
       const res = await request(app.getHttpServer())
         .post('/pair-game-quiz/pairs/my-current/answers')
         .auth(accessTokens[2], { type: 'bearer' })
@@ -999,6 +1001,7 @@ describe('PairController (e2e) - logic of finish game test', () => {
   });
 
   afterAll(async () => {
+    await myDelay(15000);
     await appClose(app);
   });
   // ********[HOST]/sa/blogs**********
@@ -1015,7 +1018,7 @@ describe('PairController (e2e) - logic of finish game test', () => {
     const res = await request(app.getHttpServer())
       .post('/pair-game-quiz/pairs/connection')
       .auth(accessTokens[0], { type: 'bearer' })
-      .expect(200);
+      .expect(HttpStatus.OK);
     gameIds[0] = res.body.id;
     expect(res.body).toEqual({
       id: expect.any(String),
@@ -1035,6 +1038,12 @@ describe('PairController (e2e) - logic of finish game test', () => {
       finishGameDate: null,
     });
   });
+  it('/pair-game-quiz/pairs/connection (POST=>200). User2 connect to game', async () => {
+    await request(app.getHttpServer())
+      .post('/pair-game-quiz/pairs/connection')
+      .auth(accessTokens[1], { type: 'bearer' })
+      .expect(200);
+  });
 
   it('/pair-game-quiz/pairs/my-current/answers (POST=>200). User1 send 5 answers', async () => {
     for (let i = 0; i < 5; i++) {
@@ -1046,5 +1055,80 @@ describe('PairController (e2e) - logic of finish game test', () => {
         })
         .expect(200);
     }
+  });
+  it('/pair-game-quiz/pairs/{id} (GET=>200). Should return game 1 by ID', async () => {
+    const res = await request(app.getHttpServer())
+      .get(`/pair-game-quiz/pairs/${gameIds[0]}`)
+      .auth(accessTokens[0], { type: 'bearer' })
+      .expect(200);
+    expect(res.body).toEqual({
+      id: gameIds[0],
+      firstPlayerProgress: {
+        answers: expect.any(Array),
+        player: {
+          id: expect.any(String),
+          login: 'user1',
+        },
+        score: 5,
+      },
+      secondPlayerProgress: {
+        answers: expect.any(Array),
+        player: {
+          id: expect.any(String),
+          login: 'user2',
+        },
+        score: 0,
+      },
+      questions: expect.any(Array),
+      status: 'Active',
+      pairCreatedDate: expect.stringMatching(isoDatePattern),
+      startGameDate: expect.stringMatching(isoDatePattern),
+      finishGameDate: null,
+    });
+  });
+  it('/pair-game-quiz/pairs/my-current/answers (POST=>200). User2 send 3 answers', async () => {
+    for (let i = 0; i < 3; i++) {
+      await request(app.getHttpServer())
+        .post('/pair-game-quiz/pairs/my-current/answers')
+        .auth(accessTokens[1], { type: 'bearer' })
+        .send({
+          answer: 'answer1',
+        })
+        .expect(200);
+    }
+  });
+
+  it('/pair-game-quiz/pairs/{id} (GET=>200). Delay 10 s and game should be finished', async () => {
+    await myDelay(11000);
+    console.log('t13');
+    console.log('start finally test after 11s delay');
+    const res = await request(app.getHttpServer())
+      .get(`/pair-game-quiz/pairs/${gameIds[0]}`)
+      .auth(accessTokens[0], { type: 'bearer' })
+      .expect(200);
+    expect(res.body).toEqual({
+      id: gameIds[0],
+      firstPlayerProgress: {
+        answers: expect.any(Array),
+        player: {
+          id: expect.any(String),
+          login: 'user1',
+        },
+        score: 6,
+      },
+      secondPlayerProgress: {
+        answers: expect.any(Array),
+        player: {
+          id: expect.any(String),
+          login: 'user2',
+        },
+        score: 3,
+      },
+      questions: expect.any(Array),
+      status: 'Finished',
+      pairCreatedDate: expect.stringMatching(isoDatePattern),
+      startGameDate: expect.stringMatching(isoDatePattern),
+      finishGameDate: expect.stringMatching(isoDatePattern),
+    });
   });
 });

@@ -1,7 +1,7 @@
-import { AnswerStatusType } from '../../types/answer-status.type';
+import { AnswerStatusEntity } from '../../types/answer-status.entity';
 
 export class AnswerViewModel {
   questionId: string;
-  answerStatus: AnswerStatusType;
+  answerStatus: AnswerStatusEntity;
   addedAt: string;
 }

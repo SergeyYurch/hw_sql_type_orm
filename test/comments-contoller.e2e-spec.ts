@@ -4,7 +4,7 @@ import { disconnect } from 'mongoose';
 import { BlogViewModel } from '../src/features/blogs/dto/view-models/blog.view.model';
 import { getApp } from './test-utils';
 import { blog1, blog2, blog3, user1, user2, user3 } from './tsts-input-data';
-import { delay } from '../src/common/helpers/helpers';
+import { myDelay } from '../src/common/helpers/helpers';
 
 describe('CommentsController (e2e)', () => {
   let app: INestApplication;
@@ -417,7 +417,7 @@ describe('CommentsController (e2e)', () => {
     user3Id = newUser3.body.id;
   });
   it('1POST:[HOST]/auth/login: signIn users', async () => {
-    await delay(10000);
+    await myDelay(10000);
     const sigInUser1 = await request(app.getHttpServer())
       .post('/auth/login')
       .send({

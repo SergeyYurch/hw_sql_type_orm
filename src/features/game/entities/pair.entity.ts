@@ -1,5 +1,5 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { GameStatusType } from '../types/game-status.type';
+import { GameStatusEnum } from '../types/game-status.enum';
 import { PlayerEntity } from './player.entity';
 
 @Entity('pairs')
@@ -17,11 +17,11 @@ export class PairEntity {
   @Column('int', { array: true, default: [] })
   questions: number[];
   @Column()
-  status: GameStatusType;
-  @Column({ type: 'bigint' })
-  pairCreatedDate: number;
-  @Column({ type: 'bigint', nullable: true })
-  startGameDate: number;
-  @Column({ type: 'bigint', nullable: true })
-  finishGameDate: number;
+  status: GameStatusEnum;
+  @Column()
+  pairCreatedDate: Date;
+  @Column({ nullable: true })
+  startGameDate: Date;
+  @Column({ nullable: true })
+  finishGameDate: Date;
 }

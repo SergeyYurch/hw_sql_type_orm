@@ -11,7 +11,7 @@ export const getConfirmationEmailExpirationDate = () =>
 export const getPasswordRecoveryCodeExpirationDate = () =>
   +process.env.PASSWORD_RECOVERY_CODE_LIFE_PERIOD_SEC * 1000 + Date.now();
 
-export const delay = async (ms: number) => {
+export const myDelay = async (ms: number) => {
   return new Promise<void>((resolve) => {
     setTimeout(() => resolve(), ms);
   });

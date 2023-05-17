@@ -1,5 +1,5 @@
 import { PlayerProgressViewModel } from './player-progress.view.model';
-import { GameStatusType } from '../../types/game-status.type';
+import { GameStatusEnum } from '../../types/game-status.enum';
 import { GameQuestionViewModel } from './game-question.view.model';
 
 export class GamePairViewModel {
@@ -7,7 +7,7 @@ export class GamePairViewModel {
   firstPlayerProgress: PlayerProgressViewModel;
   secondPlayerProgress: PlayerProgressViewModel;
   questions: GameQuestionViewModel[];
-  status: GameStatusType;
+  status: GameStatusEnum;
   pairCreatedDate: string;
   startGameDate: string;
   finishGameDate: string;

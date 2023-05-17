@@ -6,6 +6,11 @@ import { Player } from '../../domain/player';
 import { PairsTypeOrmRepository } from '../pairs.type-orm.repository';
 import { QuizQuestionsQueryTypeOrmRepository } from '../../../quiz/providers/quiz-questions.query-type-orm.repository';
 import { Answer } from '../../domain/answer';
+import { Pair } from '../../domain/pair';
+import { GameStatusEnum } from '../../types/game-status.enum';
+import { AnswerStatusEntity } from '../../types/answer-status.entity';
+import { PairEntity } from '../../entities/pair.entity';
+import { GameResultEnum } from '../../entities/player.entity';
 
 export class SetAnswerCommand {
   constructor(public userId: string, public answerBody: string) {}
@@ -22,49 +27,49 @@ export class SetAnswerUseCase implements ICommandHandler<SetAnswerCommand> {
   ) {}
 
   async execute(command: SetAnswerCommand) {
+    console.log('SetAnswerUseCase');
     const { userId, answerBody } = command;
-    console.log('t17');
-    console.log(userId);
-    let pairModel = await this.pairsQueryTypeOrmRepository.getPairModelByUserId(
-      +userId,
-    );
+    const pairModel =
+      await this.pairsQueryTypeOrmRepository.getPairModelByUserId(+userId);
     if (!pairModel) return null;
     if (pairModel.status !== 'Active') return null;
     const answer = new Answer(answerBody);
-    let currentPlayer: Player = pairModel.secondPlayer;
-    let otherPlayer: Player = pairModel.firstPlayer;
-    if (pairModel.firstPlayer.user.id === userId) {
-      currentPlayer = pairModel.firstPlayer;
-      otherPlayer = pairModel.secondPlayer;
-    }
+    const { currentPlayer, otherPlayer } = pairModel.getCurrentPlayer(userId);
     if (currentPlayer.answers.length === 5) return null;
     const numberOfQuestion = currentPlayer.answers.length;
     answer.question = pairModel.questions[numberOfQuestion];
     if (answer.question.correctAnswers.includes(answer.body)) {
-      answer.answerStatus = 'Correct';
+      answer.answerStatus = AnswerStatusEntity.CORRECT;
       currentPlayer.score++;
     } else {
-      answer.answerStatus = 'Incorrect';
+      answer.answerStatus = AnswerStatusEntity.INCORRECT;
     }
     currentPlayer.answers.push(answer);
     const pairId = await this.pairsTypeOrmRepository.savePair(pairModel);
 
     //check final answer
     if (currentPlayer.answers.length === 5) {
-      pairModel = await this.pairsQueryTypeOrmRepository.getPairModelById(
-        pairId,
-      );
-      if (pairModel.status !== 'Active') return pairId;
-      setTimeout(() => {
-        for (let i = otherPlayer.answers.length; i < 6; i++) {
-          const answer = new Answer('Empty answer');
-          answer.question = pairModel.questions[numberOfQuestion];
-          answer.answerStatus = 'Incorrect';
-          otherPlayer.answers[i] = answer;
-        }
-        this.pairsTypeOrmRepository.savePair(pairModel);
-      }, 10000);
+      if (otherPlayer.answers.length === 5) {
+        await this.finishGame(pairId);
+      } else {
+        setTimeout(() => {
+          console.log('Timer is out: finish game');
+          this.finishGame(pairId);
+        }, 10000);
+      }
     }
     return pairId;
+  }
+
+  async finishGame(pairId: string) {
+    console.log('finishGame');
+    const pairModel: Pair =
+      await this.pairsQueryTypeOrmRepository.getPairModelById(pairId);
+    console.log(pairModel);
+    if (pairModel.status === GameStatusEnum.FINISHED) return;
+    pairModel.finishGame();
+    await this.pairsTypeOrmRepository.savePair(pairModel);
+    console.log('pairModel after finish');
+    console.log(pairModel);
   }
 }

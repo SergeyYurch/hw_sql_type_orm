@@ -7,6 +7,7 @@ import {
 } from 'typeorm';
 import { QuizQuestionEntity } from '../../quiz/entities/quiz-question.entity';
 import { PlayerEntity } from './player.entity';
+import { AnswerStatusEntity } from '../types/answer-status.entity';
 
 @Entity('answers')
 export class AnswerEntity {
@@ -17,7 +18,7 @@ export class AnswerEntity {
   @Column()
   questionId: number;
   @Column()
-  answerStatus: string;
+  answerStatus: AnswerStatusEntity;
   @Column()
   body: string;
   @CreateDateColumn()

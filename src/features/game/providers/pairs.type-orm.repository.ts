@@ -3,11 +3,11 @@ import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { PairEntity } from '../entities/pair.entity';
 import { Pair } from '../domain/pair';
 import { PairsQueryTypeOrmRepository } from './pairs.query.type-orm.repository';
-import { GameResult, PlayerEntity } from '../entities/player.entity';
+import { PlayerEntity } from '../entities/player.entity';
 import { AnswerEntity } from '../entities/ansver.entity';
 import { Player } from '../domain/player';
 import { QuizQuestionsQueryTypeOrmRepository } from '../../quiz/providers/quiz-questions.query-type-orm.repository';
-import { delay } from '../../../common/helpers/helpers';
+import { GameStatusEnum } from '../types/game-status.enum';
 
 export class PairsTypeOrmRepository {
   private queryRunner: QueryRunner;
@@ -50,8 +50,12 @@ export class PairsTypeOrmRepository {
       pairEntity.startGameDate = pair.startGameDate;
       pairEntity.finishGameDate = pair.finishGameDate;
       await this.queryRunner.manager.save(pairEntity);
-      await this.checkFinishGame(pairEntity);
+      //  await this.checkFinishGame(pairEntity);
       await this.queryRunner.commitTransaction();
+      if (pair.status === GameStatusEnum.FINISHED) {
+        console.log('pairEntity has been saved');
+        console.log(pairEntity);
+      }
       return pairEntity.id;
     } catch (err) {
       console.log('pair save transaction error');
@@ -84,50 +88,9 @@ export class PairsTypeOrmRepository {
     }
     playerEntity.userId = +player.user.id;
     playerEntity.score = player.score;
+    playerEntity.result = player.result;
     await this.queryRunner.manager.save(playerEntity);
     console.log('player have been saved, id:' + player.id + ' ' + Date.now());
     return playerEntity;
-  }
-
-  private async checkFinishGame(pairEntity: PairEntity) {
-    if (
-      pairEntity.firstPlayer?.answers?.length === 5 &&
-      pairEntity.secondPlayer?.answers?.length === 5
-    ) {
-      console.log(
-        `!!!!Start finishing game!!!!!1 player answers: ${pairEntity.firstPlayer?.answers?.length} 1 player answers: ${pairEntity.secondPlayer?.answers?.length} :`,
-      );
-      pairEntity.finishGameDate = Date.now();
-      pairEntity.status = 'Finished';
-      if (
-        +pairEntity.firstPlayer.answers[4].addedAt <
-          +pairEntity.secondPlayer.answers[4].addedAt &&
-        pairEntity.firstPlayer.score > 0
-      )
-        pairEntity.firstPlayer.score++;
-      if (
-        +pairEntity.firstPlayer.answers[4].addedAt >
-          +pairEntity.secondPlayer.answers[4].addedAt &&
-        pairEntity.secondPlayer.score > 0
-      )
-        pairEntity.secondPlayer.score++;
-      if (pairEntity.firstPlayer.score === pairEntity.secondPlayer.score) {
-        pairEntity.firstPlayer.result = GameResult.draw;
-        pairEntity.secondPlayer.result = GameResult.draw;
-      }
-      if (pairEntity.firstPlayer.score > pairEntity.secondPlayer.score) {
-        pairEntity.firstPlayer.result = GameResult.won;
-        pairEntity.secondPlayer.result = GameResult.lost;
-      }
-      if (pairEntity.firstPlayer.score < pairEntity.secondPlayer.score) {
-        pairEntity.firstPlayer.result = GameResult.lost;
-        pairEntity.secondPlayer.result = GameResult.won;
-      }
-      await Promise.all([
-        await this.queryRunner.manager.save(pairEntity.firstPlayer),
-        await this.queryRunner.manager.save(pairEntity.secondPlayer),
-        await this.queryRunner.manager.save(pairEntity),
-      ]);
-    }
   }
 }

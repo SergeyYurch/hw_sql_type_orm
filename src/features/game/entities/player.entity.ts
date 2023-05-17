@@ -23,10 +23,10 @@ export class PlayerEntity {
   @Column()
   score: number;
   @Column({ nullable: true })
-  result: GameResult;
+  result: GameResultEnum;
 }
 
-export enum GameResult {
+export enum GameResultEnum {
   lost = 'lost',
   won = 'won',
   draw = 'draw',

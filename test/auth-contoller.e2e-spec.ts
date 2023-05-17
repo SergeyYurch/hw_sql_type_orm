@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { disconnect } from 'mongoose';
-import { delay } from '../src/common/helpers/helpers';
+import { myDelay } from '../src/common/helpers/helpers';
 import { user1 } from './tsts-input-data';
 import { getApp } from './test-utils';
 import { UsersQueryTypeormRepository } from '../src/features/users/providers/users.query-typeorm.repository';
@@ -189,7 +189,7 @@ describe('CommentsController (e2e)', () => {
       .expect(401);
   });
   it('POST:[HOST]/auth/refresh-token: should return code 200 and pair of JWT-tokens', async () => {
-    await delay(3000);
+    await myDelay(3000);
     const result = await request(app.getHttpServer())
       .post('/auth/refresh-token')
       .set('Cookie', `refreshToken=${refreshTokenUser1}`)
@@ -385,7 +385,7 @@ describe('CommentsController (e2e)', () => {
       .expect(204);
   });
   it('POST:[HOST]/auth/login: should return code 200 when user login with new password', async () => {
-    await delay(10000);
+    await myDelay(10000);
 
     const result = await request(app.getHttpServer())
       .post('/auth/login')

@@ -116,6 +116,7 @@ import {
   Comment,
   CommentSchema,
 } from './features/comments/mongo-shema/comment.schema';
+import { ScheduleModule } from '@nestjs/schedule';
 
 const configModule = ConfigModule.forRoot();
 const userEntities = [
@@ -266,6 +267,7 @@ export const options: TypeOrmModuleOptions =
         },
       }),
     }),
+    ScheduleModule.forRoot(),
     CqrsModule,
   ],
   controllers: [
