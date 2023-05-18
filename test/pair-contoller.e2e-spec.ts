@@ -9,6 +9,8 @@ import { GameTestHelpers } from './helpers/game.test.helpers';
 import { PrepareTestHelpers } from './helpers/prepaire.test.helpers';
 import { myDelay } from '../src/common/helpers/helpers';
 
+jest.setTimeout(30000);
+
 describe('PairController (e2e)', () => {
   let app: INestApplication;
   let testingTestHelpers: TestingTestHelpers;
@@ -996,12 +998,13 @@ describe('PairController (e2e) - logic of finish game test', () => {
   const gameIds = [];
 
   beforeAll(async () => {
+    jest.setTimeout(30000);
     app = await getApp();
     prepareTestHelpers = new PrepareTestHelpers(app);
   });
 
   afterAll(async () => {
-    await myDelay(15000);
+    await myDelay(12000);
     await appClose(app);
   });
   // ********[HOST]/sa/blogs**********
@@ -1099,7 +1102,7 @@ describe('PairController (e2e) - logic of finish game test', () => {
   });
 
   it('/pair-game-quiz/pairs/{id} (GET=>200). Delay 10 s and game should be finished', async () => {
-    await myDelay(11000);
+    await myDelay(10000);
     console.log('t13');
     console.log('start finally test after 11s delay');
     const res = await request(app.getHttpServer())

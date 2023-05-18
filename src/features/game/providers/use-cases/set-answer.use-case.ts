@@ -55,7 +55,7 @@ export class SetAnswerUseCase implements ICommandHandler<SetAnswerCommand> {
         setTimeout(() => {
           console.log('Timer is out: finish game');
           this.finishGame(pairId);
-        }, 9000);
+        }, 8000);
       }
     }
     return pairId;
