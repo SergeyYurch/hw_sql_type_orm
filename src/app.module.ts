@@ -211,7 +211,7 @@ export const options: TypeOrmModuleOptions =
         synchronize: true,
         ssl: true,
       };
-
+console.log(options);
 @Module({
   imports: [
     configModule,
@@ -225,7 +225,17 @@ export const options: TypeOrmModuleOptions =
       { name: Post.name, schema: PostSchema },
       { name: Comment.name, schema: CommentSchema },
     ]),
-    TypeOrmModule.forRoot(options),
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      host: process.env.PGHOST,
+      port: 5432,
+      username: process.env.PGUSER,
+      password: process.env.PGPASSWORD,
+      database: process.env.PGDATABASE,
+      autoLoadEntities: true,
+      synchronize: true,
+      ssl: true,
+    }),
     TypeOrmModule.forFeature([
       ...userEntities,
       ...blogsEntities,
