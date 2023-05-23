@@ -23,7 +23,7 @@ import { UsersQueryRepository } from './features/users/providers/users.query.rep
 import { MailService } from './common/mail.service/mail.service';
 import { BasicStrategy } from './common/strategies/auth-basic.strategy';
 import { IsBlogExistConstraint } from './features/posts/common/blog-id-validate';
-import { IsUniqLoginOrEmailConstraint } from './common/validators/login-or-emai-uniq-validate';
+import { IsUniqLoginOrEmailConstraint } from './common/custom-validate/login-or-emai-uniq-validate';
 import { AuthController } from './features/auth/auth.controller';
 import { BlogsController } from './features/blogs/blogs.controller';
 import { SaBlogsController } from './features/blogs/sa-blogs.controller';
@@ -117,6 +117,8 @@ import {
   CommentSchema,
 } from './features/comments/mongo-shema/comment.schema';
 import { ScheduleModule } from '@nestjs/schedule';
+import { UploadBlogWallpaperUseCase } from './features/blogs/providers/use-cases/upload-blog-wallpaper.use-case';
+import { S3Service } from './common/s3/s3.service';
 
 const configModule = ConfigModule.forRoot();
 const userEntities = [
@@ -134,6 +136,7 @@ const blogsUseCases = [
   EditBlogUseCase,
   DeleteBlogUseCase,
   BanBlogUseCase,
+  UploadBlogWallpaperUseCase,
 ];
 const usersUseCases = [
   CreateNewUserUseCase,
@@ -211,7 +214,6 @@ export const options: TypeOrmModuleOptions =
         synchronize: true,
         ssl: true,
       };
-console.log(options);
 @Module({
   imports: [
     configModule,
@@ -225,17 +227,7 @@ console.log(options);
       { name: Post.name, schema: PostSchema },
       { name: Comment.name, schema: CommentSchema },
     ]),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.PGHOST,
-      port: 5432,
-      username: process.env.PGUSER,
-      password: process.env.PGPASSWORD,
-      database: process.env.PGDATABASE,
-      autoLoadEntities: true,
-      synchronize: true,
-      ssl: true,
-    }),
+    TypeOrmModule.forRoot(options),
     TypeOrmModule.forFeature([
       ...userEntities,
       ...blogsEntities,
@@ -304,6 +296,7 @@ console.log(options);
     ...authUseCases,
     ...quizUseCases,
     //common
+    S3Service,
     ConfigService,
     JwtService,
     BasicStrategy,

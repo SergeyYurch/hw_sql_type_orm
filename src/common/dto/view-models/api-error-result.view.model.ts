@@ -1,8 +1,8 @@
 export interface APIErrorResultModel {
-  errorsMessages: FieldError[];
+  errorsMessages: BadRequestFieldErrorType[];
 }
 
-export interface FieldError {
+export interface BadRequestFieldErrorType {
   message: string;
   field: string;
 }

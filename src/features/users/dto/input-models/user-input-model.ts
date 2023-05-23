@@ -1,6 +1,6 @@
 import { IsEmail, IsString, Length, Matches } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { IsUniqLoginOrEmail } from '../../../../common/validators/login-or-emai-uniq-validate';
+import { IsUniqLoginOrEmail } from '../../../../common/custom-validate/login-or-emai-uniq-validate';
 
 export class UserInputModel {
   @IsString()

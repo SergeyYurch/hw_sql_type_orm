@@ -4,12 +4,17 @@ import {
   Delete,
   Get,
   HttpCode,
+  HttpException,
   HttpStatus,
   Param,
+  ParseFilePipe,
+  ParseFilePipeBuilder,
   Post,
   Put,
   Query,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { BlogInputModel } from './dto/input-models/blog.input.model';
 import { PostViewModel } from '../posts/dto/view-models/post.view.model';
@@ -33,6 +38,12 @@ import { BlogsQueryTypeOrmRepository } from './providers/blogs.query.type-orm.re
 import { PostsQueryTypeOrmRepository } from '../posts/providers/posts.query.type-orm.repository';
 import { CommentsQueryTypeOrmRepository } from '../comments/providers/comments.query.type-orm.repository';
 import { ApiTags } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ImageSizeValidator } from '../../common/custom-validate/image-size.validator';
+import { ImageFile } from '../../common/types/image-file.type';
+import { imageFileValidate } from '../../common/custom-validate/image-file.validate';
+import { UploadBlogWallpaperCommand } from './providers/use-cases/upload-blog-wallpaper.use-case';
+import { UploadBlogIconCommand } from './providers/use-cases/upload-blog-icon.use-case';
 
 @ApiTags('blogger/blogs')
 @UseGuards(AccessTokenGuard)
@@ -75,6 +86,32 @@ export class BloggerBlogsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteBlog(@Param('blogId') blogId: string) {
     await this.commandBus.execute(new DeleteBlogCommand(blogId));
+  }
+
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseInterceptors(FileInterceptor('file'))
+  @Post(':blogId/images/wallpaper')
+  async uploadBlogWallpaper(
+    @Param('blogId') blogId: string,
+    @UploadedFile(
+      imageFileValidate({ maxFileSizeKB: 100, width: 1028, height: 312 }),
+    )
+    file: ImageFile,
+  ) {
+    await this.commandBus.execute(new UploadBlogWallpaperCommand(blogId, file));
+  }
+
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseInterceptors(FileInterceptor('file'))
+  @Post(':blogId/images/main')
+  async uploadBlogIcon(
+    @Param('blogId') blogId: string,
+    @UploadedFile(
+      imageFileValidate({ maxFileSizeKB: 100, width: 156, height: 156 }),
+    )
+    file: ImageFile,
+  ) {
+    await this.commandBus.execute(new UploadBlogIconCommand(blogId, file));
   }
 
   @UseGuards(LoggerGuard)
