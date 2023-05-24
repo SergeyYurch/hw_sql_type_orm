@@ -1,9 +1,9 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { Multer } from 'multer';
 import { S3Service } from '../../../../common/s3/s3.service';
+import { AccountImageFile } from '../../../../common/types/account-image-file';
 
 export class UploadBlogWallpaperCommand {
-  constructor(public blogId: string, public file: Express.Multer.File) {}
+  constructor(public blogId: string, public file: AccountImageFile) {}
 }
 
 @CommandHandler(UploadBlogWallpaperCommand)
@@ -13,8 +13,13 @@ export class UploadBlogWallpaperUseCase
   constructor(private s3Service: S3Service) {}
 
   async execute(command: UploadBlogWallpaperCommand) {
-    const fileName = `blog-wallpaper-${command.blogId}-${Date.now()}`;
-    await this.s3Service.upload('wallpapers', fileName, command.file);
+    const fileName = `blog-wallpaper-${command.blogId}`;
+    const uploadRes = await this.s3Service.upload(
+      'blog-wallpapers',
+      fileName,
+      command.file.buffer,
+    );
+
     return;
   }
 }

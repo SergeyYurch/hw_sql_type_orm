@@ -40,10 +40,11 @@ import { CommentsQueryTypeOrmRepository } from '../comments/providers/comments.q
 import { ApiTags } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ImageSizeValidator } from '../../common/custom-validate/image-size.validator';
-import { ImageFile } from '../../common/types/image-file.type';
+import { AccountImageFile } from '../../common/types/account-image-file';
 import { imageFileValidate } from '../../common/custom-validate/image-file.validate';
 import { UploadBlogWallpaperCommand } from './providers/use-cases/upload-blog-wallpaper.use-case';
 import { UploadBlogIconCommand } from './providers/use-cases/upload-blog-icon.use-case';
+import { UploadPostIconCommand } from './providers/use-cases/upload-post-icon.use-case';
 
 @ApiTags('blogger/blogs')
 @UseGuards(AccessTokenGuard)
@@ -96,7 +97,7 @@ export class BloggerBlogsController {
     @UploadedFile(
       imageFileValidate({ maxFileSizeKB: 100, width: 1028, height: 312 }),
     )
-    file: ImageFile,
+    file: AccountImageFile,
   ) {
     await this.commandBus.execute(new UploadBlogWallpaperCommand(blogId, file));
   }
@@ -109,9 +110,25 @@ export class BloggerBlogsController {
     @UploadedFile(
       imageFileValidate({ maxFileSizeKB: 100, width: 156, height: 156 }),
     )
-    file: ImageFile,
+    file: AccountImageFile,
   ) {
     await this.commandBus.execute(new UploadBlogIconCommand(blogId, file));
+  }
+
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseInterceptors(FileInterceptor('file'))
+  @Post(':blogId/posts/:postId/images/main')
+  async uploadPostIcon(
+    @Param('blogId') blogId: string,
+    @Param('postId') postId: string,
+    @UploadedFile(
+      imageFileValidate({ maxFileSizeKB: 100, width: 940, height: 432 }),
+    )
+    file: AccountImageFile,
+  ) {
+    await this.commandBus.execute(
+      new UploadPostIconCommand(blogId, postId, file),
+    );
   }
 
   @UseGuards(LoggerGuard)

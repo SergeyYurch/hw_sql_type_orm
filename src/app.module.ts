@@ -119,6 +119,8 @@ import {
 import { ScheduleModule } from '@nestjs/schedule';
 import { UploadBlogWallpaperUseCase } from './features/blogs/providers/use-cases/upload-blog-wallpaper.use-case';
 import { S3Service } from './common/s3/s3.service';
+import { UploadPostIconUseCase } from './features/blogs/providers/use-cases/upload-post-icon.use-case';
+import { UploadBlogIconUseCase } from './features/blogs/providers/use-cases/upload-blog-icon.use-case';
 
 const configModule = ConfigModule.forRoot();
 const userEntities = [
@@ -137,6 +139,8 @@ const blogsUseCases = [
   DeleteBlogUseCase,
   BanBlogUseCase,
   UploadBlogWallpaperUseCase,
+  UploadPostIconUseCase,
+  UploadBlogIconUseCase,
 ];
 const usersUseCases = [
   CreateNewUserUseCase,
