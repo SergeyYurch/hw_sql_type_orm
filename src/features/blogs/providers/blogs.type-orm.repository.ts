@@ -79,6 +79,8 @@ export class BlogsTypeOrmRepository {
       blogEntity.isMembership = blog.isMembership;
       blogEntity.isBanned = blog.isBanned;
       blogEntity.banDate = blog.banDate;
+      blogEntity.iconUrl = blog.iconUrl;
+      blogEntity.wallpaperUrl = blog.wallpaperUrl;
       blogEntity.blogOwner = await this.usersQueryRepository.getUserEntityById(
         +blog.blogOwnerId,
       );

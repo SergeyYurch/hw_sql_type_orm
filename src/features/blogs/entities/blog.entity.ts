@@ -30,4 +30,8 @@ export class BlogEntity {
   blogOwner: UserEntity;
   @OneToMany(() => BlogsBannedUserEntity, (bu) => bu.blog)
   bannedUsers: BlogsBannedUserEntity[];
+  @Column({ nullable: true })
+  wallpaperUrl: string;
+  @Column({ nullable: true })
+  iconUrl: string;
 }

@@ -46,4 +46,10 @@ export class PostEntity {
       `SELECT COUNT(*) FROM likes l LEFT JOIN users u ON u.id=l."userId"  WHERE l."postId" = ${PostEntity}.id  AND l."likeStatus"='Dislike' AND u."isBanned"=false`,
   })
   dislikesCount: number;
+  @Column({ nullable: true })
+  iconUrl: string;
+  @Column({ nullable: true })
+  iconSmallUrl: string;
+  @Column({ nullable: true })
+  iconMiddleUrl: string;
 }

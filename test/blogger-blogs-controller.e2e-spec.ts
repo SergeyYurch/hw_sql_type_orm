@@ -165,7 +165,6 @@ describe('BloggerBlogController (e2e)', () => {
       createdAt: expect.any(String),
       isMembership: false,
     });
-
     //user3 created blog4
     const newBlog4 = await request(app.getHttpServer())
       .post('/blogger/blogs')

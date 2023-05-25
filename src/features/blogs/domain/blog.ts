@@ -20,6 +20,8 @@ export class Blog {
   isBanned: boolean;
   banDate: number | null;
   bannedUsers: BannedUser[];
+  wallpaperUrl: string;
+  iconUrl: string;
 
   initial(inputDate: BlogCreatedDto) {
     this.name = inputDate.name;
@@ -64,5 +66,13 @@ export class Blog {
     if (!isBanned) {
       this.bannedUsers = this.bannedUsers.filter((item) => item.id !== id);
     }
+  }
+
+  uploadWallpaper(url: string) {
+    this.wallpaperUrl = url;
+  }
+
+  uploadIcon(url: string) {
+    this.iconUrl = url;
   }
 }

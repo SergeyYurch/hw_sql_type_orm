@@ -60,6 +60,9 @@ export class PostsTypeOrmRepository {
       postEntity.createdAt = post.createdAt;
       postEntity.bloggerId = +post.blogger.id;
       postEntity.blogId = +post.blog.id;
+      postEntity.iconUrl = post.iconUrl;
+      postEntity.iconSmallUrl = post.iconSmallUrl;
+      postEntity.iconMiddleUrl = post.iconMiddleUrl;
       await this.postsRepository.save(postEntity);
       if (post.updatedLike)
         await this.likesTypeOrmRepository.updateLike({ post });
