@@ -1,4 +1,4 @@
-import { ImageDataType } from '../types/image-data.type';
+import { ImageMetadataType } from '../types/image-metadata.type';
 
 export class BloggerImage {
   id: number;
@@ -9,7 +9,7 @@ export class BloggerImage {
   format: string;
   createdAt: Date;
   updatedAt: Date;
-  setImageParams(url: string, data: ImageDataType) {
+  setImageParams(url: string, data: ImageMetadataType) {
     this.url = url;
     this.width = data.width;
     this.height = data.height;

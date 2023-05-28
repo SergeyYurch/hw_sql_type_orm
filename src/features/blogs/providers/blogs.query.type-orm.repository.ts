@@ -19,6 +19,9 @@ import { BlogsQueryOptionsType } from '../types/blogs-query-options.type';
 import { BlogEntity } from '../entities/blog.entity';
 import { BlogsBannedUserEntity } from '../entities/blogs-banned-user.entity';
 import { ImageService } from '../../image/providers/image.service';
+import { BlogImagesViewModel } from '../dto/view-models/blog-images.view.model';
+import { BloggerImage } from '../../image/domain/blogger-image';
+import { PhotoSizeViewModel } from '../../../common/dto/view-models/photo-size.view.model';
 
 @Injectable()
 export class BlogsQueryTypeOrmRepository {
@@ -194,8 +197,8 @@ export class BlogsQueryTypeOrmRepository {
     return await this.blogsRepository.findOne({
       relations: {
         blogOwner: true,
-        //  icon: true,
-        //  wallpaper: true,
+        icon: true,
+        wallpaper: true,
         bannedUsers: {
           user: true,
         },
@@ -314,20 +317,34 @@ export class BlogsQueryTypeOrmRepository {
     } else {
       blogModel.bannedUsers = [];
     }
-    // if (blogEntity.wallpaper) {
-    //   blogModel.wallpaper = this.imageService.castEntityToImageModel(
-    //     blogEntity.wallpaper,
-    //   );
-    // }
-    // if (blogEntity.icon) {
-    //   blogModel.icon = this.imageService.castEntityToImageModel(
-    //     blogEntity.icon,
-    //   );
-    // }
+    if (blogEntity.wallpaper) {
+      blogModel.wallpaper = this.imageService.castEntityToImageModel(
+        blogEntity.wallpaper,
+      );
+    }
+    if (blogEntity.icon) {
+      blogModel.icon = this.imageService.castEntityToImageModel(
+        blogEntity.icon,
+      );
+    }
     return blogModel;
   }
 
-  async getBlogImages(blogId: string) {
-    return Promise.resolve(undefined);
+  async getBlogImages(blogId: string): Promise<BlogImagesViewModel> {
+    const blog = await this.getBlogModelById(blogId);
+    return {
+      wallpaper: this.castToPhotoSizeViewModel(blog.wallpaper),
+      main: [this.castToPhotoSizeViewModel(blog.icon)],
+    };
+  }
+
+  castToPhotoSizeViewModel(image: BloggerImage): PhotoSizeViewModel {
+    if (!image) return null;
+    return {
+      width: image.width,
+      height: image.height,
+      fileSize: image.fileSize,
+      url: image.url,
+    };
   }
 }

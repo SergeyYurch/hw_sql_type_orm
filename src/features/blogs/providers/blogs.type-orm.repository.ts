@@ -71,20 +71,15 @@ export class BlogsTypeOrmRepository {
   async save(blog: Blog) {
     try {
       let blogEntity = new BlogEntity();
-      let wallpaperEntity = new BloggerImageEntity();
-      let iconEntity = new BloggerImageEntity();
       if (blog.id) {
         blogEntity = await this.blogsQueryRepository.findBlogEntityById(
           +blog.id,
         );
       }
-      if (blogEntity.wallpaper) {
-        wallpaperEntity = blogEntity.wallpaper;
-      }
-      if (blogEntity.icon) iconEntity = blogEntity.icon;
+      const wallpaperEntity = blogEntity.wallpaper ?? new BloggerImageEntity();
+      const iconEntity = blogEntity.icon ?? new BloggerImageEntity();
       if (blog.wallpaper) {
-        wallpaperEntity.blog = blogEntity;
-        this.imageService.mapBloggerImageToEntity(
+        this.imageService.castBloggerImageParamsToEntity(
           blog.wallpaper,
           wallpaperEntity,
         );
@@ -92,10 +87,8 @@ export class BlogsTypeOrmRepository {
           wallpaperEntity,
         );
       }
-
       if (blog.icon) {
-        iconEntity.blog = blogEntity;
-        this.imageService.mapBloggerImageToEntity(blog.icon, iconEntity);
+        this.imageService.castBloggerImageParamsToEntity(blog.icon, iconEntity);
         blogEntity.icon = await this.bloggerImageRepository.save(iconEntity);
       }
       blogEntity.name = blog.name;

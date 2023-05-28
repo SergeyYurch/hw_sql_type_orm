@@ -1,9 +1,8 @@
 import { Buffer } from 'buffer';
 
-export type ImageDataType = {
+export type ImageMetadataType = {
   width: number;
   height: number;
-  buffer: Buffer;
   format: string;
   size: number;
 };

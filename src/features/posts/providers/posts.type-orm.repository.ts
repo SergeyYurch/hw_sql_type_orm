@@ -27,6 +27,8 @@ export class PostsTypeOrmRepository {
     private readonly blogsRepository: Repository<BlogEntity>,
     @InjectRepository(PostEntity)
     private readonly postsRepository: Repository<PostEntity>,
+    @InjectRepository(BloggerImageEntity)
+    private readonly bloggerImageRepository: Repository<BloggerImageEntity>,
   ) {}
 
   async createModel() {
@@ -53,29 +55,36 @@ export class PostsTypeOrmRepository {
 
   async save(post: Post) {
     try {
+      console.log(post);
       let postEntity: PostEntity = new PostEntity();
       if (post.id) {
         postEntity = await this.postsQueryTypeOrmRepository.findById(post.id);
       }
 
       if (post.icons) {
-        postEntity.icon = postEntity.icon ?? new BloggerImageEntity();
+        postEntity.iconMain = postEntity.iconMain ?? new BloggerImageEntity();
         postEntity.iconSmall = postEntity.iconSmall ?? new BloggerImageEntity();
         postEntity.iconMiddle =
           postEntity.iconMiddle ?? new BloggerImageEntity();
-        this.imageService.mapBloggerImageToEntity(
+        this.imageService.castBloggerImageParamsToEntity(
           post.icons.main,
-          postEntity.icon,
+          postEntity.iconMain,
         );
-        this.imageService.mapBloggerImageToEntity(
+        this.imageService.castBloggerImageParamsToEntity(
           post.icons.small,
           postEntity.iconSmall,
         );
-        this.imageService.mapBloggerImageToEntity(
+        this.imageService.castBloggerImageParamsToEntity(
           post.icons.middle,
           postEntity.iconMiddle,
         );
       }
+      await Promise.all([
+        this.bloggerImageRepository.save(postEntity.iconMain),
+        this.bloggerImageRepository.save(postEntity.iconSmall),
+        this.bloggerImageRepository.save(postEntity.iconMiddle),
+      ]);
+
       postEntity.title = post.title;
       postEntity.shortDescription = post.shortDescription;
       postEntity.content = post.content;

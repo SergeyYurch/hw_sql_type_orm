@@ -242,8 +242,8 @@ export class PostsQueryTypeOrmRepository {
       myStatus: 'None',
     };
     postModel.newestLikes = [];
-    if (postEntity.icon)
-      postModel.icons.main = this.castToImageModel(postEntity.icon);
+    if (postEntity.iconMain)
+      postModel.icons.main = this.castToImageModel(postEntity.iconMain);
     if (postEntity.iconSmall)
       postModel.icons.small = this.castToImageModel(postEntity.iconSmall);
     if (postEntity.iconMiddle)
@@ -257,7 +257,7 @@ export class PostsQueryTypeOrmRepository {
     imageModel.url = imageEntity.url;
     imageModel.height = imageEntity.height;
     imageModel.width = imageEntity.width;
-    imageModel.format = imageEntity.mimetype;
+    imageModel.format = imageEntity.format;
     imageModel.createdAt = imageEntity.createdAt;
     imageModel.fileSize = imageEntity.fileSize;
     imageModel.updatedAt = imageEntity.updatedAt;

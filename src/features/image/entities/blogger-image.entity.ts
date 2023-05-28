@@ -22,7 +22,7 @@ export class BloggerImageEntity {
   @Column()
   fileSize: number;
   @Column()
-  mimetype: string;
+  format: string;
   @CreateDateColumn()
   createdAt: Date;
   @UpdateDateColumn()

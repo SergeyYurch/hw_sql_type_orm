@@ -3,15 +3,19 @@ import { BloggerImage } from '../domain/blogger-image';
 import { AccountImageFile } from '../../../common/types/account-image-file';
 import sharp from 'sharp';
 import config from 'config';
-import { ImageDataType } from '../types/image-data.type';
+import { ImageMetadataType } from '../types/image-metadata.type';
+
 export class ImageService {
-  mapBloggerImageToEntity(image: BloggerImage, entity: BloggerImageEntity) {
+  castBloggerImageParamsToEntity(
+    image: BloggerImage,
+    entity: BloggerImageEntity,
+  ) {
     if (image.id) entity.id = image.id;
     entity.url = image.url;
     entity.width = image.width;
     entity.height = image.height;
     entity.fileSize = image.fileSize;
-    entity.mimetype = image.format;
+    entity.format = image.format;
   }
 
   castEntityToImageModel(imageEntity: BloggerImageEntity) {
@@ -21,14 +25,14 @@ export class ImageService {
     imageModel.width = imageEntity.width;
     imageModel.height = imageEntity.height;
     imageModel.fileSize = imageEntity.fileSize;
-    imageModel.format = imageEntity.mimetype;
+    imageModel.format = imageEntity.format;
     imageModel.createdAt = imageEntity.createdAt;
     imageModel.updatedAt = imageEntity.updatedAt;
     return imageModel;
   }
   async getImageMetadata(
     file: AccountImageFile,
-  ): Promise<Omit<ImageDataType, 'buffer'>> {
+  ): Promise<Omit<ImageMetadataType, 'buffer'>> {
     const { width, height, format, size } = await sharp(file.buffer).metadata();
     return { width, height, format, size };
   }
@@ -36,8 +40,7 @@ export class ImageService {
   async changeImageSize(
     file: AccountImageFile,
     size: 'm' | 's',
-  ): Promise<ImageDataType> {
-    console.log(config.get('images.postIcon.middle.width'));
+  ): Promise<ImageMetadataType & { buffer: Buffer }> {
     const targetWidth =
       size === 'm'
         ? config.get('images.postIcon.middle.width')
@@ -46,20 +49,18 @@ export class ImageService {
       size === 'm'
         ? config.get('images.postIcon.middle.height')
         : config.get('images.postIcon.small.height');
-    const resized = sharp(file.buffer).resize({
-      width: targetWidth,
-      height: targetHeight,
-    });
-    const [metadata, buffer] = await Promise.all([
-      resized.metadata(),
-      resized.toBuffer(),
-    ]);
+    const resized = await sharp(file.buffer)
+      .resize({
+        width: targetWidth,
+        height: targetHeight,
+      })
+      .toBuffer({ resolveWithObject: true });
     return {
-      buffer,
-      size: metadata.size,
-      format: metadata.format,
-      width: metadata.width,
-      height: metadata.height,
+      buffer: resized.data,
+      size: resized.info.size,
+      format: resized.info.format,
+      width: resized.info.width,
+      height: resized.info.height,
     };
   }
 }

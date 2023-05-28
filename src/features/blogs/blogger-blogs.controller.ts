@@ -4,11 +4,8 @@ import {
   Delete,
   Get,
   HttpCode,
-  HttpException,
   HttpStatus,
   Param,
-  ParseFilePipe,
-  ParseFilePipeBuilder,
   Post,
   Put,
   Query,
@@ -39,7 +36,6 @@ import { PostsQueryTypeOrmRepository } from '../posts/providers/posts.query.type
 import { CommentsQueryTypeOrmRepository } from '../comments/providers/comments.query.type-orm.repository';
 import { ApiTags } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ImageSizeValidator } from '../../common/custom-validate/image-size.validator';
 import { AccountImageFile } from '../../common/types/account-image-file';
 import { imageFileValidate } from '../../common/custom-validate/image-file.validate';
 import { UploadBlogWallpaperCommand } from './providers/use-cases/upload-blog-wallpaper.use-case';
@@ -91,7 +87,7 @@ export class BloggerBlogsController {
 
   @UseGuards(BlogOwnerGuard)
   @UseGuards(CheckBlogIdGuard)
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @HttpCode(HttpStatus.CREATED)
   @UseInterceptors(FileInterceptor('file'))
   @Post(':blogId/images/wallpaper')
   async uploadBlogWallpaper(
@@ -102,12 +98,12 @@ export class BloggerBlogsController {
     file: AccountImageFile,
   ) {
     await this.commandBus.execute(new UploadBlogWallpaperCommand(blogId, file));
-    return await this.blogsQueryRepository.getBlogImages(blogId);
+    return this.blogsQueryRepository.getBlogImages(blogId);
   }
 
   @UseGuards(BlogOwnerGuard)
   @UseGuards(CheckBlogIdGuard)
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @HttpCode(HttpStatus.CREATED)
   @UseInterceptors(FileInterceptor('file'))
   @Post(':blogId/images/main')
   async uploadBlogIcon(
@@ -118,6 +114,7 @@ export class BloggerBlogsController {
     file: AccountImageFile,
   ) {
     await this.commandBus.execute(new UploadBlogIconCommand(blogId, file));
+    return this.blogsQueryRepository.getBlogImages(blogId);
   }
 
   @UseGuards(BlogOwnerGuard)
@@ -137,6 +134,7 @@ export class BloggerBlogsController {
     await this.commandBus.execute(
       new UploadPostIconCommand(blogId, postId, file),
     );
+    return this.blogsQueryRepository.getBlogImages(blogId);
   }
 
   @UseGuards(LoggerGuard)

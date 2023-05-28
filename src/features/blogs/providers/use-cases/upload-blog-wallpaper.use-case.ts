@@ -3,6 +3,9 @@ import { S3Service } from '../../../image/providers/s3/s3.service';
 import { AccountImageFile } from '../../../../common/types/account-image-file';
 import { BlogsQueryTypeOrmRepository } from '../blogs.query.type-orm.repository';
 import { BlogsTypeOrmRepository } from '../blogs.type-orm.repository';
+import { BloggerImage } from '../../../image/domain/blogger-image';
+import { ImageMetadataType } from '../../../image/types/image-metadata.type';
+import { ImageService } from '../../../image/providers/image.service';
 
 export class UploadBlogWallpaperCommand {
   constructor(public blogId: string, public file: AccountImageFile) {}
@@ -14,11 +17,13 @@ export class UploadBlogWallpaperUseCase
 {
   constructor(
     private s3Service: S3Service,
+    private imageService: ImageService,
     private readonly blogRepository: BlogsTypeOrmRepository,
     private readonly blogsQueryTypeOrmRepository: BlogsQueryTypeOrmRepository,
   ) {}
 
   async execute(command: UploadBlogWallpaperCommand) {
+    const { file } = command;
     const blogModel = await this.blogsQueryTypeOrmRepository.getBlogModelById(
       command.blogId,
     );
@@ -27,10 +32,15 @@ export class UploadBlogWallpaperUseCase
     const wallpaperUrl = await this.s3Service.upload({
       targetFolder,
       fileName,
-      fileBuffer: command.file.buffer,
+      fileBuffer: file.buffer,
     });
     if (wallpaperUrl) {
-      //  blogModel.uploadWallpaper(wallpaperUrl);
+      const wallpaper = new BloggerImage();
+      const data: ImageMetadataType = await this.imageService.getImageMetadata(
+        file,
+      );
+      wallpaper.setImageParams(wallpaperUrl, data);
+      blogModel.wallpaper = wallpaper;
       await this.blogRepository.save(blogModel);
     }
     return;

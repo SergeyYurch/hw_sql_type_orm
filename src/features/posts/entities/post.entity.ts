@@ -50,7 +50,7 @@ export class PostEntity {
   dislikesCount: number;
   @OneToOne(() => BloggerImageEntity, (i) => PostEntity)
   @JoinColumn()
-  icon: BloggerImageEntity;
+  iconMain: BloggerImageEntity;
   @OneToOne(() => BloggerImageEntity, (i) => PostEntity)
   @JoinColumn()
   iconSmall: BloggerImageEntity;

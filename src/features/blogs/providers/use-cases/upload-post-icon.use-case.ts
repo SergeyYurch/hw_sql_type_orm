@@ -5,7 +5,7 @@ import { PostsTypeOrmRepository } from '../../../posts/providers/posts.type-orm.
 import { PostsQueryTypeOrmRepository } from '../../../posts/providers/posts.query.type-orm.repository';
 import { BloggerImage } from '../../../image/domain/blogger-image';
 import { ImageService } from '../../../image/providers/image.service';
-import { ImageDataType } from '../../../image/types/image-data.type';
+import { ImageMetadataType } from '../../../image/types/image-metadata.type';
 
 export class UploadPostIconCommand {
   constructor(
@@ -45,7 +45,7 @@ export class UploadPostIconUseCase
       this.imageService.changeImageSize(file, 'm'),
       this.imageService.changeImageSize(file, 's'),
     ]);
-    const currentIcon: ImageDataType = {
+    const currentIcon: ImageMetadataType & { buffer: Buffer } = {
       buffer: currentBuffer,
       ...(await this.imageService.getImageMetadata(file)),
     };
