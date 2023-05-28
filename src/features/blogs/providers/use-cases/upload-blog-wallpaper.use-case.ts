@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { S3Service } from '../../../../common/s3/s3.service';
+import { S3Service } from '../../../image/providers/s3/s3.service';
 import { AccountImageFile } from '../../../../common/types/account-image-file';
 import { BlogsQueryTypeOrmRepository } from '../blogs.query.type-orm.repository';
 import { BlogsTypeOrmRepository } from '../blogs.type-orm.repository';
@@ -30,7 +30,7 @@ export class UploadBlogWallpaperUseCase
       fileBuffer: command.file.buffer,
     });
     if (wallpaperUrl) {
-      blogModel.uploadWallpaper(wallpaperUrl);
+      //  blogModel.uploadWallpaper(wallpaperUrl);
       await this.blogRepository.save(blogModel);
     }
     return;

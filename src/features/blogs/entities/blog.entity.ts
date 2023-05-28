@@ -2,11 +2,14 @@ import { BlogsBannedUserEntity } from './blogs-banned-user.entity';
 import {
   Column,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { UserEntity } from '../../users/entities/user.entity';
+import { BloggerImageEntity } from '../../image/entities/blogger-image.entity';
 
 @Entity('blogs')
 export class BlogEntity {
@@ -30,8 +33,10 @@ export class BlogEntity {
   blogOwner: UserEntity;
   @OneToMany(() => BlogsBannedUserEntity, (bu) => bu.blog)
   bannedUsers: BlogsBannedUserEntity[];
-  @Column({ nullable: true })
-  wallpaperUrl: string;
-  @Column({ nullable: true })
-  iconUrl: string;
+  @OneToOne(() => BloggerImageEntity, { nullable: true })
+  @JoinColumn()
+  wallpaper: BloggerImageEntity;
+  @OneToOne(() => BloggerImageEntity, { nullable: true })
+  @JoinColumn()
+  icon: BloggerImageEntity;
 }

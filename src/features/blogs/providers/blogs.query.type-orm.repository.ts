@@ -18,10 +18,12 @@ import { BloggerUserViewModel } from '../dto/view-models/blogger.user.view.model
 import { BlogsQueryOptionsType } from '../types/blogs-query-options.type';
 import { BlogEntity } from '../entities/blog.entity';
 import { BlogsBannedUserEntity } from '../entities/blogs-banned-user.entity';
+import { ImageService } from '../../image/providers/image.service';
 
 @Injectable()
 export class BlogsQueryTypeOrmRepository {
   constructor(
+    private imageService: ImageService,
     @InjectDataSource() protected dataSource: DataSource, // @InjectModel(BlogEntity.name) private BlogModel: Model<BlogDocument>,
     @InjectRepository(BlogEntity)
     private readonly blogsRepository: Repository<BlogEntity>,
@@ -192,6 +194,8 @@ export class BlogsQueryTypeOrmRepository {
     return await this.blogsRepository.findOne({
       relations: {
         blogOwner: true,
+        //  icon: true,
+        //  wallpaper: true,
         bannedUsers: {
           user: true,
         },
@@ -310,6 +314,20 @@ export class BlogsQueryTypeOrmRepository {
     } else {
       blogModel.bannedUsers = [];
     }
+    // if (blogEntity.wallpaper) {
+    //   blogModel.wallpaper = this.imageService.castEntityToImageModel(
+    //     blogEntity.wallpaper,
+    //   );
+    // }
+    // if (blogEntity.icon) {
+    //   blogModel.icon = this.imageService.castEntityToImageModel(
+    //     blogEntity.icon,
+    //   );
+    // }
     return blogModel;
+  }
+
+  async getBlogImages(blogId: string) {
+    return Promise.resolve(undefined);
   }
 }

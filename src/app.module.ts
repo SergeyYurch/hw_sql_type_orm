@@ -118,9 +118,11 @@ import {
 } from './features/comments/mongo-shema/comment.schema';
 import { ScheduleModule } from '@nestjs/schedule';
 import { UploadBlogWallpaperUseCase } from './features/blogs/providers/use-cases/upload-blog-wallpaper.use-case';
-import { S3Service } from './common/s3/s3.service';
+import { S3Service } from './features/image/providers/s3/s3.service';
 import { UploadPostIconUseCase } from './features/blogs/providers/use-cases/upload-post-icon.use-case';
 import { UploadBlogIconUseCase } from './features/blogs/providers/use-cases/upload-blog-icon.use-case';
+import { BloggerImageEntity } from './features/image/entities/blogger-image.entity';
+import { ImageService } from './features/image/providers/image.service';
 
 const configModule = ConfigModule.forRoot();
 const userEntities = [
@@ -130,7 +132,7 @@ const userEntities = [
 ];
 const gameEntities = [PairEntity, PlayerEntity, AnswerEntity];
 //
-const blogsEntities = [BlogEntity, BlogsBannedUserEntity];
+const blogsEntities = [BlogEntity, BlogsBannedUserEntity, BloggerImageEntity];
 
 const blogsUseCases = [
   BindBlogWithUserUseCase,
@@ -311,6 +313,7 @@ export const options: TypeOrmModuleOptions =
     LikesQuerySqlRepository,
     LikesQueryTypeOrmRepository,
     LikesTypeOrmRepository,
+    ImageService,
     //decorators
     IsBlogExistConstraint,
     IsUniqLoginOrEmailConstraint,

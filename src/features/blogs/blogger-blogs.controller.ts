@@ -89,6 +89,7 @@ export class BloggerBlogsController {
     await this.commandBus.execute(new DeleteBlogCommand(blogId));
   }
 
+  @UseGuards(BlogOwnerGuard)
   @UseGuards(CheckBlogIdGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseInterceptors(FileInterceptor('file'))
@@ -101,8 +102,10 @@ export class BloggerBlogsController {
     file: AccountImageFile,
   ) {
     await this.commandBus.execute(new UploadBlogWallpaperCommand(blogId, file));
+    return await this.blogsQueryRepository.getBlogImages(blogId);
   }
 
+  @UseGuards(BlogOwnerGuard)
   @UseGuards(CheckBlogIdGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseInterceptors(FileInterceptor('file'))
@@ -117,6 +120,7 @@ export class BloggerBlogsController {
     await this.commandBus.execute(new UploadBlogIconCommand(blogId, file));
   }
 
+  @UseGuards(BlogOwnerGuard)
   @UseGuards(CheckBlogIdGuard)
   @UseGuards(CheckPostIdGuard)
   @HttpCode(HttpStatus.NO_CONTENT)

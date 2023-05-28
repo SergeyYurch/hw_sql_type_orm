@@ -11,6 +11,8 @@ import { UsersQueryTypeormRepository } from '../../users/providers/users.query-t
 import { BlogsQueryTypeOrmRepository } from '../../blogs/providers/blogs.query.type-orm.repository';
 import { LikeEntity } from '../../likes/entities/like.entity';
 import { LikeStatusType } from '../../../common/dto/input-models/like.input.model';
+import { BloggerImageEntity } from '../../image/entities/blogger-image.entity';
+import { BloggerImage } from '../../image/domain/blogger-image';
 
 @Injectable()
 export class PostsQueryTypeOrmRepository {
@@ -240,8 +242,26 @@ export class PostsQueryTypeOrmRepository {
       myStatus: 'None',
     };
     postModel.newestLikes = [];
-
+    if (postEntity.icon)
+      postModel.icons.main = this.castToImageModel(postEntity.icon);
+    if (postEntity.iconSmall)
+      postModel.icons.small = this.castToImageModel(postEntity.iconSmall);
+    if (postEntity.iconMiddle)
+      postModel.icons.middle = this.castToImageModel(postEntity.iconMiddle);
     return postModel;
+  }
+
+  castToImageModel(imageEntity: BloggerImageEntity) {
+    const imageModel = new BloggerImage();
+    imageModel.id = imageEntity.id;
+    imageModel.url = imageEntity.url;
+    imageModel.height = imageEntity.height;
+    imageModel.width = imageEntity.width;
+    imageModel.format = imageEntity.mimetype;
+    imageModel.createdAt = imageEntity.createdAt;
+    imageModel.fileSize = imageEntity.fileSize;
+    imageModel.updatedAt = imageEntity.updatedAt;
+    return imageModel;
   }
 
   private castToPostViewModel(post: Post): PostViewModel {

@@ -16,6 +16,6 @@ export class ImageSizeValidator extends FileValidator {
   }
 
   buildErrorMessage(): string {
-    return 'Image size is wrong';
+    return 'BloggerImage size is wrong';
   }
 }

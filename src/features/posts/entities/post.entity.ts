@@ -4,12 +4,14 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   VirtualColumn,
 } from 'typeorm';
 import { UserEntity } from '../../users/entities/user.entity';
 import { BlogEntity } from '../../blogs/entities/blog.entity';
 import { LikeEntity } from '../../likes/entities/like.entity';
+import { BloggerImageEntity } from '../../image/entities/blogger-image.entity';
 
 @Entity('posts')
 export class PostEntity {
@@ -46,10 +48,13 @@ export class PostEntity {
       `SELECT COUNT(*) FROM likes l LEFT JOIN users u ON u.id=l."userId"  WHERE l."postId" = ${PostEntity}.id  AND l."likeStatus"='Dislike' AND u."isBanned"=false`,
   })
   dislikesCount: number;
-  @Column({ nullable: true })
-  iconUrl: string;
-  @Column({ nullable: true })
-  iconSmallUrl: string;
-  @Column({ nullable: true })
-  iconMiddleUrl: string;
+  @OneToOne(() => BloggerImageEntity, (i) => PostEntity)
+  @JoinColumn()
+  icon: BloggerImageEntity;
+  @OneToOne(() => BloggerImageEntity, (i) => PostEntity)
+  @JoinColumn()
+  iconSmall: BloggerImageEntity;
+  @OneToOne(() => BloggerImageEntity, (i) => PostEntity)
+  @JoinColumn()
+  iconMiddle: BloggerImageEntity;
 }

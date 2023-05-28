@@ -9,6 +9,8 @@ import { PostEntity } from '../entities/post.entity';
 import { PostsQueryTypeOrmRepository } from './posts.query.type-orm.repository';
 import { LikesTypeOrmRepository } from '../../likes/providers/likes.type-orm.repository';
 import { CommentsTypeOrmRepository } from '../../comments/providers/comments.type-orm.repository';
+import { BloggerImageEntity } from '../../image/entities/blogger-image.entity';
+import { ImageService } from '../../image/providers/image.service';
 
 @Injectable()
 export class PostsTypeOrmRepository {
@@ -17,6 +19,7 @@ export class PostsTypeOrmRepository {
     private postsQueryTypeOrmRepository: PostsQueryTypeOrmRepository,
     private likesTypeOrmRepository: LikesTypeOrmRepository,
     private commentsTypeOrmRepository: CommentsTypeOrmRepository,
+    private imageService: ImageService,
     @InjectDataSource() protected dataSource: DataSource,
     @InjectRepository(UserEntity)
     private readonly usersRepository: Repository<UserEntity>,
@@ -54,15 +57,31 @@ export class PostsTypeOrmRepository {
       if (post.id) {
         postEntity = await this.postsQueryTypeOrmRepository.findById(post.id);
       }
+
+      if (post.icons) {
+        postEntity.icon = postEntity.icon ?? new BloggerImageEntity();
+        postEntity.iconSmall = postEntity.iconSmall ?? new BloggerImageEntity();
+        postEntity.iconMiddle =
+          postEntity.iconMiddle ?? new BloggerImageEntity();
+        this.imageService.mapBloggerImageToEntity(
+          post.icons.main,
+          postEntity.icon,
+        );
+        this.imageService.mapBloggerImageToEntity(
+          post.icons.small,
+          postEntity.iconSmall,
+        );
+        this.imageService.mapBloggerImageToEntity(
+          post.icons.middle,
+          postEntity.iconMiddle,
+        );
+      }
       postEntity.title = post.title;
       postEntity.shortDescription = post.shortDescription;
       postEntity.content = post.content;
       postEntity.createdAt = post.createdAt;
       postEntity.bloggerId = +post.blogger.id;
       postEntity.blogId = +post.blog.id;
-      postEntity.iconUrl = post.iconUrl;
-      postEntity.iconSmallUrl = post.iconSmallUrl;
-      postEntity.iconMiddleUrl = post.iconMiddleUrl;
       await this.postsRepository.save(postEntity);
       if (post.updatedLike)
         await this.likesTypeOrmRepository.updateLike({ post });

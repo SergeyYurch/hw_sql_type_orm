@@ -11,6 +11,9 @@ import { UsersQueryTypeormRepository } from '../../users/providers/users.query-t
 import { PostEntity } from '../../posts/entities/post.entity';
 import { CommentEntity } from '../../comments/entities/comment.entity';
 import { CommentsTypeOrmRepository } from '../../comments/providers/comments.type-orm.repository';
+import { BloggerImage } from '../../image/domain/blogger-image';
+import { BloggerImageEntity } from '../../image/entities/blogger-image.entity';
+import { ImageService } from '../../image/providers/image.service';
 
 @Injectable()
 export class BlogsTypeOrmRepository {
@@ -18,6 +21,7 @@ export class BlogsTypeOrmRepository {
     private blogsQueryRepository: BlogsQueryTypeOrmRepository,
     private usersQueryRepository: UsersQueryTypeormRepository,
     private commentsTypeOrmRepository: CommentsTypeOrmRepository,
+    private imageService: ImageService,
     @InjectDataSource() protected dataSource: DataSource,
     @InjectRepository(BlogEntity)
     private readonly blogsRepository: Repository<BlogEntity>,
@@ -29,6 +33,8 @@ export class BlogsTypeOrmRepository {
     private readonly postsRepository: Repository<PostEntity>,
     @InjectRepository(CommentEntity)
     private readonly commentsRepository: Repository<CommentEntity>,
+    @InjectRepository(BloggerImageEntity)
+    private readonly bloggerImageRepository: Repository<BloggerImageEntity>,
   ) {}
 
   // async getBlogModel(id: string) {
@@ -64,13 +70,33 @@ export class BlogsTypeOrmRepository {
 
   async save(blog: Blog) {
     try {
-      let blogEntity: BlogEntity;
+      let blogEntity = new BlogEntity();
+      let wallpaperEntity = new BloggerImageEntity();
+      let iconEntity = new BloggerImageEntity();
       if (blog.id) {
         blogEntity = await this.blogsQueryRepository.findBlogEntityById(
           +blog.id,
         );
-      } else {
-        blogEntity = new BlogEntity();
+      }
+      if (blogEntity.wallpaper) {
+        wallpaperEntity = blogEntity.wallpaper;
+      }
+      if (blogEntity.icon) iconEntity = blogEntity.icon;
+      if (blog.wallpaper) {
+        wallpaperEntity.blog = blogEntity;
+        this.imageService.mapBloggerImageToEntity(
+          blog.wallpaper,
+          wallpaperEntity,
+        );
+        blogEntity.wallpaper = await this.bloggerImageRepository.save(
+          wallpaperEntity,
+        );
+      }
+
+      if (blog.icon) {
+        iconEntity.blog = blogEntity;
+        this.imageService.mapBloggerImageToEntity(blog.icon, iconEntity);
+        blogEntity.icon = await this.bloggerImageRepository.save(iconEntity);
       }
       blogEntity.name = blog.name;
       blogEntity.description = blog.description;
@@ -79,8 +105,6 @@ export class BlogsTypeOrmRepository {
       blogEntity.isMembership = blog.isMembership;
       blogEntity.isBanned = blog.isBanned;
       blogEntity.banDate = blog.banDate;
-      blogEntity.iconUrl = blog.iconUrl;
-      blogEntity.wallpaperUrl = blog.wallpaperUrl;
       blogEntity.blogOwner = await this.usersQueryRepository.getUserEntityById(
         +blog.blogOwnerId,
       );

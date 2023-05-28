@@ -1,0 +1,29 @@
+{
+  "images": {
+    "blogWallpaper": {
+      "width": 1028,
+      "height": 312,
+      "size": "100kb"
+    },
+    "blogIcon": {
+      "width": 156,
+      "height": 156,
+      "size": "100kb"
+    },
+    "postIcon": {
+      "main": {
+        "width": 940,
+        "height": 432,
+        "size": "100kb"
+      },
+      "middle": {
+        "width": 300,
+        "height": 180
+      },
+      "small": {
+        "width": 149,
+        "height": 96
+      }
+    }
+  }
+}

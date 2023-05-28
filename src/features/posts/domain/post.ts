@@ -7,6 +7,7 @@ import { Blog } from '../../blogs/domain/blog';
 import { User } from '../../users/domain/user';
 import { Like } from '../../likes/domain/like';
 import { Column } from 'typeorm';
+import { BloggerImage } from '../../image/domain/blogger-image';
 
 export class Post {
   id: string;
@@ -20,9 +21,11 @@ export class Post {
   likesCounts: LikesCountsType;
   updatedLike: Like | null;
   likes: LikesInfoType;
-  iconUrl: string;
-  iconSmallUrl: string;
-  iconMiddleUrl: string;
+  icons: {
+    main: BloggerImage;
+    small: BloggerImage;
+    middle: BloggerImage;
+  } | null;
 
   constructor() {
     this.newestLikes = [];
@@ -36,6 +39,7 @@ export class Post {
       myStatus: 'None',
     };
     this.updatedLike = null;
+    this.icons = null;
   }
 
   initial(postDto: PostCreateDto) {
@@ -51,11 +55,5 @@ export class Post {
     this.title = postDto.title;
     this.shortDescription = postDto.shortDescription;
     this.content = postDto.content;
-  }
-
-  uploadIcon(iconUrls: string[]) {
-    this.iconUrl = iconUrls[0];
-    this.iconMiddleUrl = iconUrls[1];
-    this.iconSmallUrl = iconUrls[2];
   }
 }
