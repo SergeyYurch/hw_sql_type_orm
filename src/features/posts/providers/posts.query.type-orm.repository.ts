@@ -174,6 +174,9 @@ export class PostsQueryTypeOrmRepository {
           relations: {
             blogger: true,
             blog: { blogOwner: true },
+            iconMain: true,
+            iconMiddle: true,
+            iconSmall: true,
           },
           where: findOptionsWhere,
           order: findOptionsOrder,
