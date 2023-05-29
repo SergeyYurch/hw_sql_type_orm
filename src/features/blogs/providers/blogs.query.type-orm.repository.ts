@@ -278,6 +278,8 @@ export class BlogsQueryTypeOrmRepository {
         relations: {
           blogOwner: true,
           bannedUsers: { user: true },
+          icon: true,
+          wallpaper: true,
         },
         select: {
           blogOwner: { id: true, login: true },
