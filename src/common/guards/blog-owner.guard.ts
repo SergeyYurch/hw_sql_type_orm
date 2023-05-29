@@ -16,6 +16,7 @@ export class BlogOwnerGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const blogId = request.params.blogId || request.body.blogId;
     const user = request.user;
+    console.log('user' + +user.userId);
     const owner = await this.blogsQueryRepository.getBlogOwner(blogId);
     if (!owner || +owner.userId !== +user.userId) {
       console.log(`[BlogOwnerGuard]: user is not the owner of the blog `);

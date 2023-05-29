@@ -19,6 +19,7 @@ export class AccessTokenStrategy extends PassportStrategy(Strategy) {
   async validate(payload: any) {
     console.log('AccessTokenStrategy');
     const { userId } = payload;
+    console.log(`user id:${userId} was logged in`);
     if (!(await this.usersQueryRepository.doesUserIdExist(userId))) {
       console.log('AccessTokenStrategy throw forbidden by doesUserIdExist');
       throw new ForbiddenException('Forbidden');
