@@ -276,7 +276,7 @@ export class PostsQueryTypeOrmRepository {
 
   private castToPostViewModel(post: Post): PostViewModel {
     const main: PhotoSizeViewModel[] = [];
-    if (post.icons.main) {
+    if (post.icons) {
       for (const key in post.icons) {
         main.push(this.castToPhotoSizeViewModel(post.icons[key]));
       }

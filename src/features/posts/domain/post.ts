@@ -6,7 +6,6 @@ import { LikesInfoType } from '../../../common/types/likes-info.type';
 import { Blog } from '../../blogs/domain/blog';
 import { User } from '../../users/domain/user';
 import { Like } from '../../likes/domain/like';
-import { Column } from 'typeorm';
 import { BloggerImage } from '../../image/domain/blogger-image';
 
 export class Post {

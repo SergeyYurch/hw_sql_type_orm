@@ -164,6 +164,10 @@ describe('BloggerBlogController (e2e)', () => {
       description: 'description3',
       createdAt: expect.any(String),
       isMembership: false,
+      images: {
+        main: expect.any(Array),
+        wallpaper: null,
+      },
     });
     //user3 created blog4
     const newBlog4 = await request(app.getHttpServer())
@@ -292,6 +296,10 @@ describe('BloggerBlogController (e2e)', () => {
       websiteUrl: 'https://youtube1.com',
       createdAt: expect.any(String),
       isMembership: false,
+      images: {
+        main: expect.any(Array),
+        wallpaper: null,
+      },
     });
 
     expect(user1Blogs.body.items[1]).toEqual({
@@ -301,6 +309,10 @@ describe('BloggerBlogController (e2e)', () => {
       websiteUrl: 'https://youtube2.com',
       createdAt: expect.any(String),
       isMembership: false,
+      images: {
+        main: expect.any(Array),
+        wallpaper: null,
+      },
     });
   });
   it('GET:[HOST]/blogger/blogs: should return code 200 and array with 0 elements with default paginator for user2', async () => {
@@ -325,6 +337,10 @@ describe('BloggerBlogController (e2e)', () => {
       websiteUrl: 'https://youtube1.com',
       createdAt: expect.any(String),
       isMembership: false,
+      images: {
+        main: expect.any(Array),
+        wallpaper: null,
+      },
     });
   });
   it('GET:[HOST]/blogger/blogs: should return code 200 and array with 1 elements with queryParams:searchNameTerm=g2', async () => {
@@ -341,6 +357,10 @@ describe('BloggerBlogController (e2e)', () => {
       websiteUrl: 'https://youtube2.com',
       createdAt: expect.any(String),
       isMembership: false,
+      images: {
+        main: expect.any(Array),
+        wallpaper: null,
+      },
     });
   });
 
@@ -411,6 +431,10 @@ describe('BloggerBlogController (e2e)', () => {
       websiteUrl: 'https://youtube5.com',
       createdAt: expect.any(String),
       isMembership: false,
+      images: {
+        main: expect.any(Array),
+        wallpaper: null,
+      },
     });
   });
   it('PUT:[HOST]/blogger/blogs/{:id}: should return code 404 for incorrect ID', async () => {
@@ -504,6 +528,9 @@ describe('BloggerBlogController (e2e)', () => {
         dislikesCount: 0,
         myStatus: 'None',
         newestLikes: [],
+      },
+      images: {
+        main: expect.any(Array),
       },
     });
 

@@ -97,6 +97,7 @@ export class PostsQueryRepository {
         myStatus,
         newestLikes,
       },
+      images: { main: [] },
     };
   }
 }
