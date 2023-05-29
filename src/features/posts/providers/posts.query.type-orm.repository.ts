@@ -308,7 +308,7 @@ export class PostsQueryTypeOrmRepository {
   async getPostImages(postId: string) {
     const post = await this.getPostViewModelById(postId);
     return {
-      images: post.images,
+      main: post.images.main,
     };
   }
 }
