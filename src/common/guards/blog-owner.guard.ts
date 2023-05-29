@@ -3,6 +3,7 @@ import {
   CanActivate,
   ExecutionContext,
   NotFoundException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { BlogsQueryTypeOrmRepository } from '../../features/blogs/providers/blogs.query.type-orm.repository';
 
@@ -16,7 +17,10 @@ export class BlogOwnerGuard implements CanActivate {
     const blogId = request.params.blogId || request.body.blogId;
     const user = request.user;
     const owner = await this.blogsQueryRepository.getBlogOwner(blogId);
-    if (!owner) throw new NotFoundException();
-    return owner.userId === user.userId;
+    if (!owner || +owner.userId !== +user.userId) {
+      console.log(`[BlogOwnerGuard]: user is not the owner of the blog `);
+      throw new ForbiddenException();
+    }
+    return true;
   }
 }

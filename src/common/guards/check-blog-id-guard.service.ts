@@ -17,6 +17,7 @@ export class CheckBlogIdGuard implements CanActivate {
     if (!Number.isInteger(+blogId)) throw new NotFoundException();
     if (+blogId < 0) throw new NotFoundException();
     if (!(await this.blogsQueryRepository.doesBlogIdExist(blogId))) {
+      console.log(`[CheckBlogIdGuard]: blogId does not exist`);
       throw new NotFoundException();
     }
     return true;

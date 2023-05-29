@@ -113,6 +113,7 @@ export class BloggerBlogsController {
     )
     file: AccountImageFile,
   ) {
+    console.log('uploadBlogIcon stsrt');
     await this.commandBus.execute(new UploadBlogIconCommand(blogId, file));
     return this.blogsQueryRepository.getBlogImages(blogId);
   }
@@ -120,7 +121,7 @@ export class BloggerBlogsController {
   @UseGuards(BlogOwnerGuard)
   @UseGuards(CheckBlogIdGuard)
   @UseGuards(CheckPostIdGuard)
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @HttpCode(HttpStatus.CREATED)
   @UseInterceptors(FileInterceptor('file'))
   @Post(':blogId/posts/:postId/images/main')
   async uploadPostIcon(

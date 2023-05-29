@@ -141,11 +141,21 @@ export class BlogsQueryTypeOrmRepository {
   }
 
   async getBlogOwner(blogId: string) {
-    const blog = await this.getBlogModelById(blogId);
-    return blog?.blogOwnerId
+    console.log('getBlogOwner start');
+    const blog = await this.blogsRepository.findOne({
+      relations: {
+        blogOwner: true,
+      },
+      where: { id: +blogId },
+      select: {
+        blogOwner: { id: true, login: true },
+      },
+    });
+    console.log(blog);
+    return blog?.blogOwner
       ? {
-          userId: blog.blogOwnerId,
-          userLogin: blog.blogOwnerLogin,
+          userId: blog.blogOwner.id,
+          userLogin: blog.blogOwner.login,
         }
       : null;
   }
