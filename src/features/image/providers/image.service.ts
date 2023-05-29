@@ -2,8 +2,17 @@ import { BloggerImageEntity } from '../entities/blogger-image.entity';
 import { BloggerImage } from '../domain/blogger-image';
 import { AccountImageFile } from '../../../common/types/account-image-file';
 import sharp from 'sharp';
-import config from 'config';
 import { ImageMetadataType } from '../types/image-metadata.type';
+const postIconSizes = {
+  middle: {
+    width: 300,
+    height: 180,
+  },
+  small: {
+    width: 149,
+    height: 96,
+  },
+};
 
 export class ImageService {
   castBloggerImageParamsToEntity(
@@ -42,13 +51,9 @@ export class ImageService {
     size: 'm' | 's',
   ): Promise<ImageMetadataType & { buffer: Buffer }> {
     const targetWidth =
-      size === 'm'
-        ? config.get('images.postIcon.middle.width')
-        : config.get('images.postIcon.small.width');
+      size === 'm' ? postIconSizes.middle.width : postIconSizes.small.width;
     const targetHeight =
-      size === 'm'
-        ? config.get('images.postIcon.middle.height')
-        : config.get('images.postIcon.small.height');
+      size === 'm' ? postIconSizes.middle.height : postIconSizes.small.height;
     const resized = await sharp(file.buffer)
       .resize({
         width: targetWidth,

@@ -690,6 +690,11 @@ describe('BloggerBlogController (e2e)', () => {
         blogId: blog2User1Id,
         blogName: 'blog2',
       },
+      likesInfo: {
+        dislikesCount: 0,
+        likesCount: 0,
+        myStatus: 'None',
+      },
     });
     expect(user1Blogs.body.items[1].commentatorInfo.userId).toBe(user2Id);
   });

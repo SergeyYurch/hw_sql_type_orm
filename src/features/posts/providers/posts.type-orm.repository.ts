@@ -78,12 +78,12 @@ export class PostsTypeOrmRepository {
           post.icons.middle,
           postEntity.iconMiddle,
         );
+        await Promise.all([
+          this.bloggerImageRepository.save(postEntity.iconMain),
+          this.bloggerImageRepository.save(postEntity.iconSmall),
+          this.bloggerImageRepository.save(postEntity.iconMiddle),
+        ]);
       }
-      await Promise.all([
-        this.bloggerImageRepository.save(postEntity.iconMain),
-        this.bloggerImageRepository.save(postEntity.iconSmall),
-        this.bloggerImageRepository.save(postEntity.iconMiddle),
-      ]);
 
       postEntity.title = post.title;
       postEntity.shortDescription = post.shortDescription;
