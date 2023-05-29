@@ -152,12 +152,11 @@ export class BlogsQueryTypeOrmRepository {
       },
     });
     console.log(blog);
-    return blog?.blogOwner
-      ? {
-          userId: blog.blogOwner.id,
-          userLogin: blog.blogOwner.login,
-        }
-      : null;
+    if (!blog) return null;
+    return {
+      userId: blog.blogOwner.id,
+      userLogin: blog.blogOwner.login,
+    };
   }
 
   async getBannedUsers(
