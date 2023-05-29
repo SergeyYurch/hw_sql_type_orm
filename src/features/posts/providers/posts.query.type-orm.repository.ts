@@ -136,6 +136,9 @@ export class PostsQueryTypeOrmRepository {
         relations: {
           blogger: true,
           blog: { blogOwner: true },
+          iconMain: true,
+          iconMiddle: true,
+          iconSmall: true,
         },
         where: { id: +postId, blog: { isBanned: false } },
       });
@@ -244,15 +247,16 @@ export class PostsQueryTypeOrmRepository {
     };
     postModel.newestLikes = [];
     if (postEntity.iconMain)
-      postModel.icons.main = this.castToImageModel(postEntity.iconMain);
-    if (postEntity.iconSmall)
-      postModel.icons.small = this.castToImageModel(postEntity.iconSmall);
-    if (postEntity.iconMiddle)
-      postModel.icons.middle = this.castToImageModel(postEntity.iconMiddle);
+      postModel.icons = {
+        main: this.castToImageModel(postEntity.iconMain),
+        middle: this.castToImageModel(postEntity.iconMiddle),
+        small: this.castToImageModel(postEntity.iconSmall),
+      };
     return postModel;
   }
 
   castToImageModel(imageEntity: BloggerImageEntity) {
+    if (!imageEntity) return null;
     const imageModel = new BloggerImage();
     imageModel.id = imageEntity.id;
     imageModel.url = imageEntity.url;
@@ -298,6 +302,13 @@ export class PostsQueryTypeOrmRepository {
       images: {
         main,
       },
+    };
+  }
+
+  async getPostImages(postId: string) {
+    const post = await this.getPostViewModelById(postId);
+    return {
+      images: post.images,
     };
   }
 }

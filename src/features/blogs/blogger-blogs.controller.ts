@@ -135,7 +135,7 @@ export class BloggerBlogsController {
     await this.commandBus.execute(
       new UploadPostIconCommand(blogId, postId, file),
     );
-    return this.blogsQueryRepository.getBlogImages(blogId);
+    return this.postsQueryRepository.getPostImages(postId);
   }
 
   @UseGuards(LoggerGuard)
