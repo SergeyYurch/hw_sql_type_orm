@@ -28,8 +28,9 @@ export class UploadBlogIconUseCase
       command.blogId,
     );
     const fileBuffer = file.buffer;
+    const metadata = await this.imageService.getImageMetadata(file);
     const targetFolder = 'blog-icons';
-    const fileName = `blog-icon-${command.blogId}`;
+    const fileName = `blog-icon-${command.blogId}.${metadata.format}`;
     const iconUrl = await this.s3Service.upload({
       targetFolder,
       fileName,

@@ -28,10 +28,14 @@ export class UploadPostIconUseCase
 
   async execute(command: UploadPostIconCommand) {
     const { file } = command;
-    const uploadIcon = (buffer: Buffer, size: string): Promise<string> => {
+    const uploadIcon = (
+      buffer: Buffer,
+      sizeSign: string,
+      format: string,
+    ): Promise<string> => {
       return this.s3Service.upload({
         targetFolder: 'post-icons',
-        fileName: `post-icon-${command.postId}-${size}`,
+        fileName: `post-icon-${command.postId}-${sizeSign}.${format}`,
         fileBuffer: buffer,
       });
     };
@@ -51,9 +55,9 @@ export class UploadPostIconUseCase
     };
 
     const [currentIconUrl, middleIconUrl, smallIconUrl] = await Promise.all([
-      uploadIcon(currentBuffer, 'l'),
-      uploadIcon(middleIcon.buffer, 'm'),
-      uploadIcon(smallIcon.buffer, 's'),
+      uploadIcon(currentBuffer, 'l', currentIcon.format),
+      uploadIcon(middleIcon.buffer, 'm', middleIcon.format),
+      uploadIcon(smallIcon.buffer, 's', smallIcon.format),
     ]);
     postModel.icons = {
       main: postModel.icons?.main ?? new BloggerImage(),

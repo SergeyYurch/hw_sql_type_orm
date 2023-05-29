@@ -27,7 +27,8 @@ export class UploadBlogWallpaperUseCase
     const blogModel = await this.blogsQueryTypeOrmRepository.getBlogModelById(
       command.blogId,
     );
-    const fileName = `blog-wallpaper-${command.blogId}`;
+    const metadata = await this.imageService.getImageMetadata(file);
+    const fileName = `blog-wallpaper-${command.blogId}.${metadata.format}`;
     const targetFolder = 'blog-wallpapers';
     const wallpaperUrl = await this.s3Service.upload({
       targetFolder,
