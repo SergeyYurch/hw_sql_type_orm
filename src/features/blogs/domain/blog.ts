@@ -23,18 +23,22 @@ export class Blog {
   bannedUsers: BannedUser[];
   wallpaper: BloggerImage;
   icon: BloggerImage;
+  constructor() {
+    this.isMembership = false;
+    this.isBanned = false;
+    this.banDate = null;
+    this.bannedUsers = [];
+    this.createdAt = Date.now();
+    this.wallpaper = null;
+    this.icon = null;
+  }
 
   initial(inputDate: BlogCreatedDto) {
     this.name = inputDate.name;
     this.websiteUrl = inputDate.websiteUrl;
     this.description = inputDate.description;
-    this.createdAt = Date.now();
     this.blogOwnerId = inputDate.blogOwnerId;
     this.blogOwnerLogin = inputDate.blogOwnerLogin;
-    this.isMembership = false;
-    this.isBanned = false;
-    this.banDate = null;
-    this.bannedUsers = [];
   }
   blogUpdate(changes: BlogEditDto) {
     this.name = changes.name;

@@ -104,6 +104,26 @@ export class BlogsQueryTypeOrmRepository {
       websiteUrl: blog.websiteUrl,
       createdAt: new Date(blog.createdAt).toISOString(),
       isMembership: blog.isMembership,
+      images: {
+        wallpaper: blog.wallpaper
+          ? {
+              url: blog.wallpaper.url,
+              width: blog.wallpaper.width,
+              height: blog.wallpaper.height,
+              fileSize: blog.wallpaper.fileSize,
+            }
+          : null,
+        main: blog.icon
+          ? [
+              {
+                url: blog.icon.url,
+                width: blog.icon.width,
+                height: blog.icon.height,
+                fileSize: blog.icon.fileSize,
+              },
+            ]
+          : [],
+      },
     };
   }
 
@@ -334,7 +354,7 @@ export class BlogsQueryTypeOrmRepository {
     const blog = await this.getBlogModelById(blogId);
     return {
       wallpaper: this.castToPhotoSizeViewModel(blog.wallpaper),
-      main: [this.castToPhotoSizeViewModel(blog.icon)],
+      main: blog.icon ? [this.castToPhotoSizeViewModel(blog.icon)] : [],
     };
   }
 

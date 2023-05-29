@@ -54,7 +54,7 @@ export class BlogsQueryRepository {
     return this.getBlogViewModel(blog);
   }
 
-  getBlogViewModel(blog: Blog): BlogViewModel {
+  getBlogViewModel(blog: Blog) {
     return {
       id: blog._id.toString(),
       name: blog.name,
@@ -62,10 +62,14 @@ export class BlogsQueryRepository {
       websiteUrl: blog.websiteUrl,
       createdAt: blog.createdAt.toISOString(),
       isMembership: blog.isMembership,
+      images: {
+        wallpaper: null,
+        main: [],
+      },
     };
   }
 
-  getSaViewModelWithOwner(blog: Blog): BlogSaViewModel | BlogViewModel {
+  getSaViewModelWithOwner(blog: Blog): BlogSaViewModel {
     const blogView = this.getBlogViewModel(blog);
     const banInfo = {
       isBanned: blog.isBanned,
