@@ -13,6 +13,7 @@ import { LikeEntity } from '../../likes/entities/like.entity';
 import { LikeStatusType } from '../../../common/dto/input-models/like.input.model';
 import { BloggerImageEntity } from '../../image/entities/blogger-image.entity';
 import { BloggerImage } from '../../image/domain/blogger-image';
+import { PhotoSizeViewModel } from '../../../common/dto/view-models/photo-size.view.model';
 
 @Injectable()
 export class PostsQueryTypeOrmRepository {
@@ -264,7 +265,22 @@ export class PostsQueryTypeOrmRepository {
     return imageModel;
   }
 
+  castToPhotoSizeViewModel(image: BloggerImage): PhotoSizeViewModel {
+    return {
+      url: image.url,
+      fileSize: image.fileSize,
+      height: image.height,
+      width: image.width,
+    };
+  }
+
   private castToPostViewModel(post: Post): PostViewModel {
+    const main: PhotoSizeViewModel[] = [];
+    if (post.icons.main) {
+      for (const key in post.icons) {
+        main.push(this.castToPhotoSizeViewModel(post.icons[key]));
+      }
+    }
     return {
       id: post.id,
       title: post.title,
@@ -278,6 +294,9 @@ export class PostsQueryTypeOrmRepository {
         dislikesCount: +post.likes.dislikesCount,
         myStatus: post.likes.myStatus || 'None',
         newestLikes: post.newestLikes,
+      },
+      images: {
+        main,
       },
     };
   }
