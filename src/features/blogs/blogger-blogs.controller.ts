@@ -148,7 +148,10 @@ export class BloggerBlogsController {
       new CreateNewBlogCommand(blog, userId),
     );
     if (!blogId) return null;
-    return this.blogsQueryRepository.getBlogById(blogId);
+    const createdBlog = await this.blogsQueryRepository.getBlogById(blogId);
+    console.log(`Blog id:${blogId} was created`);
+    console.log(createdBlog);
+    return createdBlog;
   }
 
   @UseGuards(LoggerGuard)
