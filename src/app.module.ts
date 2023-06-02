@@ -125,7 +125,8 @@ import { BloggerImageEntity } from './features/image/entities/blogger-image.enti
 import { ImageService } from './features/image/providers/image.service';
 import { TelegramAdapter } from './adapters/telegram/telegram.adapter';
 import { NotificationController } from './features/bot/notification.controller';
-import { SubscriberEntity } from './features/blogs/entities/subscriber.entity';
+import { SubscriptionEntity } from './features/blogs/entities/subscription.entity';
+import { BlogService } from './features/blogs/providers/blog.service';
 
 const configModule = ConfigModule.forRoot();
 const userEntities = [
@@ -139,7 +140,7 @@ const blogsEntities = [
   BlogEntity,
   BlogsBannedUserEntity,
   BloggerImageEntity,
-  SubscriberEntity,
+  SubscriptionEntity,
 ];
 
 const blogsUseCases = [
@@ -342,6 +343,7 @@ export const options: TypeOrmModuleOptions =
     BlogsQueryRepository,
     BlogsTypeOrmRepository,
     BlogsQueryTypeOrmRepository,
+    BlogService,
 
     //comments
     CommentsRepository,

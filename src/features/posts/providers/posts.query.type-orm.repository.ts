@@ -14,12 +14,14 @@ import { LikeStatusType } from '../../../common/dto/input-models/like.input.mode
 import { BloggerImageEntity } from '../../image/entities/blogger-image.entity';
 import { BloggerImage } from '../../image/domain/blogger-image';
 import { PhotoSizeViewModel } from '../../../common/dto/view-models/photo-size.view.model';
+import { BlogService } from '../../blogs/providers/blog.service';
 
 @Injectable()
 export class PostsQueryTypeOrmRepository {
   constructor(
     private usersQueryTypeormRepository: UsersQueryTypeormRepository,
     private blogsQueryTypeOrmRepository: BlogsQueryTypeOrmRepository,
+    private readonly blogService: BlogService,
     @InjectDataSource() protected dataSource: DataSource,
     @InjectRepository(PostEntity)
     private readonly postsRepository: Repository<PostEntity>,
@@ -239,9 +241,7 @@ export class PostsQueryTypeOrmRepository {
     postModel.blogger = this.usersQueryTypeormRepository.castToUserModel(
       postEntity.blogger,
     );
-    postModel.blog = this.blogsQueryTypeOrmRepository.castToBlogModel(
-      postEntity.blog,
-    );
+    postModel.blog = this.blogService.mapToBlogDomainModel(postEntity.blog);
     postModel.createdAt = +postEntity.createdAt;
     postModel.likes = {
       likesCount: +postEntity.likesCount,

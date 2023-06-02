@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { pagesCount } from '../../../common/helpers/helpers';
 import { BlogViewModel } from '../dto/view-models/blog.view.model';
 import { PaginatorViewModel } from '../../../common/dto/view-models/paginator.view.model';
-import { BlogSaViewModel } from '../dto/view-models/blog-sa-view.model';
 import { PaginatorInputType } from '../../../common/dto/input-models/paginator.input.type';
 import { Blog } from '../domain/blog';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
@@ -20,13 +19,13 @@ import { BlogEntity } from '../entities/blog.entity';
 import { BlogsBannedUserEntity } from '../entities/blogs-banned-user.entity';
 import { ImageService } from '../../image/providers/image.service';
 import { BlogImagesViewModel } from '../dto/view-models/blog-images.view.model';
-import { BloggerImage } from '../../image/domain/blogger-image';
-import { PhotoSizeViewModel } from '../../../common/dto/view-models/photo-size.view.model';
+import { BlogService } from './blog.service';
 
 @Injectable()
 export class BlogsQueryTypeOrmRepository {
   constructor(
-    private imageService: ImageService,
+    private readonly imageService: ImageService,
+    private readonly blogService: BlogService,
     @InjectDataSource() protected dataSource: DataSource, // @InjectModel(BlogEntity.name) private BlogModel: Model<BlogDocument>,
     @InjectRepository(BlogEntity)
     private readonly blogsRepository: Repository<BlogEntity>,
@@ -76,8 +75,8 @@ export class BlogsQueryTypeOrmRepository {
       options,
     );
     const items: BlogViewModel[] = options?.bannedBlogInclude
-      ? blogModels.map((b) => this.getSaViewModelWithOwner(b))
-      : blogModels.map((b) => this.getBlogViewModel(b));
+      ? blogModels.map((b) => this.blogService.mapToSaBlogViewModelWithOwner(b))
+      : blogModels.map((b) => this.blogService.mapToBlogViewModel(b));
     return {
       pagesCount: pagesCount(totalCount, pageSize),
       page: pageNumber,
@@ -93,51 +92,7 @@ export class BlogsQueryTypeOrmRepository {
   ): Promise<BlogViewModel | null> {
     const blog = await this.getBlogModelById(id, options);
     if (!blog) return null;
-    return this.getBlogViewModel(blog);
-  }
-
-  getBlogViewModel(blog: Blog): BlogViewModel {
-    return {
-      id: blog.id,
-      name: blog.name,
-      description: blog.description,
-      websiteUrl: blog.websiteUrl,
-      createdAt: new Date(blog.createdAt).toISOString(),
-      isMembership: blog.isMembership,
-      images: {
-        wallpaper: blog.wallpaper
-          ? {
-              url: blog.wallpaper.url,
-              width: blog.wallpaper.width,
-              height: blog.wallpaper.height,
-              fileSize: blog.wallpaper.fileSize,
-            }
-          : null,
-        main: blog.icon
-          ? [
-              {
-                url: blog.icon.url,
-                width: blog.icon.width,
-                height: blog.icon.height,
-                fileSize: blog.icon.fileSize,
-              },
-            ]
-          : [],
-      },
-    };
-  }
-
-  getSaViewModelWithOwner(blog: Blog): BlogSaViewModel | BlogViewModel {
-    const blogView = this.getBlogViewModel(blog);
-    const banInfo = {
-      isBanned: blog.isBanned,
-      banDate: blog.banDate ? new Date(blog.banDate).toISOString() : null,
-    };
-    const blogOwnerInfo = {
-      userId: blog.blogOwnerId,
-      userLogin: blog.blogOwnerLogin,
-    };
-    return { ...blogView, blogOwnerInfo, banInfo };
+    return this.blogService.mapToBlogViewModel(blog);
   }
 
   async getBlogOwner(blogId: string) {
@@ -247,7 +202,7 @@ export class BlogsQueryTypeOrmRepository {
     try {
       const blogEntity = await this.findBlogEntityById(+blogId, options);
       if (!blogEntity) return null;
-      return this.castToBlogModel(blogEntity);
+      return this.blogService.mapToBlogDomainModel(blogEntity);
     } catch (e) {
       console.log(e);
       return null;
@@ -314,7 +269,7 @@ export class BlogsQueryTypeOrmRepository {
       // ]);
       const blogModels: Blog[] = [];
       for (const blog of blogs) {
-        blogModels.push(this.castToBlogModel(blog));
+        blogModels.push(this.blogService.mapToBlogDomainModel(blog));
       }
       return { totalCount: totalCount, blogModels };
     } catch (e) {
@@ -323,59 +278,13 @@ export class BlogsQueryTypeOrmRepository {
     }
   }
 
-  castToBlogModel(blogEntity: BlogEntity) {
-    console.log('castToBlogModel was started');
-    const blogModel: Blog = new Blog();
-    blogModel.id = String(blogEntity.id);
-    blogModel.name = blogEntity.name;
-    if (blogEntity.blogOwner) {
-      blogModel.blogOwnerId = String(blogEntity.blogOwner.id);
-      blogModel.blogOwnerLogin = blogEntity.blogOwner.login;
-    }
-    blogModel.description = blogEntity.description;
-    blogModel.websiteUrl = blogEntity.websiteUrl;
-    blogModel.createdAt = +blogEntity.createdAt;
-    blogModel.isMembership = blogEntity.isMembership;
-    blogModel.isBanned = blogEntity.isBanned;
-    blogModel.banDate = +blogEntity.banDate;
-    if (blogEntity.bannedUsers?.length > 0) {
-      blogModel.bannedUsers = blogEntity.bannedUsers.map((bu) => ({
-        id: String(bu.userId),
-        banDate: bu.banDate,
-        banReason: bu.banReason,
-        login: bu.user.login,
-      }));
-    } else {
-      blogModel.bannedUsers = [];
-    }
-    if (blogEntity.wallpaper) {
-      blogModel.wallpaper = this.imageService.castEntityToImageModel(
-        blogEntity.wallpaper,
-      );
-    }
-    if (blogEntity.icon) {
-      blogModel.icon = this.imageService.castEntityToImageModel(
-        blogEntity.icon,
-      );
-    }
-    return blogModel;
-  }
-
   async getBlogImages(blogId: string): Promise<BlogImagesViewModel> {
     const blog = await this.getBlogModelById(blogId);
     return {
-      wallpaper: this.castToPhotoSizeViewModel(blog.wallpaper),
-      main: blog.icon ? [this.castToPhotoSizeViewModel(blog.icon)] : [],
-    };
-  }
-
-  castToPhotoSizeViewModel(image: BloggerImage): PhotoSizeViewModel {
-    if (!image) return null;
-    return {
-      width: image.width,
-      height: image.height,
-      fileSize: image.fileSize,
-      url: image.url,
+      wallpaper: this.blogService.mapToPhotoSizeViewModel(blog.wallpaper),
+      main: blog.icon
+        ? [this.blogService.mapToPhotoSizeViewModel(blog.icon)]
+        : [],
     };
   }
 }

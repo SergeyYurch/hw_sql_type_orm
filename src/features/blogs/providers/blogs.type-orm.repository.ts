@@ -11,7 +11,6 @@ import { UsersQueryTypeormRepository } from '../../users/providers/users.query-t
 import { PostEntity } from '../../posts/entities/post.entity';
 import { CommentEntity } from '../../comments/entities/comment.entity';
 import { CommentsTypeOrmRepository } from '../../comments/providers/comments.type-orm.repository';
-import { BloggerImage } from '../../image/domain/blogger-image';
 import { BloggerImageEntity } from '../../image/entities/blogger-image.entity';
 import { ImageService } from '../../image/providers/image.service';
 
@@ -36,14 +35,6 @@ export class BlogsTypeOrmRepository {
     @InjectRepository(BloggerImageEntity)
     private readonly bloggerImageRepository: Repository<BloggerImageEntity>,
   ) {}
-
-  // async getBlogModel(id: string) {
-  //   return this.blogsQueryRepository.getBlogModelById(id);
-  // }
-
-  async createBlogModel() {
-    return new Blog();
-  }
 
   async deleteBlog(blogId: string) {
     try {
