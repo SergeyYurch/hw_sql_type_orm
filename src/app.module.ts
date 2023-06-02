@@ -127,6 +127,11 @@ import { TelegramAdapter } from './adapters/telegram/telegram.adapter';
 import { NotificationController } from './features/bot/notification.controller';
 import { SubscriptionEntity } from './features/blogs/entities/subscription.entity';
 import { BlogService } from './features/blogs/providers/blog.service';
+import { SubscribeUseCase } from './features/blogs/providers/use-cases/subscribe-use-case';
+import { UnsubscribeUseCase } from './features/blogs/providers/use-cases/unsubscribe-use-case';
+import { SubscriptionService } from './features/blogs/providers/subscription.service';
+import { SubscriptionsTypeormQueryRepository } from './features/blogs/providers/subscriptions.typeorm.query.repository';
+import { SubscriptionsTypeormRepository } from './features/blogs/providers/subscriptions.typeorm.repository';
 
 const configModule = ConfigModule.forRoot();
 const userEntities = [
@@ -152,6 +157,8 @@ const blogsUseCases = [
   UploadBlogWallpaperUseCase,
   UploadPostIconUseCase,
   UploadBlogIconUseCase,
+  SubscribeUseCase,
+  UnsubscribeUseCase,
 ];
 const usersUseCases = [
   CreateNewUserUseCase,
@@ -344,6 +351,9 @@ export const options: TypeOrmModuleOptions =
     BlogsTypeOrmRepository,
     BlogsQueryTypeOrmRepository,
     BlogService,
+    SubscriptionService,
+    SubscriptionsTypeormRepository,
+    SubscriptionsTypeormQueryRepository,
 
     //comments
     CommentsRepository,
