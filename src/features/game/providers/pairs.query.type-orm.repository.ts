@@ -26,6 +26,7 @@ import { pagesCount } from '../../../common/helpers/helpers';
 import { MyStatisticViewModel } from '../dto/view-models/my-statistic.view.model';
 import { Question } from '../../quiz/domain/question';
 import { GameStatusEnum } from '../types/game-status.enum';
+import { UsersService } from '../../users/providers/users.service';
 
 export class PairsQueryTypeOrmRepository {
   findOptionsRelations: FindOptionsRelations<PairEntity>;
@@ -38,6 +39,7 @@ export class PairsQueryTypeOrmRepository {
     private readonly playersRepository: Repository<PlayerEntity>,
     private readonly usersQueryTypeormRepository: UsersQueryTypeormRepository,
     private readonly quizQuestionsQueryTypeOrmRepository: QuizQuestionsQueryTypeOrmRepository,
+    private readonly usersService: UsersService,
     @InjectDataSource() protected dataSource: DataSource,
   ) {
     this.findOptionsRelations = {
@@ -200,7 +202,7 @@ export class PairsQueryTypeOrmRepository {
 
   castToPlayerModel(pairModel: Pair, playerEntity: PlayerEntity) {
     const playerModel = new Player();
-    playerModel.user = this.usersQueryTypeormRepository.mapToUserDomainModel(
+    playerModel.user = this.usersService.mapToUserDomainModel(
       playerEntity.user,
     );
     playerModel.id = playerEntity.id.toString();

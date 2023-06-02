@@ -15,12 +15,14 @@ import { BloggerImageEntity } from '../../image/entities/blogger-image.entity';
 import { BloggerImage } from '../../image/domain/blogger-image';
 import { PhotoSizeViewModel } from '../../../common/dto/view-models/photo-size.view.model';
 import { BlogService } from '../../blogs/providers/blog.service';
+import { UsersService } from '../../users/providers/users.service';
 
 @Injectable()
 export class PostsQueryTypeOrmRepository {
   constructor(
     private usersQueryTypeormRepository: UsersQueryTypeormRepository,
     private blogsQueryTypeOrmRepository: BlogsQueryTypeOrmRepository,
+    private readonly usersService: UsersService,
     private readonly blogService: BlogService,
     @InjectDataSource() protected dataSource: DataSource,
     @InjectRepository(PostEntity)
@@ -238,7 +240,7 @@ export class PostsQueryTypeOrmRepository {
     postModel.title = postEntity.title;
     postModel.shortDescription = postEntity.shortDescription;
     postModel.content = postEntity.content;
-    postModel.blogger = this.usersQueryTypeormRepository.mapToUserDomainModel(
+    postModel.blogger = this.usersService.mapToUserDomainModel(
       postEntity.blogger,
     );
     postModel.blog = this.blogService.mapToBlogDomainModel(postEntity.blog);

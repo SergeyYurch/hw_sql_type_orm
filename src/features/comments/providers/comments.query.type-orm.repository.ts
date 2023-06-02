@@ -17,6 +17,7 @@ import { PostsQueryTypeOrmRepository } from '../../posts/providers/posts.query.t
 import { Post } from '../../posts/domain/post';
 import { LikeEntity } from '../../likes/entities/like.entity';
 import { BlogsBannedUserEntity } from '../../blogs/entities/blogs-banned-user.entity';
+import { UsersService } from '../../users/providers/users.service';
 
 @Injectable()
 export class CommentsQueryTypeOrmRepository {
@@ -29,6 +30,7 @@ export class CommentsQueryTypeOrmRepository {
     private readonly likesRepository: Repository<LikeEntity>,
     private readonly usersQueryTypeormRepository: UsersQueryTypeormRepository,
     private readonly postsQueryTypeOrmRepository: PostsQueryTypeOrmRepository,
+    private readonly usersService: UsersService,
   ) {}
 
   async isCommentOwner(userId: string, commentId: string): Promise<boolean> {
@@ -244,10 +246,9 @@ export class CommentsQueryTypeOrmRepository {
   }
 
   castToCommentModel(commentEntity: CommentEntity): Comment {
-    const commentator: User =
-      this.usersQueryTypeormRepository.mapToUserDomainModel(
-        commentEntity.commentator,
-      );
+    const commentator: User = this.usersService.mapToUserDomainModel(
+      commentEntity.commentator,
+    );
     const post: Post = this.postsQueryTypeOrmRepository.castToPostModel(
       commentEntity.post,
     );
