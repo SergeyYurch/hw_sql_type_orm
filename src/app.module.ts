@@ -123,6 +123,9 @@ import { UploadPostIconUseCase } from './features/blogs/providers/use-cases/uplo
 import { UploadBlogIconUseCase } from './features/blogs/providers/use-cases/upload-blog-icon.use-case';
 import { BloggerImageEntity } from './features/image/entities/blogger-image.entity';
 import { ImageService } from './features/image/providers/image.service';
+import { TelegramAdapter } from './adapters/telegram/telegram.adapter';
+import { NotificationController } from './features/bot/notification.controller';
+import { SubscriberEntity } from './features/blogs/entities/subscriber.entity';
 
 const configModule = ConfigModule.forRoot();
 const userEntities = [
@@ -132,7 +135,12 @@ const userEntities = [
 ];
 const gameEntities = [PairEntity, PlayerEntity, AnswerEntity];
 //
-const blogsEntities = [BlogEntity, BlogsBannedUserEntity, BloggerImageEntity];
+const blogsEntities = [
+  BlogEntity,
+  BlogsBannedUserEntity,
+  BloggerImageEntity,
+  SubscriberEntity,
+];
 
 const blogsUseCases = [
   BindBlogWithUserUseCase,
@@ -291,6 +299,7 @@ export const options: TypeOrmModuleOptions =
     TestingController,
     SaQuizQuestionsController,
     PairGameQuizController,
+    NotificationController,
   ],
 
   providers: [
@@ -302,8 +311,9 @@ export const options: TypeOrmModuleOptions =
     ...authUseCases,
     ...quizUseCases,
     //common
-    S3Service,
     ConfigService,
+    TelegramAdapter,
+    S3Service,
     JwtService,
     BasicStrategy,
     LocalStrategy,

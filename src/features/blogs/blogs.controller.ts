@@ -1,4 +1,14 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { PaginatorInputType } from '../../common/dto/input-models/paginator.input.type';
 import { PostViewModel } from '../posts/dto/view-models/post.view.model';
 import { PaginatorViewModel } from '../../common/dto/view-models/paginator.view.model';
@@ -8,6 +18,7 @@ import { PaginatorParam } from '../../common/decorators/paginator-param.decorato
 import { BlogsQueryTypeOrmRepository } from './providers/blogs.query.type-orm.repository';
 import { PostsQueryTypeOrmRepository } from '../posts/providers/posts.query.type-orm.repository';
 import { ApiTags } from '@nestjs/swagger';
+import { AccessTokenGuard } from '../../common/guards/access-token.guard';
 
 @ApiTags('blogs')
 @Controller('blogs')
@@ -34,6 +45,28 @@ export class BlogsController {
   async getBlog(@Param('blogId') blogId: string) {
     console.log(`[BlogsController ]/getBlog - run...`);
     return await this.blogsQueryRepository.getBlogById(blogId);
+  }
+
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(CheckBlogIdGuard)
+  @UseGuards(AccessTokenGuard)
+  @Post(':blogId/subscription')
+  async subscribe(
+    @Param('blogId') blogId: string,
+    @CurrentUserId() userId: string,
+  ) {
+    console.log(`[BlogsController ]:subscribe - run...`);
+  }
+
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(CheckBlogIdGuard)
+  @UseGuards(AccessTokenGuard)
+  @Delete(':blogId/subscription')
+  async unsubscribe(
+    @Param('blogId') blogId: string,
+    @CurrentUserId() userId: string,
+  ) {
+    console.log(`[BlogsController ]:unsubscribe - run...`);
   }
 
   @UseGuards(CheckBlogIdGuard)
