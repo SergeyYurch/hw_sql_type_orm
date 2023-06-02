@@ -6,6 +6,7 @@ import { UserCreatDto } from '../../dto/user-creat.dto';
 import { UsersService } from '../users.service';
 import { UsersTypeOrmRepository } from '../users.typeorm.repository';
 import { UsersQueryTypeormRepository } from '../users.query-typeorm.repository';
+import { User } from '../../domain/user';
 
 export class RegistrationUserCommand {
   constructor(public userInputModel: UserInputModel) {}
@@ -38,7 +39,7 @@ export class RegistrationUserUseCase
       passwordHash,
       isConfirmed: false,
     };
-    let userModel = this.usersRepository.createUserModel();
+    let userModel = new User();
     userModel.initialize(user);
     userModel = await this.usersRepository.save(userModel);
     if (!userModel) return null;

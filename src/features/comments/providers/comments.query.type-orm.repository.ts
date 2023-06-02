@@ -244,9 +244,10 @@ export class CommentsQueryTypeOrmRepository {
   }
 
   castToCommentModel(commentEntity: CommentEntity): Comment {
-    const commentator: User = this.usersQueryTypeormRepository.castToUserModel(
-      commentEntity.commentator,
-    );
+    const commentator: User =
+      this.usersQueryTypeormRepository.mapToUserDomainModel(
+        commentEntity.commentator,
+      );
     const post: Post = this.postsQueryTypeOrmRepository.castToPostModel(
       commentEntity.post,
     );

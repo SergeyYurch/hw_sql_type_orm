@@ -15,10 +15,12 @@ import { User } from '../domain/user';
 import { UserEntity } from '../entities/user.entity';
 import { DeviceSessionsEntity } from '../entities/device-sessions.entity';
 import { PasswordRecoveryInformationEntity } from '../entities/password-recovery-information.entity';
+import { UsersService } from './users.service';
 
 @Injectable()
 export class UsersQueryTypeormRepository {
   constructor(
+    private readonly usersService: UsersService,
     @InjectDataSource() protected dataSource: DataSource,
     @InjectRepository(UserEntity)
     private readonly usersRepository: Repository<UserEntity>,
@@ -81,7 +83,7 @@ export class UsersQueryTypeormRepository {
           passwordRecoveryInformation: true,
         },
       });
-      if (userEntity) return this.castToUserModel(userEntity);
+      if (userEntity) return this.usersService.mapToUserDomainModel(userEntity);
       return null;
     } catch (e) {
       console.log(e);
@@ -116,7 +118,9 @@ export class UsersQueryTypeormRepository {
   async getUserModelById(id: string): Promise<User | null> {
     console.log(`findById- typeOrm: ${id}`);
     const userEntity: UserEntity = await this.getUserEntityById(+id);
-    return userEntity ? this.castToUserModel(userEntity) : null;
+    return userEntity
+      ? this.usersService.mapToUserDomainModel(userEntity)
+      : null;
   }
 
   // async getUserModelById(id: string) {
@@ -135,7 +139,9 @@ export class UsersQueryTypeormRepository {
         },
         where: condition,
       });
-      return userEntity ? this.castToUserModel(userEntity) : null;
+      return userEntity
+        ? this.usersService.mapToUserDomainModel(userEntity)
+        : null;
     } catch (e) {
       console.log('Did not found users');
       console.log(e);
@@ -192,7 +198,7 @@ export class UsersQueryTypeormRepository {
       );
       const userModels: User[] = [];
       for (const user of users) {
-        userModels.push(this.castToUserModel(user));
+        userModels.push(this.usersService.mapToUserDomainModel(user));
       }
       return { totalCount, userModels };
     } catch (e) {
@@ -265,47 +271,6 @@ export class UsersQueryTypeormRepository {
         banReason: user.banInfo.banReason || null,
       },
     };
-  }
-
-  castToUserModel(userEntity: UserEntity): User {
-    console.log('castToUserModel');
-    const user = new User();
-    user.id = String(userEntity.id);
-    user.accountData = {
-      login: userEntity.login,
-      email: userEntity.email,
-      passwordHash: userEntity.passwordHash,
-      passwordSalt: userEntity.passwordSalt,
-      createdAt: +userEntity.createdAt,
-    };
-    user.banInfo = {
-      isBanned: userEntity.isBanned,
-      banDate: +userEntity.banDate || null,
-      banReason: userEntity.banReason,
-      sa: 'superAdmin',
-    };
-    user.emailConfirmation = {
-      isConfirmed: userEntity.isConfirmed,
-      confirmationCode: userEntity.confirmationCode,
-      expirationDate: +userEntity.expirationDate || null,
-      dateSendingConfirmEmail: +userEntity.dateSendingConfirmEmail || null,
-    };
-    user.passwordRecoveryInformation = {
-      recoveryCode: userEntity.passwordRecoveryInformation?.recoveryCode,
-      expirationDate:
-        +userEntity.passwordRecoveryInformation?.expirationDate || null,
-    };
-    if (userEntity.deviceSessions && Array.isArray(userEntity.deviceSessions)) {
-      user.deviceSessions = userEntity.deviceSessions.map((d) => ({
-        deviceId: d.deviceId,
-        ip: d.ip,
-        title: d.title,
-        lastActiveDate: +d.lastActiveDate,
-        expiresDate: +d.expiresDate,
-      }));
-    } else user.deviceSessions = [];
-
-    return user;
   }
 
   async getMeInfo(userId: string) {

@@ -200,7 +200,7 @@ export class PairsQueryTypeOrmRepository {
 
   castToPlayerModel(pairModel: Pair, playerEntity: PlayerEntity) {
     const playerModel = new Player();
-    playerModel.user = this.usersQueryTypeormRepository.castToUserModel(
+    playerModel.user = this.usersQueryTypeormRepository.mapToUserDomainModel(
       playerEntity.user,
     );
     playerModel.id = playerEntity.id.toString();

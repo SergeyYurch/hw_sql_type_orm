@@ -6,10 +6,12 @@ import { UserEntity } from '../entities/user.entity';
 import { DeviceSessionsEntity } from '../entities/device-sessions.entity';
 import { PasswordRecoveryInformationEntity } from '../entities/password-recovery-information.entity';
 import { UsersQueryTypeormRepository } from './users.query-typeorm.repository';
+import { UsersService } from './users.service';
 
 @Injectable()
 export class UsersTypeOrmRepository {
   constructor(
+    private readonly usersService: UsersService,
     @InjectDataSource() protected dataSource: DataSource,
     protected userQueryRepository: UsersQueryTypeormRepository,
     @InjectRepository(UserEntity)
@@ -22,10 +24,6 @@ export class UsersTypeOrmRepository {
 
   async getUserModel(userId: string) {
     return this.userQueryRepository.getUserModelById(userId);
-  }
-
-  createUserModel() {
-    return new User();
   }
 
   async deleteUser(userId: string) {
@@ -105,7 +103,7 @@ export class UsersTypeOrmRepository {
           }
         }
       }
-      return this.userQueryRepository.castToUserModel(userEntity);
+      return this.usersService.mapToUserDomainModel(userEntity);
     } catch (e) {
       console.log(e);
       return null;

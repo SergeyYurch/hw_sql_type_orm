@@ -238,7 +238,7 @@ export class PostsQueryTypeOrmRepository {
     postModel.title = postEntity.title;
     postModel.shortDescription = postEntity.shortDescription;
     postModel.content = postEntity.content;
-    postModel.blogger = this.usersQueryTypeormRepository.castToUserModel(
+    postModel.blogger = this.usersQueryTypeormRepository.mapToUserDomainModel(
       postEntity.blogger,
     );
     postModel.blog = this.blogService.mapToBlogDomainModel(postEntity.blog);

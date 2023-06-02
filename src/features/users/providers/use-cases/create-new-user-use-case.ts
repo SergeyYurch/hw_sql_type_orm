@@ -34,7 +34,7 @@ export class CreateNewUserUseCase
       passwordHash,
       isConfirmed: true,
     };
-    const userModel = await this.usersRepository.createUserModel();
+    const userModel = new User();
     await userModel.initialize(user);
     return await this.usersRepository.save(userModel);
   }
