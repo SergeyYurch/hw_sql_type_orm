@@ -1,6 +1,9 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
+import { Injectable } from '@nestjs/common';
+
 const axios = require('axios');
 
+@Injectable()
 export class TelegramAdapter {
   token: string;
   hookUrl: string;
@@ -25,5 +28,12 @@ export class TelegramAdapter {
   async setWebhook() {
     console.log(this.hookUrl);
     await this.telegramAction('setWebhook', { url: this.hookUrl });
+  }
+
+  async getBotLink() {
+    const res = await axios.get(
+      `https://api.telegram.org/bot${this.token}/getMe`,
+    );
+    return `https://t.me/${res.data.result.username}`;
   }
 }

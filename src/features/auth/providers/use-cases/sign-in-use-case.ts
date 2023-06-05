@@ -1,6 +1,6 @@
 import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { v4 as uuidv4 } from 'uuid';
-import { tokenService } from '../token.service';
+import { JwtTokenService } from '../jwt-token.service';
 import { ValidateUserCommand } from './validate-user.use-case';
 import { UsersTypeOrmRepository } from '../../../users/providers/users.typeorm.repository';
 import { User } from '../../../users/domain/user';
@@ -17,7 +17,7 @@ export class SignInCommand {
 @CommandHandler(SignInCommand)
 export class SignInUseCase implements ICommandHandler<SignInCommand> {
   constructor(
-    private authService: tokenService,
+    private authService: JwtTokenService,
     private userRepository: UsersTypeOrmRepository,
     private commandBus: CommandBus,
   ) {}

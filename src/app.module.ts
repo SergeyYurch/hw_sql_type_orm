@@ -35,7 +35,7 @@ import { TestingController } from './features/testing/testing.controller';
 import { LocalStrategy } from './common/strategies/local.strategy';
 import { RefreshTokenStrategy } from './common/strategies/refresh-token.strategy';
 import { AccessTokenStrategy } from './common/strategies/access-token.strategy';
-import { tokenService } from './features/auth/providers/token.service';
+import { JwtTokenService } from './features/auth/providers/jwt-token.service';
 import { BlogsRepository } from './features/blogs/providers/blogs.repository';
 import { BlogsQueryRepository } from './features/blogs/providers/blogs.query.repository';
 import { CommentsRepository } from './features/comments/providers/comments.repository';
@@ -132,6 +132,10 @@ import { UnsubscribeUseCase } from './features/blogs/providers/use-cases/unsubsc
 import { SubscriptionService } from './features/blogs/providers/subscription.service';
 import { SubscriptionsTypeormQueryRepository } from './features/blogs/providers/subscriptions.typeorm.query.repository';
 import { SubscriptionsTypeormRepository } from './features/blogs/providers/subscriptions.typeorm.repository';
+import { IntegrationsController } from './features/integrations/integrations.controller';
+import { IntegrationsService } from './features/integrations/providers/integrations.service';
+import { GenerateTelegramBotLinkUseCase } from './features/integrations/providers/use-cases/generate-telegram-bot-link.use-case';
+import { TelegramRegistrationUserUseCase } from './features/users/providers/use-cases/telegram-registration-user.use-case';
 
 const configModule = ConfigModule.forRoot();
 const userEntities = [
@@ -197,6 +201,7 @@ const authUseCases = [
   RefreshTokenUseCases,
   ValidateUserDeviceSessionUseCase,
   ValidateUserUseCase,
+  TelegramRegistrationUserUseCase,
 ];
 
 const securityUseCases = [
@@ -213,6 +218,8 @@ const quizUseCases = [
   ConnectionUseCase,
   SetAnswerUseCase,
 ];
+
+const integrationUseCases = [GenerateTelegramBotLinkUseCase];
 export const options: TypeOrmModuleOptions =
   process.env.DB_LOCATION === 'LOCAL'
     ? {
@@ -308,6 +315,7 @@ export const options: TypeOrmModuleOptions =
     SaQuizQuestionsController,
     PairGameQuizController,
     NotificationController,
+    IntegrationsController,
   ],
 
   providers: [
@@ -318,6 +326,7 @@ export const options: TypeOrmModuleOptions =
     ...commentsUseCases,
     ...authUseCases,
     ...quizUseCases,
+    ...integrationUseCases,
     //common
     ConfigService,
     TelegramAdapter,
@@ -343,7 +352,7 @@ export const options: TypeOrmModuleOptions =
     PairsQueryTypeOrmRepository,
 
     //auth
-    tokenService,
+    JwtTokenService,
 
     //blogs
     BlogsRepository,
@@ -375,6 +384,9 @@ export const options: TypeOrmModuleOptions =
     UsersQueryRepository,
     UsersQueryTypeormRepository,
     UsersTypeOrmRepository,
+
+    //integrations
+    IntegrationsService,
 
     //
     TestingService,

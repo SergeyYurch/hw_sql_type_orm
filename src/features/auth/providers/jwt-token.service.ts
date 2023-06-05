@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtPayloadType } from '../../blogs/types/jwt-payload.type';
 
 @Injectable()
-export class tokenService {
+export class JwtTokenService {
   constructor(
     private readonly jwtService: JwtService,
     private configService: ConfigService,
@@ -40,5 +40,16 @@ export class tokenService {
       expiresDate: jwtPayload.exp * 1000,
       lastActiveDate: jwtPayload.iat * 1000,
     };
+  }
+
+  async getTelegramConfirmationCode(userId: string) {
+    return await this.jwtService.signAsync(
+      {
+        userId,
+      },
+      {
+        secret: this.configService.get<string>('TELEGRAM_SECRET'),
+      },
+    );
   }
 }

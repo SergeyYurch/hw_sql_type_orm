@@ -15,6 +15,12 @@ export class UsersService {
     console.log('castToUserModel');
     const user = new User();
     user.id = String(userEntity.id);
+    user.telegramInfo = {
+      chatId: userEntity.telegramId,
+      languageCode: userEntity.telegramLanguageCode,
+      confirmationCode: userEntity.telegramConfirmationCode,
+      telegramFirstName: userEntity.telegramFirstName,
+    };
     user.accountData = {
       login: userEntity.login,
       email: userEntity.email,

@@ -20,7 +20,7 @@ export class UnsubscribeUseCase implements ICommandHandler<UnsubscribeCommand> {
     const { blogId, userId } = command;
     const subscription: Subscription =
       await this.subscriptionsQueryRepository.getSubscription(userId, blogId);
-    subscription.unsubscribe();
-    return this.subscriptionsRepository.save(subscription);
+    if (!subscription) return false;
+    return this.subscriptionsRepository.delete(subscription);
   }
 }

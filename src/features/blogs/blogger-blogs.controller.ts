@@ -41,6 +41,8 @@ import { imageFileValidate } from '../../common/custom-validate/image-file.valid
 import { UploadBlogWallpaperCommand } from './providers/use-cases/upload-blog-wallpaper.use-case';
 import { UploadBlogIconCommand } from './providers/use-cases/upload-blog-icon.use-case';
 import { UploadPostIconCommand } from './providers/use-cases/upload-post-icon.use-case';
+import { SubscribeCommand } from './providers/use-cases/subscribe-use-case';
+import { UnsubscribeCommand } from './providers/use-cases/unsubscribe-use-case';
 
 @ApiTags('blogger/blogs')
 @UseGuards(AccessTokenGuard)
@@ -52,6 +54,30 @@ export class BloggerBlogsController {
     private commentsQueryRepository: CommentsQueryTypeOrmRepository,
     private commandBus: CommandBus,
   ) {}
+
+  @UseGuards(CheckBlogIdGuard)
+  @UseGuards(LoggerGuard)
+  @Post(':blogId/subscription')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async subscribe(
+    @CurrentUserId() userId: string,
+    @Param('blogId') blogId: string,
+  ) {
+    console.log(`[BloggerBlogController]:subscribe start...`);
+    await this.commandBus.execute(new SubscribeCommand(blogId, userId));
+  }
+
+  @UseGuards(CheckBlogIdGuard)
+  @UseGuards(LoggerGuard)
+  @Delete(':blogId/subscription')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async unsubscribe(
+    @CurrentUserId() userId: string,
+    @Param('blogId') blogId: string,
+  ) {
+    console.log(`[BloggerBlogController]:unsubscribe start...`);
+    await this.commandBus.execute(new UnsubscribeCommand(blogId, userId));
+  }
 
   @Get('comments')
   async getComments(

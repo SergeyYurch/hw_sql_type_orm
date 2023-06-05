@@ -3,7 +3,9 @@ import {
   Delete,
   Get,
   HttpCode,
+  HttpException,
   HttpStatus,
+  InternalServerErrorException,
   Param,
   Post,
   Query,
@@ -19,6 +21,9 @@ import { BlogsQueryTypeOrmRepository } from './providers/blogs.query.type-orm.re
 import { PostsQueryTypeOrmRepository } from '../posts/providers/posts.query.type-orm.repository';
 import { ApiTags } from '@nestjs/swagger';
 import { AccessTokenGuard } from '../../common/guards/access-token.guard';
+import { CommandBus } from '@nestjs/cqrs';
+import { SubscribeCommand } from './providers/use-cases/subscribe-use-case';
+import { UnsubscribeCommand } from './providers/use-cases/unsubscribe-use-case';
 
 @ApiTags('blogs')
 @Controller('blogs')
@@ -26,6 +31,7 @@ export class BlogsController {
   constructor(
     private blogsQueryRepository: BlogsQueryTypeOrmRepository,
     private postsQueryRepository: PostsQueryTypeOrmRepository,
+    private commandBus: CommandBus,
   ) {}
 
   @Get()
@@ -56,6 +62,12 @@ export class BlogsController {
     @CurrentUserId() userId: string,
   ) {
     console.log(`[BlogsController ]:subscribe - run...`);
+    const res = await this.commandBus.execute(
+      new SubscribeCommand(blogId, userId),
+    );
+    if (!res) {
+      throw new InternalServerErrorException();
+    }
   }
 
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -67,6 +79,12 @@ export class BlogsController {
     @CurrentUserId() userId: string,
   ) {
     console.log(`[BlogsController ]:unsubscribe - run...`);
+    const res = await this.commandBus.execute(
+      new UnsubscribeCommand(blogId, userId),
+    );
+    if (!res) {
+      throw new InternalServerErrorException();
+    }
   }
 
   @UseGuards(CheckBlogIdGuard)

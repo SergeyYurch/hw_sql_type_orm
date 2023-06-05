@@ -5,7 +5,6 @@ export class Subscription {
   constructor(public user: User, public blog: Blog) {
     this.code = null;
   }
-  id: number;
   subscribedAt: Date;
   unsubscribedAt: Date;
   code: string | null;

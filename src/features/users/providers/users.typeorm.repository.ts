@@ -64,6 +64,13 @@ export class UsersTypeOrmRepository {
       userEntity.expirationDate = user.emailConfirmation?.expirationDate;
       userEntity.dateSendingConfirmEmail =
         user.emailConfirmation?.dateSendingConfirmEmail;
+      userEntity.telegramId = user.telegramInfo.chatId ?? null;
+      userEntity.telegramFirstName =
+        user.telegramInfo.telegramFirstName ?? null;
+      userEntity.telegramLanguageCode = user.telegramInfo.languageCode ?? null;
+      userEntity.telegramConfirmationCode =
+        user.telegramInfo.confirmationCode ?? null;
+      userEntity.telegramUserName = user.telegramInfo.userName ?? null;
       //try to map User to UserEntity and save model
       await this.usersRepository.save(userEntity);
       if (user.passwordRecoveryInformation) {

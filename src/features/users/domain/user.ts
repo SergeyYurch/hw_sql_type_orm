@@ -39,6 +39,14 @@ export class BanInfo {
   sa: string | null;
 }
 
+export class TelegramInfo {
+  confirmationCode: string;
+  chatId?: number;
+  telegramFirstName?: string;
+  languageCode?: string;
+  userName?: string;
+}
+
 export class User {
   id: string;
   sigIn: boolean;
@@ -47,6 +55,7 @@ export class User {
   passwordRecoveryInformation: null | PasswordRecoveryInformation;
   deviceSessions: DeviceSessions[];
   banInfo: null | BanInfo;
+  telegramInfo: TelegramInfo;
 
   async validateCredentials(passwordHash: string) {
     return (
@@ -214,6 +223,12 @@ export class User {
       banDate: isBanned ? Date.now() : null,
       banReason: isBanned ? banReason : null,
       sa: saId,
+    };
+  }
+
+  setTelegramConfirmationCode(confirmationCode: string) {
+    this.telegramInfo = {
+      confirmationCode,
     };
   }
 }

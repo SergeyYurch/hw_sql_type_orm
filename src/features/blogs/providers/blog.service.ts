@@ -5,7 +5,9 @@ import { Blog } from '../domain/blog';
 import { BlogViewModel } from '../dto/view-models/blog.view.model';
 import { ImageService } from '../../image/providers/image.service';
 import { BlogSaViewModel } from '../dto/view-models/blog-sa-view.model';
+import { Injectable } from '@nestjs/common';
 
+@Injectable()
 export class BlogService {
   constructor(private readonly imageService: ImageService) {}
   mapToPhotoSizeViewModel(image: BloggerImage): PhotoSizeViewModel {

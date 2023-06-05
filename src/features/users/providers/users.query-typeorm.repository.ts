@@ -296,4 +296,22 @@ export class UsersQueryTypeormRepository {
     //   },
     // });
   }
+
+  async getUserModelByTelegramCode(
+    telegramConfirmationCode: string,
+  ): Promise<User> {
+    const userEntity = await this.usersRepository.findOne({
+      where: { telegramConfirmationCode },
+    });
+    return userEntity
+      ? this.usersService.mapToUserDomainModel(userEntity)
+      : null;
+  }
+
+  async isUserTelegramIdRegistered(telegramId: number) {
+    const userEntity = await this.usersRepository.findOne({
+      where: { telegramId },
+    });
+    return !!userEntity;
+  }
 }

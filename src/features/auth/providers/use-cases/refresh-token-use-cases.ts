@@ -1,4 +1,4 @@
-import { tokenService } from '../token.service';
+import { JwtTokenService } from '../jwt-token.service';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UsersTypeOrmRepository } from '../../../users/providers/users.typeorm.repository';
 
@@ -11,7 +11,7 @@ export class RefreshTokenUseCases
   implements ICommandHandler<RefreshTokenCommand>
 {
   constructor(
-    private authService: tokenService,
+    private authService: JwtTokenService,
     private usersRepository: UsersTypeOrmRepository,
   ) {}
 

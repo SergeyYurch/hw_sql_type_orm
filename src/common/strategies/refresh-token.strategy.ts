@@ -7,7 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { tokenService } from '../../features/auth/providers/token.service';
+import { JwtTokenService } from '../../features/auth/providers/jwt-token.service';
 import { CommandBus } from '@nestjs/cqrs';
 import { ValidateUserDeviceSessionCommand } from '../../features/auth/providers/use-cases/validate-user-device-session.use-case';
 import { JwtPayloadType } from '../../features/blogs/types/jwt-payload.type';
@@ -20,7 +20,7 @@ export class RefreshTokenStrategy extends PassportStrategy(
 ) {
   constructor(
     private jwtService: JwtService,
-    private authService: tokenService,
+    private authService: JwtTokenService,
     private usersQueryRepository: UsersQueryTypeormRepository,
     private commandBus: CommandBus,
   ) {

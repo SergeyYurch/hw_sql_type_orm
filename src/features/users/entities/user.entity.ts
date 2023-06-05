@@ -42,4 +42,12 @@ export class UserEntity {
   deviceSessions: DeviceSessionsEntity[];
   @Column({ nullable: true })
   telegramId: number;
+  @Column({ nullable: true })
+  telegramFirstName: string;
+  @Column({ nullable: true })
+  telegramLanguageCode: string;
+  @Column({ nullable: true })
+  telegramConfirmationCode: string;
+  @Column({ nullable: true })
+  telegramUserName: string;
 }
