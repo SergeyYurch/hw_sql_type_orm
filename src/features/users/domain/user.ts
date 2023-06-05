@@ -4,7 +4,6 @@ import {
   getPasswordRecoveryCodeExpirationDate,
 } from '../../../common/helpers/helpers';
 import { UserCreatDto } from '../dto/user-creat.dto';
-import { SchemaOfChangeDetectionType } from '../../../common/types/schema-of-change-detection.type';
 
 export class AccountData {
   login: string;
@@ -232,61 +231,3 @@ export class User {
     };
   }
 }
-
-//determines the correspondence of the fields of the entity to the table
-// and the fields of the database
-
-export const userSchemaDb: SchemaOfChangeDetectionType[] = [
-  {
-    tableName: 'users',
-    fields: [
-      { fieldName: 'accountData.login', dbFiledName: 'login' },
-      { fieldName: 'accountData.email', dbFiledName: 'email' },
-      { fieldName: 'accountData.passwordHash', dbFiledName: 'passwordHash' },
-      { fieldName: 'accountData.passwordSalt', dbFiledName: 'passwordSalt' },
-      {
-        fieldName: 'emailConfirmation.isConfirmed',
-        dbFiledName: 'isConfirmed',
-      },
-      { fieldName: 'banInfo.isBanned', dbFiledName: 'isBanned' },
-    ],
-  },
-  {
-    tableName: 'ban_info',
-    fields: [
-      { fieldName: 'banInfo.banDate', dbFiledName: 'banDate' },
-      { fieldName: 'banInfo.banReason', dbFiledName: 'banReason' },
-      { fieldName: 'banInfo.sa', dbFiledName: 'sa' },
-    ],
-  },
-  {
-    tableName: 'email_confirmation',
-    fields: [
-      {
-        fieldName: 'emailConfirmation.confirmationCode',
-        dbFiledName: 'confirmationCode',
-      },
-      {
-        fieldName: 'emailConfirmation.expirationDate',
-        dbFiledName: 'expirationDate',
-      },
-      {
-        fieldName: 'emailConfirmation.dateSendingConfirmEmail',
-        dbFiledName: 'dateSendingConfirmEmail',
-      },
-    ],
-  },
-  {
-    tableName: 'password_recovery_information',
-    fields: [
-      {
-        fieldName: 'passwordRecoveryInformation.recoveryCode',
-        dbFiledName: 'recoveryCode',
-      },
-      {
-        fieldName: 'passwordRecoveryInformation.expirationDate',
-        dbFiledName: 'expirationDate',
-      },
-    ],
-  },
-];

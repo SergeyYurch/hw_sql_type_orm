@@ -136,6 +136,8 @@ import { IntegrationsController } from './features/integrations/integrations.con
 import { IntegrationsService } from './features/integrations/providers/integrations.service';
 import { GenerateTelegramBotLinkUseCase } from './features/integrations/providers/use-cases/generate-telegram-bot-link.use-case';
 import { TelegramRegistrationUserUseCase } from './features/users/providers/use-cases/telegram-registration-user.use-case';
+import { CreateNewPostNotificationUseCase } from './features/posts/providers/use-cases/create-new-post-notification.use-case';
+import { SubscriberNotificationUseCase } from './features/bot/use-cases/subsriber-notification.use-case';
 
 const configModule = ConfigModule.forRoot();
 const userEntities = [
@@ -163,6 +165,7 @@ const blogsUseCases = [
   UploadBlogIconUseCase,
   SubscribeUseCase,
   UnsubscribeUseCase,
+  CreateNewPostNotificationUseCase,
 ];
 const usersUseCases = [
   CreateNewUserUseCase,
@@ -219,7 +222,10 @@ const quizUseCases = [
   SetAnswerUseCase,
 ];
 
-const integrationUseCases = [GenerateTelegramBotLinkUseCase];
+const integrationUseCases = [
+  GenerateTelegramBotLinkUseCase,
+  SubscriberNotificationUseCase,
+];
 export const options: TypeOrmModuleOptions =
   process.env.DB_LOCATION === 'LOCAL'
     ? {

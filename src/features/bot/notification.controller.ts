@@ -2,7 +2,6 @@ import { Body, Controller, Get, Post } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { TelegramAdapter } from '../../adapters/telegram/telegram.adapter';
 import { TelegramUpdateMessageType } from './telegram-update-message.type';
-import { match } from 'assert';
 import { UserTelegramDataInputModel } from '../users/dto/input-models/user-telegram-data.input-model';
 import { TelegramRegistrationUserCommand } from '../users/providers/use-cases/telegram-registration-user.use-case';
 import { UsersQueryTypeormRepository } from '../users/providers/users.query-typeorm.repository';

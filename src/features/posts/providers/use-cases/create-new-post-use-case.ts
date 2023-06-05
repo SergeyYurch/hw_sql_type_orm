@@ -1,4 +1,4 @@
-import { CommandHandler } from '@nestjs/cqrs';
+import { CommandBus, CommandHandler } from '@nestjs/cqrs';
 import { PostCreateDto } from '../../dto/post-create.dto';
 import { BlogPostInputModel } from '../../../blogs/dto/input-models/blog-post.input.model';
 import { PostsTypeOrmRepository } from '../posts.type-orm.repository';
@@ -16,6 +16,7 @@ export class CreateNewPostCommand {
 @CommandHandler(CreateNewPostCommand)
 export class CreateNewPostUseCase {
   constructor(
+    private readonly commandBus: CommandBus,
     private postRepository: PostsTypeOrmRepository,
     private blogQueryRepository: BlogsQueryTypeOrmRepository,
     private usersQueryTypeormRepository: UsersQueryTypeormRepository,
@@ -37,6 +38,6 @@ export class CreateNewPostUseCase {
       blogger,
     };
     await createdPost.initial(postDto);
-    return await this.postRepository.save(createdPost);
+    return this.postRepository.save(createdPost);
   }
 }

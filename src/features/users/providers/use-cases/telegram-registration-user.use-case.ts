@@ -1,12 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { MailService } from '../../../../common/mail.service/mail.service';
-import { UserInputModel } from '../../dto/input-models/user-input-model';
 import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { UserCreatDto } from '../../dto/user-creat.dto';
-import { UsersService } from '../users.service';
 import { UsersTypeOrmRepository } from '../users.typeorm.repository';
 import { UsersQueryTypeormRepository } from '../users.query-typeorm.repository';
-import { User } from '../../domain/user';
 import { UserTelegramDataInputModel } from '../../dto/input-models/user-telegram-data.input-model';
 
 export class TelegramRegistrationUserCommand {
@@ -22,8 +17,6 @@ export class TelegramRegistrationUserUseCase
     private commandBus: CommandBus,
     private readonly usersQueryRepository: UsersQueryTypeormRepository,
     private readonly usersRepository: UsersTypeOrmRepository,
-    private readonly usersService: UsersService,
-    private readonly mailService: MailService,
   ) {}
   async execute(command: TelegramRegistrationUserCommand) {
     const {

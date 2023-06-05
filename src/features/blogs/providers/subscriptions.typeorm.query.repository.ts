@@ -4,10 +4,13 @@ import { Repository } from 'typeorm';
 import { SubscriptionEntity } from '../entities/subscription.entity';
 import { SubscriptionService } from './subscription.service';
 import { Subscription } from '../domain/subscription';
+import { UsersService } from '../../users/providers/users.service';
+import { User } from '../../users/domain/user';
 
 @Injectable()
 export class SubscriptionsTypeormQueryRepository {
   constructor(
+    private readonly userService: UsersService,
     private readonly subscriptionService: SubscriptionService,
     @InjectRepository(SubscriptionEntity)
     private readonly subscriptionRepository: Repository<SubscriptionEntity>,
@@ -31,5 +34,12 @@ export class SubscriptionsTypeormQueryRepository {
       relations: { user: true, blog: true },
       where: { userId: +userId, blogId: +blogId },
     });
+  }
+  async getBlogSubscribers(blogId: string): Promise<User[]> {
+    const res = await this.subscriptionRepository.find({
+      relations: { user: true },
+      where: { blogId: +blogId },
+    });
+    return res.map((s) => this.userService.mapToUserDomainModel(s.user));
   }
 }
