@@ -60,6 +60,7 @@ export class SaUsersController {
     return this.usersQueryRepository.getUserViewById(user.id, true);
   }
 
+  @HttpCode(HttpStatus.OK)
   @Get()
   async getUsers(
     @Query('banStatus') banStatus = 'all',

@@ -9,12 +9,12 @@ import { TestingTestHelpers } from './helpers/testing-test.helpers';
 describe('SaUsersController (e2e)', () => {
   let app: INestApplication;
   let testingTestHelpers: TestingTestHelpers;
-  let usersTestService: UsersTestHelpers;
+  let usersTestHelpers: UsersTestHelpers;
   const users = [];
 
   beforeAll(async () => {
     app = await getApp();
-    usersTestService = new UsersTestHelpers(app);
+    usersTestHelpers = new UsersTestHelpers(app);
     testingTestHelpers = new TestingTestHelpers(app);
   });
 
@@ -31,15 +31,15 @@ describe('SaUsersController (e2e)', () => {
   //***********[HOST]/sa/users**************
   //post
   it('POST: [HOST]/sa/users should return code 401 "Unauthorized" for unauthorized request', async () => {
-    const user1 = usersTestService.getUserInputModel(1);
+    const user1 = usersTestHelpers.getUserInputModel(1);
     await request(app.getHttpServer())
       .post('/sa/users')
       .send(user1)
       .expect(401);
   });
   it('POST: [HOST]/sa/users (POST) Add new user to the system. Should return 201 and add new user to db', async () => {
-    const userInput1 = usersTestService.getUserInputModel(1);
-    const { body: newUser1 } = await usersTestService.createUser(
+    const userInput1 = usersTestHelpers.getUserInputModel(1);
+    const { body: newUser1 } = await usersTestHelpers.createUser(
       userInput1,
       201,
     );
@@ -56,10 +56,10 @@ describe('SaUsersController (e2e)', () => {
       },
     });
     console.log(users[0].id);
-    await usersTestService.createSetOfUsers(12, 2);
+    await usersTestHelpers.createSetOfUsers(11, 2);
   });
   it('POST: [HOST]/sa/users should return code 400 and error message for field login', async () => {
-    const { body } = await usersTestService.createUser(
+    const { body } = await usersTestHelpers.createUser(
       {
         password: 'password1',
         email: 'email221@gmail.com',
@@ -102,9 +102,11 @@ describe('SaUsersController (e2e)', () => {
   it('GET: [HOST]/users: should return code 200 and array with 12 elements with default paginator', async () => {
     const users = await request(app.getHttpServer())
       .get('/sa/users')
-      .auth('admin', 'qwerty', { type: 'basic' })
-      .expect(200);
-
+      .auth('admin', 'qwerty', { type: 'basic' });
+    console.log('t222');
+    console.log(users.statusCode);
+    console.log(users.body);
+    expect(users.statusCode).toBe(200);
     expect(users.body.totalCount).toBe(12);
 
     expect(users.body.items[0]).toEqual({
