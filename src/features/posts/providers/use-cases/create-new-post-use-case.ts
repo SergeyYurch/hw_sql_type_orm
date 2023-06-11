@@ -4,6 +4,7 @@ import { BlogPostInputModel } from '../../../blogs/dto/input-models/blog-post.in
 import { PostsTypeOrmRepository } from '../posts.type-orm.repository';
 import { BlogsQueryTypeOrmRepository } from '../../../blogs/providers/blogs.query.type-orm.repository';
 import { UsersQueryTypeormRepository } from '../../../users/providers/users.query-typeorm.repository';
+import { CreateNewPostNotificationCommand } from './create-new-post-notification.use-case';
 
 export class CreateNewPostCommand {
   constructor(
@@ -38,6 +39,11 @@ export class CreateNewPostUseCase {
       blogger,
     };
     await createdPost.initial(postDto);
-    return this.postRepository.save(createdPost);
+    const result = this.postRepository.save(createdPost);
+    if (result)
+      await this.commandBus.execute(
+        new CreateNewPostNotificationCommand(blogId),
+      );
+    return result;
   }
 }

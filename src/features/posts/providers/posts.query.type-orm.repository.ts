@@ -89,6 +89,7 @@ export class PostsQueryTypeOrmRepository {
   }
 
   async getPostModelById(postId: string, userId?: string) {
+    debugger;
     const postEntity = await this.findById(postId);
     if (!postEntity) return null;
     let postModel: Post = this.castToPostModel(postEntity);

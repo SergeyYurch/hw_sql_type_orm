@@ -11,12 +11,16 @@ export class SubscriberNotificationUseCase {
   constructor(private readonly telegramAdapter: TelegramAdapter) {}
 
   async execute(command: SubscriberNotificationCommand) {
+    console.log('SubscriberNotificationUseCase was started');
     const { message, subscribers } = command;
+    console.log(subscribers);
     for (const subscriber of subscribers) {
-      await this.telegramAdapter.sendMessage(
-        message,
-        subscriber.telegramInfo.chatId,
-      );
+      if (subscriber.telegramInfo?.chatId) {
+        await this.telegramAdapter.sendMessage(
+          message,
+          subscriber.telegramInfo.chatId,
+        );
+      }
     }
   }
 }

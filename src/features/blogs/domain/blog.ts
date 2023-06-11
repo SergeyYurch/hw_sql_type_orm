@@ -81,6 +81,13 @@ export class Blog {
   getUserSubscriptionStatus(userId: string): SubscriptionStatuses {
     if (!userId) return SubscriptionStatuses.NONE;
     const subscription = this.subscriptions.find((s) => s.user.id === userId);
-    return subscription.status ?? SubscriptionStatuses.NONE;
+    return subscription?.status ?? SubscriptionStatuses.NONE;
+  }
+
+  getSubscribersCount(): number {
+    const subscriptions = this.subscriptions.filter(
+      (s) => s.status === SubscriptionStatuses.SUBSCRIBED,
+    );
+    return subscriptions?.length ?? 0;
   }
 }

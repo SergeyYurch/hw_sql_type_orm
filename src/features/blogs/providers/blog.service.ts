@@ -73,6 +73,7 @@ export class BlogService {
     return blogModel;
   }
   mapToBlogViewModel(blog: Blog, currentUserId?: string): BlogViewModel {
+    debugger;
     return {
       id: blog.id,
       name: blog.name,
@@ -102,7 +103,7 @@ export class BlogService {
       },
       currentUserSubscriptionStatus:
         blog.getUserSubscriptionStatus(currentUserId),
-      subscribersCount: blog.subscribers?.length ?? 0,
+      subscribersCount: blog.getSubscribersCount(),
     };
   }
 

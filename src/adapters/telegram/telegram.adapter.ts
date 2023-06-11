@@ -1,6 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 import { Injectable } from '@nestjs/common';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const axios = require('axios');
 
 @Injectable()
@@ -19,6 +20,7 @@ export class TelegramAdapter {
   }
 
   async sendMessage(text: string, recipientId: number) {
+    console.log(`sendMessage ${text} to ${recipientId}`);
     await this.telegramAction(`sendMessage`, {
       chat_id: recipientId,
       text,

@@ -25,11 +25,12 @@ export class SubscriptionsTypeormRepository {
       const subscriptionEntity =
         (await this.subscriptionsQueryRepository.findSubscription(
           subscription.user.id,
-          subscription.blog.id,
+          subscription.blog?.id ?? subscription.blogId,
         )) ?? new SubscriptionEntity();
 
       subscriptionEntity.userId = +subscription.user.id;
-      subscriptionEntity.blogId = +subscription.blog.id;
+      subscriptionEntity.blogId =
+        +subscription.blogId || +subscription.blog?.id;
       subscriptionEntity.subscribedAt = subscription.subscribedAt;
       subscriptionEntity.unsubscribedAt = subscription.unsubscribedAt;
       subscriptionEntity.status = subscription.status;

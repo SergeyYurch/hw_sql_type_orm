@@ -4,6 +4,7 @@ import { disconnect } from 'mongoose';
 import { BlogViewModel } from '../src/features/blogs/dto/view-models/blog.view.model';
 import { getApp } from './test-utils';
 import { blog1, blog2, blog3, user1, user2, user3 } from './tsts-input-data';
+import { PhotoSizeViewModel } from '../src/common/dto/view-models/photo-size.view.model';
 
 describe('BlogsController (e2e)', () => {
   let app: INestApplication;
@@ -166,6 +167,12 @@ describe('BlogsController (e2e)', () => {
       websiteUrl: 'https://youtube3.com',
       createdAt: expect.any(String),
       isMembership: false,
+      images: {
+        wallpaper: null,
+        main: [],
+      },
+      currentUserSubscriptionStatus: 'None',
+      subscribersCount: 0,
     });
 
     expect(blogs.body.items[1]).toEqual({
@@ -175,6 +182,12 @@ describe('BlogsController (e2e)', () => {
       websiteUrl: 'https://youtube2.com',
       createdAt: expect.any(String),
       isMembership: false,
+      images: {
+        wallpaper: null,
+        main: [],
+      },
+      currentUserSubscriptionStatus: 'None',
+      subscribersCount: 0,
     });
   });
   it('GET:[HOST]/blogs: should return code 200 and array with 3 elements with queryParams:sortDirection=asc', async () => {
@@ -193,6 +206,12 @@ describe('BlogsController (e2e)', () => {
       websiteUrl: 'https://youtube1.com',
       createdAt: expect.any(String),
       isMembership: false,
+      images: {
+        wallpaper: null,
+        main: [],
+      },
+      currentUserSubscriptionStatus: 'None',
+      subscribersCount: 0,
     });
 
     expect(blogs.body.items[1]).toEqual({
@@ -202,6 +221,12 @@ describe('BlogsController (e2e)', () => {
       websiteUrl: 'https://youtube2.com',
       createdAt: expect.any(String),
       isMembership: false,
+      images: {
+        wallpaper: null,
+        main: [],
+      },
+      currentUserSubscriptionStatus: 'None',
+      subscribersCount: 0,
     });
   });
   it('GET:[HOST]/blogs: should return code 200 and array with 1 elements with queryParams:pageSize=1&sortDirection=asc', async () => {
@@ -217,6 +242,12 @@ describe('BlogsController (e2e)', () => {
       websiteUrl: 'https://youtube1.com',
       createdAt: expect.any(String),
       isMembership: false,
+      images: {
+        wallpaper: null,
+        main: [],
+      },
+      currentUserSubscriptionStatus: 'None',
+      subscribersCount: 0,
     });
   });
   it(
@@ -235,6 +266,12 @@ describe('BlogsController (e2e)', () => {
         websiteUrl: 'https://youtube1.com',
         createdAt: expect.any(String),
         isMembership: false,
+        images: {
+          wallpaper: null,
+          main: [],
+        },
+        currentUserSubscriptionStatus: 'None',
+        subscribersCount: 0,
       });
     },
   );
@@ -251,6 +288,12 @@ describe('BlogsController (e2e)', () => {
       websiteUrl: 'https://youtube2.com',
       createdAt: expect.any(String),
       isMembership: false,
+      images: {
+        wallpaper: null,
+        main: [],
+      },
+      currentUserSubscriptionStatus: 'None',
+      subscribersCount: 0,
     });
   });
 
@@ -279,6 +322,12 @@ describe('BlogsController (e2e)', () => {
       websiteUrl: 'https://youtube3.com',
       createdAt: expect.any(String),
       isMembership: false,
+      images: {
+        wallpaper: null,
+        main: [],
+      },
+      currentUserSubscriptionStatus: 'None',
+      subscribersCount: 0,
     });
   });
 
@@ -300,6 +349,12 @@ describe('BlogsController (e2e)', () => {
       websiteUrl: 'https://youtube1.com',
       createdAt: expect.any(String),
       isMembership: false,
+      images: {
+        wallpaper: null,
+        main: [],
+      },
+      currentUserSubscriptionStatus: 'None',
+      subscribersCount: 0,
     });
   });
 
@@ -330,6 +385,7 @@ describe('BlogsController (e2e)', () => {
         myStatus: 'None',
         newestLikes: [],
       },
+      images: { main: [] },
     });
   });
 });

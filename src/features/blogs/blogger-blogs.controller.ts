@@ -44,7 +44,6 @@ import { UploadBlogIconCommand } from './providers/use-cases/upload-blog-icon.us
 import { UploadPostIconCommand } from './providers/use-cases/upload-post-icon.use-case';
 import { SubscribeCommand } from './providers/use-cases/subscribe-use-case';
 import { UnsubscribeCommand } from './providers/use-cases/unsubscribe-use-case';
-import { CreateNewPostNotificationCommand } from '../posts/providers/use-cases/create-new-post-notification.use-case';
 
 @ApiTags('blogger/blogs')
 @UseGuards(AccessTokenGuard)
@@ -215,7 +214,7 @@ export class BloggerBlogsController {
     const postId = await this.commandBus.execute(
       new CreateNewPostCommand(userId, blogId, blogPostInputModel),
     );
-    await this.commandBus.execute(new CreateNewPostNotificationCommand(blogId));
+
     return await this.postsQueryRepository.getPostViewModelById(postId);
   }
 
