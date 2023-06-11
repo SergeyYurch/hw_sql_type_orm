@@ -1,4 +1,5 @@
 import { BlogImagesViewModel } from './blog-images.view.model';
+import { SubscriptionStatuses } from '../../types/subscription-statuses.enum';
 
 export class BlogViewModel {
   id: string;
@@ -8,4 +9,6 @@ export class BlogViewModel {
   createdAt: string;
   isMembership: boolean;
   images: BlogImagesViewModel;
+  currentUserSubscriptionStatus: SubscriptionStatuses;
+  subscribersCount: number;
 }

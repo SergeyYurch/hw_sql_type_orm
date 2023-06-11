@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { UserEntity } from '../../users/entities/user.entity';
 import { BloggerImageEntity } from '../../image/entities/blogger-image.entity';
+import { SubscriptionEntity } from './subscription.entity';
 
 @Entity('blogs')
 export class BlogEntity {
@@ -39,4 +40,6 @@ export class BlogEntity {
   @OneToOne(() => BloggerImageEntity, { nullable: true })
   @JoinColumn()
   icon: BloggerImageEntity;
+  @OneToMany(() => SubscriptionEntity, (s) => s.blog)
+  subscriptions: SubscriptionEntity[];
 }

@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ERR_SAVE_TO_DB } from '../constants/blogs.constant';
 import { BlogsQueryTypeOrmRepository } from './blogs.query.type-orm.repository';
 import { UserEntity } from '../../users/entities/user.entity';
 import { UsersQueryTypeormRepository } from '../../users/providers/users.query-typeorm.repository';
@@ -29,16 +28,19 @@ export class SubscriptionsTypeormRepository {
           subscription.blog.id,
         )) ?? new SubscriptionEntity();
 
-      subscriptionEntity.subscribedAt = subscription.subscribedAt ?? null;
-      subscriptionEntity.unsubscribedAt = subscription.unsubscribedAt ?? null;
-      subscriptionEntity.code = subscription.code;
       subscriptionEntity.userId = +subscription.user.id;
       subscriptionEntity.blogId = +subscription.blog.id;
+      subscriptionEntity.subscribedAt = subscription.subscribedAt;
+      subscriptionEntity.unsubscribedAt = subscription.unsubscribedAt;
+      subscriptionEntity.status = subscription.status;
       await this.subscriptionRepository.save(subscriptionEntity);
+      console.log('t333');
+      console.log(subscriptionEntity);
+
       return true;
     } catch (e) {
       console.log(e);
-      return ERR_SAVE_TO_DB;
+      return false;
     }
   }
 

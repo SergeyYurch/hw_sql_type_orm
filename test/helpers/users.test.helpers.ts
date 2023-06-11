@@ -1,17 +1,19 @@
 import { INestApplication } from '@nestjs/common';
 import { UserInputModel } from '../../src/features/users/dto/input-models/user-input-model';
 import request from 'supertest';
+import { UserViewModel } from '../../src/features/users/dto/view-models/user.view.model';
 
 export class UsersTestHelpers {
   constructor(private app: INestApplication) {}
-  async createUser(user: any, statusCode: number) {
+  async createUser(user: any, statusCode: number): Promise<UserViewModel> {
     console.log('t11');
     console.log(user);
-    return request(this.app.getHttpServer())
+    const result = await request(this.app.getHttpServer())
       .post('/sa/users')
       .auth('admin', 'qwerty', { type: 'basic' })
       .send(user)
       .expect(statusCode);
+    return result.body;
   }
 
   async createSetOfUsers(countOfUserInSet: number, numberOfFirstUserInSet = 1) {

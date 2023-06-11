@@ -26,7 +26,7 @@ export class CreateNewPostUseCase {
     const { userId, blogId, postInputModel } = command;
     const { shortDescription, content, title } = postInputModel;
     const createdPost = await this.postRepository.createModel();
-    const blog = await this.blogQueryRepository.getBlogModelById(blogId);
+    const blog = await this.blogQueryRepository.getBlogDomainModelById(blogId);
     const blogger = await this.usersQueryTypeormRepository.getUserModelById(
       userId,
     );

@@ -4,6 +4,7 @@ import { UsersQueryTypeormRepository } from '../../../users/providers/users.quer
 import { Subscription } from '../../domain/subscription';
 import { SubscriptionService } from '../subscription.service';
 import { SubscriptionsTypeormRepository } from '../subscriptions.typeorm.repository';
+import { SubscriptionStatuses } from '../../types/subscription-statuses.enum';
 
 export class SubscribeCommand {
   constructor(public blogId: string, public userId: string) {}
@@ -22,11 +23,13 @@ export class SubscribeUseCase implements ICommandHandler<SubscribeCommand> {
     const { blogId, userId } = command;
     const [user, blog] = await Promise.all([
       this.usersQueryRepository.getUserModelById(userId),
-      this.blogsQueryRepository.getBlogModelById(blogId),
+      this.blogsQueryRepository.getBlogDomainModelById(blogId),
     ]);
-    const subscription: Subscription = new Subscription(user, blog);
-    const code = await this.subscriptionService.generateCode(userId, blogId);
-    subscription.subscribe(code);
+    const subscription: Subscription = new Subscription();
+    subscription.user = user;
+    subscription.blog = blog;
+    subscription.subscribedAt = new Date();
+    subscription.status = SubscriptionStatuses.SUBSCRIBED;
     return this.subscriptionsRepository.save(subscription);
   }
 }

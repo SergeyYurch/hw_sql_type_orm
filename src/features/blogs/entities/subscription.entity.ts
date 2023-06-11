@@ -1,10 +1,4 @@
-import {
-  Column,
-  Entity,
-  ManyToOne,
-  PrimaryColumn,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
 import { UserEntity } from '../../users/entities/user.entity';
 import { BlogEntity } from './blog.entity';
 
@@ -12,12 +6,12 @@ import { BlogEntity } from './blog.entity';
 export class SubscriptionEntity {
   // @PrimaryGeneratedColumn()
   // id: number;
-  @Column({ nullable: true })
-  subscribedAt: Date | null;
+  @Column()
+  subscribedAt: Date;
   @Column({ nullable: true })
   unsubscribedAt: Date | null;
   @Column({ nullable: true })
-  code: string;
+  status: string;
   @ManyToOne(() => UserEntity, { nullable: false })
   user: UserEntity;
   @PrimaryColumn()

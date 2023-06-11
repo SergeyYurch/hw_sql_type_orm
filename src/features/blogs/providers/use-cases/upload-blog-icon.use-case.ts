@@ -24,9 +24,10 @@ export class UploadBlogIconUseCase
 
   async execute(command: UploadBlogIconCommand) {
     const { file } = command;
-    const blogModel = await this.blogsQueryTypeOrmRepository.getBlogModelById(
-      command.blogId,
-    );
+    const blogModel =
+      await this.blogsQueryTypeOrmRepository.getBlogDomainModelById(
+        command.blogId,
+      );
     const fileBuffer = file.buffer;
     const metadata = await this.imageService.getImageMetadata(file);
     const targetFolder = 'blog-icons';

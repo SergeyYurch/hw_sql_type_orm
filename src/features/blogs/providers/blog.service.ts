@@ -6,10 +6,16 @@ import { BlogViewModel } from '../dto/view-models/blog.view.model';
 import { ImageService } from '../../image/providers/image.service';
 import { BlogSaViewModel } from '../dto/view-models/blog-sa-view.model';
 import { Injectable } from '@nestjs/common';
+import { UsersService } from '../../users/providers/users.service';
+import { SubscriptionService } from './subscription.service';
 
 @Injectable()
 export class BlogService {
-  constructor(private readonly imageService: ImageService) {}
+  constructor(
+    private readonly imageService: ImageService,
+    private readonly usersService: UsersService,
+    private readonly subscriptionService: SubscriptionService,
+  ) {}
   mapToPhotoSizeViewModel(image: BloggerImage): PhotoSizeViewModel {
     if (!image) return null;
     return {
@@ -54,9 +60,19 @@ export class BlogService {
         blogEntity.icon,
       );
     }
+    blogModel.subscriptions = [];
+    if (blogEntity.subscriptions?.length > 0) {
+      for (const subscriptionEntity of blogEntity.subscriptions) {
+        blogModel.subscriptions.push(
+          this.subscriptionService.mapToSubscriptionDomainModel(
+            subscriptionEntity,
+          ),
+        );
+      }
+    }
     return blogModel;
   }
-  mapToBlogViewModel(blog: Blog): BlogViewModel {
+  mapToBlogViewModel(blog: Blog, currentUserId?: string): BlogViewModel {
     return {
       id: blog.id,
       name: blog.name,
@@ -84,8 +100,12 @@ export class BlogService {
             ]
           : [],
       },
+      currentUserSubscriptionStatus:
+        blog.getUserSubscriptionStatus(currentUserId),
+      subscribersCount: blog.subscribers?.length ?? 0,
     };
   }
+
   mapToSaBlogViewModelWithOwner(blog: Blog): BlogSaViewModel | BlogViewModel {
     const blogView = this.mapToBlogViewModel(blog);
     const banInfo = {

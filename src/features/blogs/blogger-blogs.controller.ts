@@ -5,6 +5,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  InternalServerErrorException,
   Param,
   Post,
   Put,
@@ -65,7 +66,10 @@ export class BloggerBlogsController {
     @Param('blogId') blogId: string,
   ) {
     console.log(`[BloggerBlogController]:subscribe start...`);
-    await this.commandBus.execute(new SubscribeCommand(blogId, userId));
+    const res = await this.commandBus.execute(
+      new SubscribeCommand(blogId, userId),
+    );
+    if (!res) throw new InternalServerErrorException();
   }
 
   @UseGuards(CheckBlogIdGuard)
@@ -175,7 +179,10 @@ export class BloggerBlogsController {
       new CreateNewBlogCommand(blog, userId),
     );
     if (!blogId) return null;
-    const createdBlog = await this.blogsQueryRepository.getBlogById(blogId);
+    const createdBlog = await this.blogsQueryRepository.getBlogById(
+      blogId,
+      userId,
+    );
     console.log(`Blog id:${blogId} was created`);
     console.log(createdBlog);
     return createdBlog;

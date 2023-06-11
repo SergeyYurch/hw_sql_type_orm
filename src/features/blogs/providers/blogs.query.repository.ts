@@ -5,7 +5,6 @@ import { Blog, BlogDocument } from '../mongo-shema/blog.schema';
 import { pagesCount } from '../../../common/helpers/helpers';
 import { BlogViewModel } from '../dto/view-models/blog.view.model';
 import { PaginatorViewModel } from '../../../common/dto/view-models/paginator.view.model';
-import { BlogSaViewModel } from '../dto/view-models/blog-sa-view.model';
 import { PaginatorInputType } from '../../../common/dto/input-models/paginator.input.type';
 
 @Injectable()
@@ -36,7 +35,7 @@ export class BlogsQueryRepository {
       .sort({ [sortBy]: sortDirection })
       .skip((pageNumber - 1) * pageSize)
       .limit(pageSize);
-    const items: BlogViewModel[] = options?.viewForSa
+    const items: any[] = options?.viewForSa
       ? result.map((b) => this.getSaViewModelWithOwner(b))
       : result.map((b) => this.getBlogViewModel(b));
     return {
@@ -48,7 +47,7 @@ export class BlogsQueryRepository {
     };
   }
 
-  async getBlogById(id: string): Promise<BlogViewModel | null> {
+  async getBlogById(id: string) {
     const blog = await this.BlogModel.findById(id);
     if (!blog || blog.isBanned) return null;
     return this.getBlogViewModel(blog);
@@ -69,7 +68,7 @@ export class BlogsQueryRepository {
     };
   }
 
-  getSaViewModelWithOwner(blog: Blog): BlogSaViewModel {
+  getSaViewModelWithOwner(blog: Blog) {
     const blogView = this.getBlogViewModel(blog);
     const banInfo = {
       isBanned: blog.isBanned,

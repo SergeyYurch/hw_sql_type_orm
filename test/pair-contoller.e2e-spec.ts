@@ -1010,7 +1010,7 @@ describe('PairController (e2e) - logic of finish game test', () => {
   // ********[HOST]/sa/blogs**********
 
   it('Prepare DB', async () => {
-    const res = await prepareTestHelpers.prepare({
+    const res = await prepareTestHelpers.prepareAccounts({
       countOfUsers: 10,
       countOfQuestions: 10,
     });

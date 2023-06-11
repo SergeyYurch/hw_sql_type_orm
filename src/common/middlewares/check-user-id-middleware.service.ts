@@ -15,7 +15,6 @@ export class CheckUserIdMiddleware implements NestMiddleware {
       const payload = <JwtPayloadType>(
         this.jwtService.verify(token, { secret: process.env.JWT_ACCESS_SECRET })
       );
-
       if (payload) {
         req.user = payload;
       }

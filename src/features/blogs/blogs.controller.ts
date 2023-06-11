@@ -3,7 +3,6 @@ import {
   Delete,
   Get,
   HttpCode,
-  HttpException,
   HttpStatus,
   InternalServerErrorException,
   Param,
@@ -48,9 +47,12 @@ export class BlogsController {
 
   @UseGuards(CheckBlogIdGuard)
   @Get(':blogId')
-  async getBlog(@Param('blogId') blogId: string) {
+  async getBlog(
+    @Param('blogId') blogId: string,
+    @CurrentUserId() userId: string,
+  ) {
     console.log(`[BlogsController ]/getBlog - run...`);
-    return await this.blogsQueryRepository.getBlogById(blogId);
+    return await this.blogsQueryRepository.getBlogById(blogId, userId);
   }
 
   @HttpCode(HttpStatus.NO_CONTENT)

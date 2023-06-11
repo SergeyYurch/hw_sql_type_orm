@@ -22,9 +22,8 @@ export class EditBlogUseCase implements ICommandHandler<EditBlogCommand> {
       websiteUrl: inputDate.websiteUrl,
       description: inputDate.description,
     };
-    const editBlog = await this.blogsQueryTypeOrmRepository.getBlogModelById(
-      blogId,
-    );
+    const editBlog =
+      await this.blogsQueryTypeOrmRepository.getBlogDomainModelById(blogId);
     editBlog.blogUpdate(changes);
     return !!(await this.blogRepository.save(editBlog));
   }

@@ -1,20 +1,12 @@
 import { Blog } from './blog';
 import { User } from '../../users/domain/user';
+import { SubscriptionStatuses } from '../types/subscription-statuses.enum';
 
 export class Subscription {
-  constructor(public user: User, public blog: Blog) {
-    this.code = null;
-  }
+  user: User;
+  blog: Blog;
+  blogId: string;
   subscribedAt: Date;
   unsubscribedAt: Date;
-  code: string | null;
-
-  subscribe(code: string) {
-    this.subscribedAt = new Date();
-    this.code = code;
-  }
-  unsubscribe() {
-    this.unsubscribedAt = new Date();
-    this.code = null;
-  }
+  status: SubscriptionStatuses;
 }

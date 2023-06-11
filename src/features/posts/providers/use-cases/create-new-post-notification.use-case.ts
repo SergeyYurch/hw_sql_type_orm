@@ -16,7 +16,7 @@ export class CreateNewPostNotificationUseCase {
   ) {}
 
   async execute(command: CreateNewPostNotificationCommand) {
-    const blog = await this.blogQueryRepository.getBlogModelById(
+    const blog = await this.blogQueryRepository.getBlogDomainModelById(
       command.blogId,
     );
     const subscribers =

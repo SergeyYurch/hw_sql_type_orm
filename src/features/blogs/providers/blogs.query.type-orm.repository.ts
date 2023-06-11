@@ -20,6 +20,7 @@ import { BlogsBannedUserEntity } from '../entities/blogs-banned-user.entity';
 import { ImageService } from '../../image/providers/image.service';
 import { BlogImagesViewModel } from '../dto/view-models/blog-images.view.model';
 import { BlogService } from './blog.service';
+import { SubscriptionEntity } from '../entities/subscription.entity';
 
 @Injectable()
 export class BlogsQueryTypeOrmRepository {
@@ -31,6 +32,8 @@ export class BlogsQueryTypeOrmRepository {
     private readonly blogsRepository: Repository<BlogEntity>,
     @InjectRepository(BlogsBannedUserEntity)
     private readonly blogsBannedUsersRepository: Repository<BlogsBannedUserEntity>,
+    @InjectRepository(SubscriptionEntity)
+    private readonly subscriptionRepository: Repository<SubscriptionEntity>,
   ) {}
 
   async doesBlogIdExist(
@@ -87,12 +90,13 @@ export class BlogsQueryTypeOrmRepository {
   }
 
   async getBlogById(
-    id: string,
+    blogId: string,
+    userId?: string,
     options?: BlogsQueryOptionsType,
   ): Promise<BlogViewModel | null> {
-    const blog = await this.getBlogModelById(id, options);
+    const blog = await this.getBlogDomainModelById(blogId, userId, options);
     if (!blog) return null;
-    return this.blogService.mapToBlogViewModel(blog);
+    return this.blogService.mapToBlogViewModel(blog, userId);
   }
 
   async getBlogOwner(blogId: string) {
@@ -173,12 +177,16 @@ export class BlogsQueryTypeOrmRepository {
     return queryBannedUsersResult[0].exists;
   }
 
-  async findBlogEntityById(id: number, options?: BlogsQueryOptionsType) {
+  async findBlogEntityById(
+    id: number,
+    userId?: string,
+    options?: BlogsQueryOptionsType,
+  ): Promise<BlogEntity> {
     const findOptionsWhere: FindOptionsWhere<BlogEntity> = {
       id,
     };
     if (options?.bannedBlogInclude) delete findOptionsWhere.isBanned;
-    return await this.blogsRepository.findOne({
+    const result = await this.blogsRepository.findOne({
       relations: {
         blogOwner: true,
         icon: true,
@@ -186,6 +194,7 @@ export class BlogsQueryTypeOrmRepository {
         bannedUsers: {
           user: true,
         },
+        subscriptions: { user: true },
       },
       where: findOptionsWhere,
       select: {
@@ -193,14 +202,52 @@ export class BlogsQueryTypeOrmRepository {
         bannedUsers: true,
       },
     });
+    console.log(result);
+    return result;
+    // const whereConditions = `blog.id = ${id} AND blog.isBanned=false`;
+    // if (options?.bannedBlogInclude)
+    //   whereConditions.replace('AND blog.isBanned=false', '');
+    // const qb = this.blogsRepository.createQueryBuilder('blog');
+    // const query = await qb
+    //   .leftJoinAndSelect('blog.blogOwner', 'blogOwner')
+    //   .leftJoinAndSelect('blog.icon', 'icon')
+    //   .leftJoinAndSelect('blog.wallpaper', 'wallpaper')
+    //   .leftJoinAndSelect('blog.bannedUsers', 'bannedUsers')
+    //   .leftJoinAndSelect('bannedUsers.user', 'user')
+    //   .where(whereConditions)
+    //   .select('*')
+    //   .addSelect((subQuery) => {
+    //     return subQuery
+    //       .select('COUNT(*)')
+    //       .from(SubscriptionEntity, 'subscriptions')
+    //       .where(`subscriptions.blogId=blog.id`);
+    //   }, 'subscribersCount')
+    //   .addSelect((subQuery) => {
+    //     return subQuery
+    //       .select('status')
+    //       .from(SubscriptionEntity, 'subscriptions')
+    //       .where(
+    //         `subscriptions.userId=${
+    //           userId || 0
+    //         } AND subscriptions.blogId=blog.id`,
+    //       );
+    //   }, 'currentUserSubscriptionStatus');
+    // const result = await query.getRawOne();
+    // console.log(result);
+    // return result;
   }
 
-  async getBlogModelById(
+  async getBlogDomainModelById(
     blogId,
+    userId?,
     options?: BlogsQueryOptionsType,
   ): Promise<Blog | null> {
     try {
-      const blogEntity = await this.findBlogEntityById(+blogId, options);
+      const blogEntity = await this.findBlogEntityById(
+        +blogId,
+        userId,
+        options,
+      );
       if (!blogEntity) return null;
       return this.blogService.mapToBlogDomainModel(blogEntity);
     } catch (e) {
@@ -235,6 +282,7 @@ export class BlogsQueryTypeOrmRepository {
           bannedUsers: { user: true },
           icon: true,
           wallpaper: true,
+          subscriptions: { user: true },
         },
         select: {
           blogOwner: { id: true, login: true },
@@ -279,7 +327,7 @@ export class BlogsQueryTypeOrmRepository {
   }
 
   async getBlogImages(blogId: string): Promise<BlogImagesViewModel> {
-    const blog = await this.getBlogModelById(blogId);
+    const blog = await this.getBlogDomainModelById(blogId);
     return {
       wallpaper: this.blogService.mapToPhotoSizeViewModel(blog.wallpaper),
       main: blog.icon

@@ -24,9 +24,10 @@ export class UploadBlogWallpaperUseCase
 
   async execute(command: UploadBlogWallpaperCommand) {
     const { file } = command;
-    const blogModel = await this.blogsQueryTypeOrmRepository.getBlogModelById(
-      command.blogId,
-    );
+    const blogModel =
+      await this.blogsQueryTypeOrmRepository.getBlogDomainModelById(
+        command.blogId,
+      );
     const metadata = await this.imageService.getImageMetadata(file);
     const fileName = `blog-wallpaper-${command.blogId}.${metadata.format}`;
     const targetFolder = 'blog-wallpapers';

@@ -3,6 +3,7 @@ import { UserInputModel } from '../../src/features/users/dto/input-models/user-i
 import { LoginInputModel } from '../../src/features/auth/dto/login.input.model';
 import { AuthTestHelpers } from './auth.test.helpers';
 import { INestApplication } from '@nestjs/common';
+import { UserViewModel } from '../../src/features/users/dto/view-models/user.view.model';
 
 export class AccountsTestHelpers {
   usersTestService: UsersTestHelpers;
@@ -19,6 +20,7 @@ export class AccountsTestHelpers {
     };
   }
   async createSetOfUsers(count: number, startNumber = 1) {
+    const users: UserViewModel[] = [];
     for (let i = 0; i < count; i++) {
       console.log('t12');
       console.log(`i:${i}`);
@@ -26,14 +28,16 @@ export class AccountsTestHelpers {
       console.log(`startNumber:${startNumber}`);
       const user: UserInputModel = this.getUserInputModel(startNumber);
       console.log(`user:${user.login}`);
-      await this.usersTestService.createUser(user, 201);
+      const createdUser = await this.usersTestService.createUser(user, 201);
+      users.push(createdUser);
       startNumber++;
     }
+    return users;
   }
   async createAndLoginUsers(count: number, startNumber = 1) {
     const accessTokens = [];
     const refreshTokens = [];
-    await this.createSetOfUsers(count, startNumber);
+    const users = await this.createSetOfUsers(count, startNumber);
     for (let i = 0; i < count; i++) {
       const loginData: LoginInputModel = {
         loginOrEmail: `user${startNumber}`,
@@ -45,6 +49,6 @@ export class AccountsTestHelpers {
       refreshTokens.push(refreshToken);
       startNumber++;
     }
-    return { accessTokens, refreshTokens };
+    return { accessTokens, refreshTokens, users };
   }
 }

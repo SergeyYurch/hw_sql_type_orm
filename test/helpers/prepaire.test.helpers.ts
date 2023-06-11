@@ -5,6 +5,7 @@ import { AuthTestHelpers } from './auth.test.helpers';
 import { AccountsTestHelpers } from './accounts.test.helpers';
 import { GameTestHelpers } from './game.test.helpers';
 import { Question } from '../../src/features/quiz/domain/question';
+import { UserViewModel } from '../../src/features/users/dto/view-models/user.view.model';
 
 export class PrepareOptions {
   countOfUsers?: number;
@@ -19,6 +20,7 @@ export class PrepareTestHelpers {
   accountsTestHelpers: AccountsTestHelpers;
   gameTestService: GameTestHelpers;
   questions: Question[];
+  users: UserViewModel[];
   accessTokens: string[];
   refreshTokens: string[];
   gameIds = [];
@@ -30,18 +32,20 @@ export class PrepareTestHelpers {
     this.accountsTestHelpers = new AccountsTestHelpers(app);
   }
 
-  async prepare(options?: PrepareOptions) {
+  //created a certain amount of users, login users and return their accessTokens
+  async prepareAccounts(options?: PrepareOptions) {
     const countOfUsers = options?.countOfUsers ?? 0;
     const startNumberUser = options?.startNumberUser ?? 1;
     const countOfQuestions = options?.countOfQuestions ?? 0;
     await this.testingTestHelpers.clearDb();
     if (countOfUsers > 0) {
-      this.accessTokens = (
+      const { accessTokens, users } =
         await this.accountsTestHelpers.createAndLoginUsers(
           countOfUsers,
           startNumberUser,
-        )
-      ).accessTokens;
+        );
+      this.accessTokens = accessTokens;
+      this.users = users;
     }
 
     if (countOfQuestions > 0) {
@@ -49,6 +53,10 @@ export class PrepareTestHelpers {
         countOfQuestions,
       );
     }
-    return { accessTokens: this.accessTokens, questions: this.questions };
+    return {
+      accessTokens: this.accessTokens,
+      questions: this.questions,
+      users: this.users,
+    };
   }
 }

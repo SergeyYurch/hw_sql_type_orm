@@ -26,9 +26,8 @@ export class BloggerBanUserUseCase
     await this.commandBus.execute(
       new BanBlogCommentByCommentatorIdCommand(userId, blogId, isBanned),
     );
-    const editBlog = await this.blogsQueryTypeOrmRepository.getBlogModelById(
-      blogId,
-    );
+    const editBlog =
+      await this.blogsQueryTypeOrmRepository.getBlogDomainModelById(blogId);
     editBlog.banUser(userId, login, banReason, isBanned);
     return !!(await this.blogRepository.save(editBlog));
   }

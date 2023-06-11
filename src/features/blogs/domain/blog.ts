@@ -1,6 +1,9 @@
 import { BlogCreatedDto } from '../dto/blog-created.dto';
 import { BlogEditDto } from '../dto/blog-edit.dto';
 import { BloggerImage } from '../../image/domain/blogger-image';
+import { User } from '../../users/domain/user';
+import { Subscription } from './subscription';
+import { SubscriptionStatuses } from '../types/subscription-statuses.enum';
 
 export class BannedUser {
   id: string;
@@ -23,6 +26,8 @@ export class Blog {
   bannedUsers: BannedUser[];
   wallpaper: BloggerImage;
   icon: BloggerImage;
+  subscribers: User[];
+  subscriptions: Subscription[];
   constructor() {
     this.isMembership = false;
     this.isBanned = false;
@@ -71,5 +76,11 @@ export class Blog {
     if (!isBanned) {
       this.bannedUsers = this.bannedUsers.filter((item) => item.id !== id);
     }
+  }
+
+  getUserSubscriptionStatus(userId: string): SubscriptionStatuses {
+    if (!userId) return SubscriptionStatuses.NONE;
+    const subscription = this.subscriptions.find((s) => s.user.id === userId);
+    return subscription.status ?? SubscriptionStatuses.NONE;
   }
 }

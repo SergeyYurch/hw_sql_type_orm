@@ -20,9 +20,8 @@ export class BindBlogWithUserUseCase
   async execute(command: BindBlogWithUserCommand) {
     const { userId, blogId } = command;
     const user = await this.userQueryRepository.getUserModelById(userId);
-    const editBlog = await this.blogsQueryTypeOrmRepository.getBlogModelById(
-      blogId,
-    );
+    const editBlog =
+      await this.blogsQueryTypeOrmRepository.getBlogDomainModelById(blogId);
     editBlog.bindUser(userId, user.accountData.login);
     return !!(await this.blogRepository.save(editBlog));
   }

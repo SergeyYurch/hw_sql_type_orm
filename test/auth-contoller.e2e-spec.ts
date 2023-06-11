@@ -6,9 +6,13 @@ import { user1 } from './tsts-input-data';
 import { getApp } from './test-utils';
 import { UsersQueryTypeormRepository } from '../src/features/users/providers/users.query-typeorm.repository';
 import { UsersTypeOrmRepository } from '../src/features/users/providers/users.typeorm.repository';
+import { PrepareTestHelpers } from './helpers/prepaire.test.helpers';
 
 describe('CommentsController (e2e)', () => {
   let app: INestApplication;
+  let prepareTestHelpers: PrepareTestHelpers;
+  let accessTokens: string[];
+
   let cookies: string[];
   let userQueryRepository: UsersQueryTypeormRepository;
   let usersRepository: UsersTypeOrmRepository;
@@ -23,6 +27,7 @@ describe('CommentsController (e2e)', () => {
     app = await getApp();
     userQueryRepository = await app.resolve(UsersQueryTypeormRepository);
     usersRepository = await app.resolve(UsersTypeOrmRepository);
+    prepareTestHelpers = new PrepareTestHelpers(app);
   });
   afterAll(async () => {
     await disconnect();
@@ -32,78 +37,14 @@ describe('CommentsController (e2e)', () => {
   // ********[HOST]/blogs**********
 
   //preparation
-  it('/testing/all-data (DELETE) clear DB', async () => {
-    return request(app.getHttpServer()).delete('/testing/all-data').expect(204);
-  });
-  it('/sa/users (POST) add new user to the system', async () => {
-    //create new user1
-    const newUser1 = await request(app.getHttpServer())
-      .post('/sa/users')
-      .auth('admin', 'qwerty', { type: 'basic' })
-      .send(user1)
-      .expect(201);
-    user1Id = newUser1.body.id;
-  });
-
-  //Registration in the system. Email with confirmation code will be send to passed email address
-  it('POST:[HOST]/auth/registration: should return code 400 If the inputModel has incorrect values', async () => {
-    await request(app.getHttpServer())
-      .post('/auth/registration')
-      .send({
-        email: 'string',
-        password: 'password1',
+  it('prepare', async () => {
+    const countOfUsers = 3;
+    accessTokens = (
+      await prepareTestHelpers.prepareAccounts({
+        countOfUsers,
       })
-      .expect(400);
+    ).accessTokens;
   });
-  it('POST:[HOST]/auth/registration: should return code 204 if input model is correct', async () => {
-    await request(app.getHttpServer())
-      .post('/auth/registration')
-      .send({
-        login: 'user21',
-        password: 'password21',
-        email: 'user21@mail.ru',
-      })
-      .expect(204);
-  });
-  // it('POST:[HOST]/auth/registration: should return code 429 if access attempt limit exceeded', async () => {
-  //   await request(app.getHttpServer()).post('/auth/registration').send({
-  //     login: 'user11',
-  //     password: 'string11',
-  //     email: 'user11@mail.ru',
-  //   });
-  //
-  //   await request(app.getHttpServer()).post('/auth/registration').send({
-  //     login: 'user2',
-  //     password: 'string2',
-  //     email: 'user2@mail.ru',
-  //   });
-  //   await request(app.getHttpServer()).post('/auth/registration').send({
-  //     login: 'user11',
-  //     password: 'string11',
-  //     email: 'user11@mail.ru',
-  //   });
-  //
-  //   await request(app.getHttpServer()).post('/auth/registration').send({
-  //     login: 'user2',
-  //     password: 'string2',
-  //     email: 'user2@mail.ru',
-  //   });
-  //
-  //   await request(app.getHttpServer()).post('/auth/registration').send({
-  //     login: 'user3',
-  //     password: 'string3',
-  //     email: 'user3@mail.ru',
-  //   });
-  //
-  //   await request(app.getHttpServer())
-  //     .post('/auth/registration')
-  //     .send({
-  //       login: 'user6',
-  //       password: 'string6',
-  //       email: 'user6@mail.ru',
-  //     })
-  //     .expect(429);
-  // });
 
   //Try login user to the system
   it('POST:[HOST]/auth/login: should return code 400 If the inputModel has incorrect values', async () => {
