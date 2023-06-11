@@ -107,8 +107,11 @@ export class BlogService {
     };
   }
 
-  mapToSaBlogViewModelWithOwner(blog: Blog): BlogSaViewModel | BlogViewModel {
-    const blogView = this.mapToBlogViewModel(blog);
+  mapToSaBlogViewModelWithOwner(
+    blog: Blog,
+    currentUserId?: string,
+  ): BlogSaViewModel | BlogViewModel {
+    const blogView = this.mapToBlogViewModel(blog, currentUserId);
     const banInfo = {
       isBanned: blog.isBanned,
       banDate: blog.banDate ? new Date(blog.banDate).toISOString() : null,

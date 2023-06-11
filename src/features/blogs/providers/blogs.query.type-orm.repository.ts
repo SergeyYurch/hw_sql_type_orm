@@ -66,7 +66,7 @@ export class BlogsQueryTypeOrmRepository {
     }
   }
 
-  async findBlogs(
+  async getBlogs(
     paginatorParams,
     searchNameTerm,
     options?: BlogsQueryOptionsType,
@@ -79,7 +79,9 @@ export class BlogsQueryTypeOrmRepository {
     );
     const items: BlogViewModel[] = options?.bannedBlogInclude
       ? blogModels.map((b) => this.blogService.mapToSaBlogViewModelWithOwner(b))
-      : blogModels.map((b) => this.blogService.mapToBlogViewModel(b));
+      : blogModels.map((b) =>
+          this.blogService.mapToBlogViewModel(b, options?.currentUserId),
+        );
     return {
       pagesCount: pagesCount(totalCount, pageSize),
       page: pageNumber,

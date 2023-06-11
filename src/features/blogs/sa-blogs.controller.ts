@@ -54,7 +54,7 @@ export class SaBlogsController {
     @Query('searchNameTerm') searchNameTerm: string | null = null,
     @PaginatorParam() paginatorParams: PaginatorInputType,
   ) {
-    return await this.blogsQueryRepository.findBlogs(
+    return await this.blogsQueryRepository.getBlogs(
       paginatorParams,
       searchNameTerm,
       { bannedBlogInclude: true },

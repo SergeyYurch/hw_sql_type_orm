@@ -18,7 +18,7 @@ export class NotificationController {
   async telegramHook(@Body() payload: TelegramUpdateMessageType) {
     console.log('It was received by telegram end-point');
     console.log(payload);
-    if (payload.message.text.match(/\/start code=(.+)/)) {
+    if (payload?.message?.text?.match(/\/start code=(.+)/)) {
       const code = payload.message.text.split('=')[1];
       const telegramInfo: UserTelegramDataInputModel = {
         confirmationCode: code,
@@ -41,6 +41,8 @@ export class NotificationController {
           payload.message.from.id,
         );
       }
+    } else {
+      return;
     }
 
     if (payload.message.text.match(/\/start$/)) {

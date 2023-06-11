@@ -27,6 +27,7 @@ export class TelegramRegistrationUserUseCase
       chatId,
     } = command.usersTelegramData;
 
+    if (!confirmationCode) return null;
     const userModel =
       await this.usersQueryRepository.getUserModelByTelegramCode(
         confirmationCode,

@@ -37,11 +37,13 @@ export class BlogsController {
   async getBlogs(
     @Query('searchNameTerm') searchNameTerm: string | null = null,
     @PaginatorParam() paginatorParams: PaginatorInputType,
+    @CurrentUserId() userId: string,
   ) {
     console.log(`[BlogsController ]/getBlogs - run...`);
-    return await this.blogsQueryRepository.findBlogs(
+    return await this.blogsQueryRepository.getBlogs(
       paginatorParams,
       searchNameTerm,
+      { currentUserId: userId },
     );
   }
 

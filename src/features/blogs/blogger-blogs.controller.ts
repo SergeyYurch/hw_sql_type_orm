@@ -195,10 +195,10 @@ export class BloggerBlogsController {
     @CurrentUserId() userId: string,
   ) {
     console.log(`[BloggerBlogsController]/getBlogs - run...`);
-    return await this.blogsQueryRepository.findBlogs(
+    return await this.blogsQueryRepository.getBlogs(
       paginatorParams,
       searchNameTerm,
-      { blogOwnerId: userId },
+      { blogOwnerId: userId, currentUserId: userId },
     );
   }
 

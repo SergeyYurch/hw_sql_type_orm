@@ -40,7 +40,7 @@ export class UserEntity {
   passwordRecoveryInformation: PasswordRecoveryInformationEntity;
   @OneToMany(() => DeviceSessionsEntity, (ds) => ds.user)
   deviceSessions: DeviceSessionsEntity[];
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'bigint' })
   telegramId: number;
   @Column({ nullable: true })
   telegramFirstName: string;

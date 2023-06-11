@@ -25,6 +25,7 @@ export class GenerateTelegramBotLinkUseCase
     user.setTelegramConfirmationCode(getConfirmationCode());
     await this.usersRepository.save(user);
     const botLink = await this.telegramAdapter.getBotLink();
-    return `${botLink}?start=code%3d${user.telegramInfo.confirmationCode}`;
+    return `${botLink}?code=${user.telegramInfo.confirmationCode}`;
+    // return `${botLink}?start=code%3d${user.telegramInfo.confirmationCode}`;
   }
 }
